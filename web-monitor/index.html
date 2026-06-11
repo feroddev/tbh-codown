@@ -224,7 +224,7 @@
         20: 1208,
         30: 1308,
         40: 2201,
-        50: 3101,
+        50: 2305,
         65: 3205,
         80: 4103,
       };
@@ -325,6 +325,9 @@
           logAdded: "Novo bau Lv{level} adicionado.",
           logRemoved: "Bau Lv{level} removido.",
           logLevelUpdated: "Bau atualizado para Lv{level}.",
+          logLevelDuplicate:
+            "Lv{level} ja esta em uso. Escolha outro nivel de bau.",
+          logAllLevelsUsed: "Todos os niveis de bau ja estao configurados.",
           logResetAll: "Todos os cronometros foram resetados.",
           logResetSingle: "Timer Lv{level} resetado.",
           logAlreadyCounting:
@@ -371,6 +374,9 @@
           logAdded: "New chest Lv{level} added.",
           logRemoved: "Chest Lv{level} removed.",
           logLevelUpdated: "Chest updated to Lv{level}.",
+          logLevelDuplicate:
+            "Lv{level} is already in use. Choose another chest level.",
+          logAllLevelsUsed: "All chest levels are already configured.",
           logResetAll: "All timers were reset.",
           logResetSingle: "Timer Lv{level} reset.",
           logAlreadyCounting: "Lv{level} ignored: timer is already running.",
@@ -415,6 +421,9 @@
           logAdded: "宝箱 Lv{level} を追加しました。",
           logRemoved: "宝箱 Lv{level} を削除しました。",
           logLevelUpdated: "宝箱レベルを Lv{level} に変更しました。",
+          logLevelDuplicate:
+            "Lv{level} は既に使用中です。別の宝箱レベルを選んでください。",
+          logAllLevelsUsed: "すべての宝箱レベルが既に設定されています。",
           logResetAll: "すべてのタイマーをリセットしました。",
           logResetSingle: "Lv{level} のタイマーをリセットしました。",
           logAlreadyCounting:
@@ -489,7 +498,12 @@
                 stage: Number(item.stage),
                 difficulty: String(item.difficulty),
                 enemyLevel: Number(item.enemy_level),
+                isActBoss: Boolean(item.is_act_boss),
                 bossChestLevel: Number(item.boss_chest_level),
+                bossChestDropPercent:
+                  item.boss_chest_drop_percent != null
+                    ? Number(item.boss_chest_drop_percent)
+                    : null,
                 stageKey,
               };
               stageCache.push(entry);
@@ -526,7 +540,7 @@
             {
               id: crypto.randomUUID(),
               level: 50,
-              stageKey: 3101,
+              stageKey: 2305,
               expiresAt: null,
               expired: false,
             },
@@ -574,8 +588,36 @@
 
       function stagesForLevel(level) {
         return stageCache
-          .filter((item) => item.bossChestLevel === level)
+          .filter(
+            (item) => item.bossChestLevel === level && !item.isActBoss,
+          )
           .sort(sortStages);
+      }
+
+      function usedLevels(excludeTimerId = null) {
+        const used = new Set();
+        for (const timer of state.timers) {
+          if (excludeTimerId && timer.id === excludeTimerId) continue;
+          used.add(timer.level);
+        }
+        return used;
+      }
+
+      function availableLevelsForTimer(timer) {
+        const used = usedLevels(timer.id);
+        return CHEST_LEVELS.filter(
+          (level) => level === timer.level || !used.has(level),
+        );
+      }
+
+      function canAddTimer() {
+        return usedLevels().size < CHEST_LEVELS.length;
+      }
+
+      function refreshAddButton() {
+        addTimerButton.disabled = !canAddTimer();
+        addTimerButton.classList.toggle("opacity-50", !canAddTimer());
+        addTimerButton.classList.toggle("cursor-not-allowed", !canAddTimer());
       }
 
       function suggestedStageKey(level) {
@@ -585,8 +627,16 @@
         return first ? first.stageKey : null;
       }
 
+      function formatBossDropPercent(percent) {
+        if (percent == null || !Number.isFinite(percent)) return "";
+        return Number.isInteger(percent)
+          ? `${percent}% `
+          : `${percent}% `;
+      }
+
       function stageLabel(entry, includeStar = true) {
-        const base = `${entry.act}-${entry.stage} ${localizeMapName(entry.name)} · ${localizeDifficulty(entry.difficulty)}`;
+        const dropPrefix = formatBossDropPercent(entry.bossChestDropPercent);
+        const base = `${dropPrefix}${entry.act}-${entry.stage} ${localizeMapName(entry.name)} · ${localizeDifficulty(entry.difficulty)}`;
         if (
           includeStar &&
           RECOMMENDED_STAGE_BY_LEVEL[entry.bossChestLevel] === entry.stageKey
@@ -647,6 +697,25 @@
             expired: Boolean(timer.expired),
           };
         });
+
+        const seenLevels = new Set();
+        const deduped = [];
+        for (const timer of state.timers) {
+          if (seenLevels.has(timer.level)) {
+            const nextLevel = CHEST_LEVELS.find((level) => !seenLevels.has(level));
+            if (nextLevel === undefined) continue;
+            deduped.push({
+              ...timer,
+              level: nextLevel,
+              stageKey: suggestedStageKey(nextLevel),
+            });
+            seenLevels.add(nextLevel);
+            continue;
+          }
+          deduped.push(timer);
+          seenLevels.add(timer.level);
+        }
+        state.timers = deduped;
       }
 
       function saveState(force = false) {
@@ -754,7 +823,7 @@
           removeButton.title = t("rowRemove");
           removeButton.setAttribute("aria-label", t("rowRemove"));
 
-          for (const level of CHEST_LEVELS) {
+          for (const level of availableLevelsForTimer(timer)) {
             const option = document.createElement("option");
             option.value = String(level);
             option.textContent = `Lv ${level}`;
@@ -766,9 +835,16 @@
           refreshTimerLabel(timer, timerLabel);
 
           levelSelect.addEventListener("change", () => {
-            timer.level = Number(levelSelect.value);
+            const newLevel = Number(levelSelect.value);
+            if (usedLevels(timer.id).has(newLevel)) {
+              levelSelect.value = String(timer.level);
+              appendLog(t("logLevelDuplicate", { level: newLevel }));
+              return;
+            }
+            timer.level = newLevel;
             populateMapSelect(mapSelect, timer);
             saveState();
+            renderTimers();
             appendLog(t("logLevelUpdated", { level: timer.level }));
           });
 
@@ -813,6 +889,8 @@
 
           timersContainer.appendChild(node);
         }
+
+        refreshAddButton();
       }
 
       function refreshTimerLabel(timer, labelElement) {
@@ -943,10 +1021,19 @@
       document
         .querySelector("#addTimerButton")
         .addEventListener("click", () => {
-          const nextLevel =
-            CHEST_LEVELS.find(
-              (level) => !state.timers.some((timer) => timer.level === level),
-            ) ?? 30;
+          if (!canAddTimer()) {
+            appendLog(t("logAllLevelsUsed"));
+            return;
+          }
+
+          const nextLevel = CHEST_LEVELS.find(
+            (level) => !state.timers.some((timer) => timer.level === level),
+          );
+          if (nextLevel === undefined) {
+            appendLog(t("logAllLevelsUsed"));
+            return;
+          }
+
           state.timers.push({
             id: crypto.randomUUID(),
             level: nextLevel,

@@ -1,14 +1,17 @@
 from __future__ import annotations
 
 import time
-from collections.abc import Callable
 from dataclasses import dataclass
 
 import customtkinter as ctk
 
 from src.data.chest_catalog import chest_display_label
 from src.domain.chest_farm import ChestFarmSlot
-from src.domain.timer_urgency import TimerSortState, sort_timer_keys_by_urgency
+from src.domain.timer_urgency import (
+    TimerSortState,
+    pick_next_collectable_key,
+    sort_timer_keys_by_urgency,
+)
 from src.ui.i18n import (
     Language,
     format_game_instruction_for_stage_key,
@@ -17,7 +20,6 @@ from src.ui.i18n import (
 )
 from src.ui.sound_notifier import play_chest_drop_sound, play_timer_expired_sound
 from src.ui.theme import (
-    BG_ELEVATED,
     BG_INSET,
     BG_SURFACE,
     BORDER,
@@ -66,9 +68,6 @@ class ChestTimerRow(ctk.CTkFrame):
         *,
         map_label: str | None = None,
         language: Language = Language.PT_BR,
-        on_drag_start: Callable[["ChestTimerRow"], None] | None = None,
-        on_drag_motion: Callable[["ChestTimerRow", object], None] | None = None,
-        on_drag_end: Callable[["ChestTimerRow"], None] | None = None,
         **kwargs,
     ) -> None:
         super().__init__(
@@ -87,22 +86,9 @@ class ChestTimerRow(ctk.CTkFrame):
         self._expires_at: float | None = None
         self._expired = False
         self._language = language
-        self._on_drag_start = on_drag_start
-        self._on_drag_motion = on_drag_motion
-        self._on_drag_end = on_drag_end
         self._is_next_target = False
 
-        self.grid_columnconfigure(3, weight=1)
-
-        self._grip_label = ctk.CTkLabel(
-            self,
-            text="⠿",
-            width=20,
-            font=ctk.CTkFont(size=14),
-            text_color=TEXT_MUTED,
-            cursor="hand2",
-        )
-        self._grip_label.grid(row=0, column=0, padx=(8, 2), pady=6)
+        self.grid_columnconfigure(2, weight=1)
 
         self.timer_label = ctk.CTkLabel(
             self,
@@ -112,7 +98,7 @@ class ChestTimerRow(ctk.CTkFrame):
             text_color=TEXT_MUTED,
             anchor="w",
         )
-        self.timer_label.grid(row=0, column=1, padx=(0, 8), pady=6, sticky="w")
+        self.timer_label.grid(row=0, column=0, padx=(10, 8), pady=6, sticky="w")
 
         self._name_label = ctk.CTkLabel(
             self,
@@ -122,7 +108,7 @@ class ChestTimerRow(ctk.CTkFrame):
             text_color=TEXT_PRIMARY,
             anchor="w",
         )
-        self._name_label.grid(row=0, column=2, padx=(0, 8), pady=6, sticky="w")
+        self._name_label.grid(row=0, column=1, padx=(0, 8), pady=6, sticky="w")
 
         self._map_label_widget = ctk.CTkLabel(
             self,
@@ -131,11 +117,7 @@ class ChestTimerRow(ctk.CTkFrame):
             text_color=TEXT_SECONDARY,
             anchor="w",
         )
-        self._map_label_widget.grid(row=0, column=3, padx=(0, 10), pady=6, sticky="ew")
-
-        self._grip_label.bind("<ButtonPress-1>", self._handle_drag_start, add="+")
-        self._grip_label.bind("<B1-Motion>", self._handle_drag_motion, add="+")
-        self._grip_label.bind("<ButtonRelease-1>", self._handle_drag_end, add="+")
+        self._map_label_widget.grid(row=0, column=2, padx=(0, 10), pady=6, sticky="ew")
 
     def _chest_label(self, language: Language) -> str:
         return chest_display_label(self._timer_key, language=language, short=True)
@@ -156,17 +138,9 @@ class ChestTimerRow(ctk.CTkFrame):
         self._name_label.configure(text=self._chest_label(language))
         self._refresh()
 
-    def set_drop_highlight(self, active: bool) -> None:
-        if self._is_next_target:
-            return
-        self.configure(border_color=TIMER_ACTIVE if active else BORDER)
-
     def set_next_target_highlight(self, active: bool) -> None:
         self._is_next_target = active
         self.configure(border_color=NEXT_TARGET_BORDER if active else BORDER)
-
-    def set_dragging(self, active: bool) -> None:
-        self.configure(fg_color=BG_ELEVATED if active else BG_INSET)
 
     @property
     def is_counting(self) -> bool:
@@ -183,18 +157,6 @@ class ChestTimerRow(ctk.CTkFrame):
         self._expires_at = expires_at
         self._expired = expired
         self._refresh()
-
-    def _handle_drag_start(self, event) -> None:
-        if self._on_drag_start is not None:
-            self._on_drag_start(self)
-
-    def _handle_drag_motion(self, event) -> None:
-        if self._on_drag_motion is not None:
-            self._on_drag_motion(self, event)
-
-    def _handle_drag_end(self, _event) -> None:
-        if self._on_drag_end is not None:
-            self._on_drag_end(self)
 
     def start_countdown(self) -> None:
         self._expired = False
@@ -246,7 +208,6 @@ class ChestTimerBoard(ctk.CTkFrame):
         master,
         duration_minutes: float = 12.0,
         language: Language = Language.PT_BR,
-        on_order_changed: Callable[[list[int]], None] | None = None,
         **kwargs,
     ) -> None:
         super().__init__(
@@ -259,32 +220,19 @@ class ChestTimerBoard(ctk.CTkFrame):
         )
         self._duration_minutes = duration_minutes
         self._language = language
-        self._on_order_changed = on_order_changed
         self._watch_targets: list[TimerWatchTarget] = []
         self._order: list[TimerKey] = []
         self._rows: dict[TimerKey, ChestTimerRow] = {}
-        self._dragging_key: TimerKey | None = None
-        self._syncing_order = False
 
         header = ctk.CTkFrame(self, fg_color="transparent")
         header.pack(fill="x", padx=PAD_INNER, pady=(PAD_INNER, PAD_TIGHT))
         header.grid_columnconfigure(0, weight=1)
 
-        title_row = ctk.CTkFrame(header, fg_color="transparent")
-        title_row.grid(row=0, column=0, sticky="ew")
-        title_row.grid_columnconfigure(0, weight=1)
-
         self.title_label = section_label(
-            title_row,
+            header,
             text=t("chest_timers_title", language=language),
         )
         self.title_label.grid(row=0, column=0, sticky="w")
-
-        self.hint_label = hint_label(
-            title_row,
-            text=t("timers_drag_hint", language=language),
-        )
-        self.hint_label.grid(row=0, column=1, sticky="e")
 
         self.next_phase_label = ctk.CTkLabel(
             header,
@@ -314,7 +262,6 @@ class ChestTimerBoard(ctk.CTkFrame):
     def set_language(self, language: Language) -> None:
         self._language = language
         self.title_label.configure(text=t("chest_timers_title", language=language))
-        self.hint_label.configure(text=t("timers_drag_hint", language=language))
         self.empty_label.configure(text=t("timers_none_enabled", language=language))
         for row in self._rows.values():
             row.set_language(language)
@@ -395,9 +342,6 @@ class ChestTimerBoard(ctk.CTkFrame):
                 duration_minutes=self._duration_minutes,
                 map_label=self._map_label_for_key(timer_key),
                 language=self._language,
-                on_drag_start=self._on_row_drag_start,
-                on_drag_motion=self._on_row_drag_motion,
-                on_drag_end=self._on_row_drag_end,
             )
             self._rows[timer_key] = row
             if timer_key in preserved:
@@ -426,7 +370,7 @@ class ChestTimerBoard(ctk.CTkFrame):
         return states
 
     def _auto_sort_by_urgency(self) -> None:
-        if self._dragging_key is not None or not self._rows:
+        if not self._rows:
             return
 
         states = self._collect_sort_states()
@@ -442,9 +386,7 @@ class ChestTimerBoard(ctk.CTkFrame):
         self._update_next_target_highlight()
 
     def _next_target_key(self) -> TimerKey | None:
-        if not self._order:
-            return None
-        return self._order[0]
+        return pick_next_collectable_key(self._collect_sort_states())
 
     def _update_next_target_highlight(self) -> None:
         next_key = self._next_target_key()
@@ -475,75 +417,6 @@ class ChestTimerBoard(ctk.CTkFrame):
                 chest=chest_label,
             )
         )
-
-    def _on_row_drag_start(self, row: ChestTimerRow) -> None:
-        self._dragging_key = row.timer_key
-        row.set_dragging(True)
-
-    def _on_row_drag_motion(self, _row: ChestTimerRow, event) -> None:
-        if self._dragging_key is None:
-            return
-
-        drop_key = self._row_at_position(event.x_root, event.y_root)
-        for timer_key, timer_row in self._rows.items():
-            timer_row.set_drop_highlight(
-                drop_key == timer_key and timer_key != self._dragging_key
-            )
-
-    def apply_level_order(self, levels: list[int]) -> None:
-        self._syncing_order = True
-        try:
-            merged = list(levels)
-            for key in self._order:
-                if key not in merged:
-                    merged.append(key)
-            self._order = merged
-            self._layout_rows()
-            self._auto_sort_by_urgency()
-        finally:
-            self._syncing_order = False
-
-    def _row_at_position(self, x_root: int, y_root: int) -> TimerKey | None:
-        for timer_key, row in self._rows.items():
-            try:
-                left = row.winfo_rootx()
-                top = row.winfo_rooty()
-                right = left + row.winfo_width()
-                bottom = top + row.winfo_height()
-            except Exception:
-                continue
-            if left <= x_root <= right and top <= y_root <= bottom:
-                return timer_key
-        return None
-
-    def _on_row_drag_end(self, _row: ChestTimerRow) -> None:
-        if self._dragging_key is None:
-            return
-
-        dragging_key = self._dragging_key
-        self._dragging_key = None
-
-        for timer_row in self._rows.values():
-            timer_row.set_drop_highlight(False)
-            timer_row.set_dragging(False)
-
-        drop_key = self._row_at_position(self.winfo_pointerx(), self.winfo_pointery())
-        if drop_key is None or drop_key == dragging_key:
-            self._auto_sort_by_urgency()
-            return
-
-        from_index = self._order.index(dragging_key)
-        to_index = self._order.index(drop_key)
-        self._order.pop(from_index)
-        self._order.insert(to_index, dragging_key)
-        self._layout_rows()
-        self._emit_order_changed()
-        self._update_next_target_highlight()
-
-    def _emit_order_changed(self) -> None:
-        if self._on_order_changed is None or self._syncing_order:
-            return
-        self._on_order_changed(list(self._order))
 
     def start_timer(self, timer_key: TimerKey) -> None:
         row = self._rows.get(timer_key)

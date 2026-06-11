@@ -29,6 +29,7 @@ class StageCatalogEntry:
     boss_chest_key: str
     boss_chest_level: int
     boss_chest_name: str
+    boss_chest_drop_percent: float | None = None
 
     @property
     def stage_key(self) -> int:
@@ -73,6 +74,11 @@ def load_stage_catalog() -> tuple[StageCatalogEntry, ...]:
             boss_chest_key=str(item["boss_chest_key"]),
             boss_chest_level=int(item["boss_chest_level"]),
             boss_chest_name=str(item["boss_chest_name"]),
+            boss_chest_drop_percent=(
+                float(item["boss_chest_drop_percent"])
+                if item.get("boss_chest_drop_percent") is not None
+                else None
+            ),
         )
         for item in raw
     ]
@@ -103,7 +109,11 @@ def find_catalog_entry(stage_key: int) -> StageCatalogEntry | None:
 
 
 def stages_for_chest_level(chest_level: int) -> list[StageCatalogEntry]:
-    return [entry for entry in load_stage_catalog() if entry.boss_chest_level == chest_level]
+    return [
+        entry
+        for entry in load_stage_catalog()
+        if entry.boss_chest_level == chest_level and not entry.is_act_boss
+    ]
 
 
 def suggested_stage_for_chest_level(chest_level: int) -> StageCatalogEntry | None:
@@ -137,6 +147,8 @@ def is_valid_map_for_chest_level(stage_key: int, chest_level: int) -> bool:
     entry = find_catalog_entry(stage_key)
     if entry is None:
         return False
+    if entry.is_act_boss:
+        return False
     return entry.boss_chest_level == chest_level
 
 
@@ -159,6 +171,13 @@ def boss_chest_level_for_stage_key(stage_key: int) -> int | None:
     if entry is None:
         return None
     return entry.boss_chest_level
+
+
+def boss_chest_drop_percent_for_stage_key(stage_key: int) -> float | None:
+    entry = find_catalog_entry(stage_key)
+    if entry is None:
+        return None
+    return entry.boss_chest_drop_percent
 
 
 def merge_saved_maps(saved_maps: list[MapConfig]) -> list[MapConfig]:

@@ -30,10 +30,10 @@ MESSAGES: dict[str, dict[str, str]] = {
         "lang_pt_br": "Português (BR)",
         "lang_en": "English",
         "chest_timers_title": "Cronômetros",
-        "timers_drag_hint": "Ordenação automática por urgência · arraste para ajustar prioridade",
         "timers_next_phase": "Próxima fase: {instruction} ({chest})",
         "timers_none_enabled": "Configure baús à esquerda para ver cronômetros.",
         "watch_title": "Baús monitorados",
+        "watch_drag_hint": "Arraste para definir prioridade",
         "add_chest": "+ Adicionar baú",
         "common_chest_short": "Comum",
         "common_chest_lv_short": "Comum Lv{level}",
@@ -156,10 +156,10 @@ MESSAGES: dict[str, dict[str, str]] = {
         "lang_pt_br": "Português (BR)",
         "lang_en": "English",
         "chest_timers_title": "Timers",
-        "timers_drag_hint": "Auto-sorted by urgency · drag to adjust priority",
         "timers_next_phase": "Next phase: {instruction} ({chest})",
         "timers_none_enabled": "Configure chests on the left to see timers.",
         "watch_title": "Watched chests",
+        "watch_drag_hint": "Drag to set priority",
         "add_chest": "+ Add chest",
         "common_chest_short": "Common",
         "common_chest_lv_short": "Common Lv{level}",
@@ -369,13 +369,20 @@ def format_watch_map_label(
     stage: int,
     difficulty: str,
     map_name: str | None = None,
+    boss_drop_percent: float | None = None,
     language: Language | None = None,
 ) -> str:
-    stage_part = format_stage_short(act, stage, language=language)
     difficulty_part = difficulty_display_name(difficulty, language)
     if map_name:
-        localized_name = translate_map_name(map_name, language)
-        return f"{stage_part} {localized_name} · {difficulty_part}"
+        map_part = format_map_drop_label(
+            act=act,
+            stage=stage,
+            map_name=map_name,
+            boss_drop_percent=boss_drop_percent,
+            language=language,
+        )
+        return f"{map_part} · {difficulty_part}"
+    stage_part = format_stage_short(act, stage, language=language)
     return f"{stage_part} · {difficulty_part}"
 
 
@@ -418,6 +425,7 @@ def format_watch_map_label_for_stage_key(
             stage=entry.stage,
             difficulty=entry.difficulty,
             map_name=entry.name,
+            boss_drop_percent=entry.boss_chest_drop_percent,
             language=language,
         )
 
@@ -439,9 +447,13 @@ def format_current_stage_label(
 
     entry = find_catalog_entry(stage_key)
     if entry is not None:
-        return (
-            f"{format_map_drop_label(act=entry.act, stage=entry.stage, map_name=entry.name, language=language)}"
-            f" · {difficulty_display_name(entry.difficulty, language)}"
+        return format_watch_map_label(
+            act=entry.act,
+            stage=entry.stage,
+            difficulty=entry.difficulty,
+            map_name=entry.name,
+            boss_drop_percent=entry.boss_chest_drop_percent,
+            language=language,
         )
 
     stage = decode_stage_key(stage_key)
@@ -470,10 +482,16 @@ def format_map_drop_label(
     act: int,
     stage: int,
     map_name: str,
+    boss_drop_percent: float | None = None,
     language: Language | None = None,
 ) -> str:
+    from src.data.boss_chest_drop_rate import format_boss_drop_percent
+
     localized_name = translate_map_name(map_name, language)
-    return f"{format_stage_short(act, stage, language=language)} {localized_name}"
+    base = f"{format_stage_short(act, stage, language=language)} {localized_name}"
+    if boss_drop_percent is not None:
+        return f"{format_boss_drop_percent(boss_drop_percent)} {base}"
+    return base
 
 
 def localized_map_label_for_stage_key(
@@ -486,7 +504,7 @@ def localized_map_label_for_stage_key(
     entry = find_catalog_entry(stage_key)
     if entry is not None:
         return (
-            f"{format_map_drop_label(act=entry.act, stage=entry.stage, map_name=entry.name, language=language)}"
+            f"{format_map_drop_label(act=entry.act, stage=entry.stage, map_name=entry.name, boss_drop_percent=entry.boss_chest_drop_percent, language=language)}"
             f" — Lv{entry.enemy_level}"
         )
 

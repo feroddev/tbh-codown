@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from collections.abc import Callable
+
 import customtkinter as ctk
 
 from src.data.chest_catalog import boss_farm_levels, chest_display_label
@@ -22,7 +24,9 @@ from src.ui.theme import (
     PAD_TIGHT,
     RADIUS_CARD,
     RADIUS_SMALL,
+    SWITCH_PROGRESS,
     TEXT_MUTED,
+    hint_label,
     option_menu,
     secondary_button,
     section_label,
@@ -35,6 +39,7 @@ def _map_option_label(entry: StageCatalogEntry, language: Language, suggested: b
         stage=entry.stage,
         difficulty=entry.difficulty,
         map_name=entry.name,
+        boss_drop_percent=entry.boss_chest_drop_percent,
         language=language,
     )
     if suggested:
@@ -53,6 +58,9 @@ class ChestWatchRow(ctk.CTkFrame):
         on_change,
         on_remove,
         can_remove: bool,
+        on_drag_start: Callable[["ChestWatchRow"], None] | None = None,
+        on_drag_motion: Callable[["ChestWatchRow", object], None] | None = None,
+        on_drag_end: Callable[["ChestWatchRow"], None] | None = None,
         **kwargs,
     ) -> None:
         super().__init__(
@@ -69,6 +77,9 @@ class ChestWatchRow(ctk.CTkFrame):
         self._used_levels = used_levels
         self._on_change = on_change
         self._on_remove = on_remove
+        self._on_drag_start = on_drag_start
+        self._on_drag_motion = on_drag_motion
+        self._on_drag_end = on_drag_end
 
         self._chest_level = slot.chest_level
         self._valid_stages = stages_for_chest_level(self._chest_level)
@@ -76,7 +87,17 @@ class ChestWatchRow(ctk.CTkFrame):
         self._map_labels: list[str] = []
         self._label_to_stage_key: dict[str, int] = {}
 
-        self.grid_columnconfigure(2, weight=1)
+        self.grid_columnconfigure(3, weight=1)
+
+        self._grip_label = ctk.CTkLabel(
+            self,
+            text="⠿",
+            width=20,
+            font=ctk.CTkFont(size=14),
+            text_color=TEXT_MUTED,
+            cursor="hand2",
+        )
+        self._grip_label.grid(row=0, column=0, padx=(PAD_TIGHT, 2), pady=PAD_TIGHT)
 
         self._order_label = ctk.CTkLabel(
             self,
@@ -85,7 +106,7 @@ class ChestWatchRow(ctk.CTkFrame):
             font=ctk.CTkFont(family="Segoe UI", size=12, weight="bold"),
             text_color=TEXT_MUTED,
         )
-        self._order_label.grid(row=0, column=0, padx=(PAD_INNER, 6), pady=PAD_TIGHT)
+        self._order_label.grid(row=0, column=1, padx=(0, 6), pady=PAD_TIGHT)
 
         self._chest_menu = option_menu(
             self,
@@ -94,15 +115,15 @@ class ChestWatchRow(ctk.CTkFrame):
             width=84,
         )
         self._chest_menu.set(chest_display_label(self._chest_level, language=language, short=True))
-        self._chest_menu.grid(row=0, column=1, padx=(0, 6), pady=PAD_TIGHT)
+        self._chest_menu.grid(row=0, column=2, padx=(0, 6), pady=PAD_TIGHT)
 
         self._map_menu = option_menu(
             self,
             values=["—"],
             command=self._on_map_changed,
-            width=168,
+            width=220,
         )
-        self._map_menu.grid(row=0, column=2, sticky="ew", padx=(0, 6), pady=PAD_TIGHT)
+        self._map_menu.grid(row=0, column=3, sticky="ew", padx=(0, 6), pady=PAD_TIGHT)
 
         self._remove_btn = ctk.CTkButton(
             self,
@@ -117,7 +138,11 @@ class ChestWatchRow(ctk.CTkFrame):
             command=self._on_remove_clicked,
             state="normal" if can_remove else "disabled",
         )
-        self._remove_btn.grid(row=0, column=3, padx=(0, PAD_TIGHT), pady=PAD_TIGHT)
+        self._remove_btn.grid(row=0, column=4, padx=(0, PAD_TIGHT), pady=PAD_TIGHT)
+
+        self._grip_label.bind("<ButtonPress-1>", self._handle_drag_start, add="+")
+        self._grip_label.bind("<B1-Motion>", self._handle_drag_motion, add="+")
+        self._grip_label.bind("<ButtonRelease-1>", self._handle_drag_end, add="+")
 
         self._rebuild_map_options()
         self._select_stage_key(slot.stage_key)
@@ -144,6 +169,28 @@ class ChestWatchRow(ctk.CTkFrame):
         )
         self._rebuild_map_options()
         self._select_stage_key(current_key)
+
+    @property
+    def chest_level(self) -> int:
+        return self._chest_level
+
+    def set_drop_highlight(self, active: bool) -> None:
+        self.configure(border_color=SWITCH_PROGRESS if active else BORDER)
+
+    def set_dragging(self, active: bool) -> None:
+        self.configure(fg_color=BG_ELEVATED if active else BG_INSET)
+
+    def _handle_drag_start(self, event) -> None:
+        if self._on_drag_start is not None:
+            self._on_drag_start(self)
+
+    def _handle_drag_motion(self, event) -> None:
+        if self._on_drag_motion is not None:
+            self._on_drag_motion(self, event)
+
+    def _handle_drag_end(self, _event) -> None:
+        if self._on_drag_end is not None:
+            self._on_drag_end(self)
 
     def update_context(self, index: int, used_levels: set[int], can_remove: bool) -> None:
         self._index = index
@@ -225,12 +272,23 @@ class ChestWatchPanel(ctk.CTkFrame):
         self._language = language
         self._on_change = on_change
         self._rows: list[ChestWatchRow] = []
+        self._dragging_row: ChestWatchRow | None = None
 
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(1, weight=1)
 
-        self.title_label = section_label(self, text=t("watch_title", language=language))
-        self.title_label.grid(row=0, column=0, sticky="ew", pady=(0, PAD_TIGHT))
+        header = ctk.CTkFrame(self, fg_color="transparent")
+        header.grid(row=0, column=0, sticky="ew", pady=(0, PAD_TIGHT))
+        header.grid_columnconfigure(0, weight=1)
+
+        self.title_label = section_label(header, text=t("watch_title", language=language))
+        self.title_label.grid(row=0, column=0, sticky="w")
+
+        self.hint_label = hint_label(
+            header,
+            text=t("watch_drag_hint", language=language),
+        )
+        self.hint_label.grid(row=0, column=1, sticky="e")
 
         self.rows_scroll = ctk.CTkScrollableFrame(
             self,
@@ -254,6 +312,7 @@ class ChestWatchPanel(ctk.CTkFrame):
     def set_language(self, language: Language) -> None:
         self._language = language
         self.title_label.configure(text=t("watch_title", language=language))
+        self.hint_label.configure(text=t("watch_drag_hint", language=language))
         self.add_button.configure(text=t("add_chest", language=language))
         self._refresh_rows()
 
@@ -265,6 +324,15 @@ class ChestWatchPanel(ctk.CTkFrame):
         active = [slot for slot in sorted(slots, key=lambda item: item.priority) if slot.enabled]
         if not active:
             active = self._default_slots()
+
+        seen_levels: set[int] = set()
+        unique_slots: list[ChestFarmSlot] = []
+        for slot in active:
+            if slot.chest_level in seen_levels:
+                continue
+            seen_levels.add(slot.chest_level)
+            unique_slots.append(slot)
+        active = unique_slots
 
         for index, slot in enumerate(active, start=1):
             self._append_row(index, slot)
@@ -304,6 +372,9 @@ class ChestWatchPanel(ctk.CTkFrame):
             on_change=self._notify_change,
             on_remove=self._remove_row,
             can_remove=False,
+            on_drag_start=self._on_row_drag_start,
+            on_drag_motion=self._on_row_drag_motion,
+            on_drag_end=self._on_row_drag_end,
         )
         row.grid(row=len(self._rows), column=0, sticky="ew", pady=4)
         self._rows.append(row)
@@ -359,16 +430,59 @@ class ChestWatchPanel(ctk.CTkFrame):
         self._refresh_add_button()
         self._on_change()
 
-    def apply_level_order(self, levels: list[int]) -> None:
-        row_by_level = {row.to_slot().chest_level: row for row in self._rows}
-        reordered = [row_by_level[level] for level in levels if level in row_by_level]
+    def _layout_rows(self) -> None:
+        for index, row in enumerate(self._rows):
+            row.grid(row=index, column=0, sticky="ew", pady=4)
+
+    def _row_at_position(self, x_root: int, y_root: int) -> ChestWatchRow | None:
         for row in self._rows:
-            if row not in reordered:
-                reordered.append(row)
-        self._rows = reordered
-        for index, row in enumerate(self._rows, start=1):
-            row.grid(row=index - 1, column=0, sticky="ew", pady=4)
+            try:
+                left = row.winfo_rootx()
+                top = row.winfo_rooty()
+                right = left + row.winfo_width()
+                bottom = top + row.winfo_height()
+            except Exception:
+                continue
+            if left <= x_root <= right and top <= y_root <= bottom:
+                return row
+        return None
+
+    def _on_row_drag_start(self, row: ChestWatchRow) -> None:
+        self._dragging_row = row
+        row.set_dragging(True)
+
+    def _on_row_drag_motion(self, _row: ChestWatchRow, event) -> None:
+        if self._dragging_row is None:
+            return
+
+        drop_row = self._row_at_position(event.x_root, event.y_root)
+        for candidate in self._rows:
+            candidate.set_drop_highlight(
+                drop_row is candidate and candidate is not self._dragging_row
+            )
+
+    def _on_row_drag_end(self, _row: ChestWatchRow) -> None:
+        if self._dragging_row is None:
+            return
+
+        dragging_row = self._dragging_row
+        self._dragging_row = None
+
+        for candidate in self._rows:
+            candidate.set_drop_highlight(False)
+            candidate.set_dragging(False)
+
+        drop_row = self._row_at_position(self.winfo_pointerx(), self.winfo_pointery())
+        if drop_row is None or drop_row is dragging_row:
+            return
+
+        from_index = self._rows.index(dragging_row)
+        to_index = self._rows.index(drop_row)
+        self._rows.pop(from_index)
+        self._rows.insert(to_index, dragging_row)
+        self._layout_rows()
         self._sync_row_context()
+        self._notify_change()
 
     def collect_slots(self) -> list[ChestFarmSlot]:
         return [row.to_slot() for row in self._rows]

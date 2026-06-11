@@ -12,18 +12,37 @@ class TimerSortState:
 
 
 def sort_timer_keys_by_urgency(states: list[TimerSortState]) -> list[int]:
-    """Sort timers: expired first, then active by remaining time, then waiting.
+    """Sort timers for display.
 
-    Within each urgency tier, lower ``priority`` values come first (rotation order).
+    Collectable chests (expired / 0:00) are pulled to the top by priority.
+    Remaining active timers follow by soonest expiry; waiting timers keep priority.
     """
     if not states:
         return []
 
-    def sort_key(state: TimerSortState) -> tuple:
-        if state.expired:
-            return (0, state.priority)
-        if state.expires_at is not None:
-            return (1, state.expires_at, state.priority)
-        return (2, state.priority)
+    expired = sorted(
+        (state for state in states if state.expired),
+        key=lambda state: state.priority,
+    )
+    active = sorted(
+        (state for state in states if not state.expired and state.expires_at is not None),
+        key=lambda state: (state.expires_at, state.priority),
+    )
+    waiting = sorted(
+        (state for state in states if not state.expired and state.expires_at is None),
+        key=lambda state: state.priority,
+    )
 
-    return [state.timer_key for state in sorted(states, key=sort_key)]
+    ordered = expired + active + waiting
+    return [state.timer_key for state in ordered]
+
+
+def pick_next_collectable_key(states: list[TimerSortState]) -> int | None:
+    """Return the next chest map to visit — only timers at 0:00 qualify."""
+    expired = sorted(
+        (state for state in states if state.expired),
+        key=lambda state: state.priority,
+    )
+    if not expired:
+        return None
+    return expired[0].timer_key

@@ -302,7 +302,6 @@ class MonitorApp(ctk.CTk):
             root,
             duration_minutes=self.config.monitor.average_drop_minutes,
             language=self._language,
-            on_order_changed=self._on_timer_order_changed,
         )
         self.chest_timer_board.grid(
             row=2,
@@ -401,11 +400,6 @@ class MonitorApp(ctk.CTk):
         self.config = self._collect_config()
         save_config(self.config_path, self.config)
 
-    def _on_timer_order_changed(self, levels: list[int]) -> None:
-        self.chest_watch_panel.apply_level_order(levels)
-        self.config = self._collect_config()
-        save_config(self.config_path, self.config)
-
     def _sync_timers(self) -> None:
         self.chest_timer_board.set_watch_targets(
             self.chest_watch_panel.collect_slots(),
@@ -481,10 +475,12 @@ class MonitorApp(ctk.CTk):
         entry = find_catalog_entry(stage_key)
         stage = decode_stage_key(stage_key)
         map_name = entry.name if entry is not None else stage.label
+        boss_drop_percent = entry.boss_chest_drop_percent if entry is not None else None
         return format_map_drop_label(
             act=stage.act,
             stage=stage.stage,
             map_name=map_name,
+            boss_drop_percent=boss_drop_percent,
             language=self._language,
         )
 

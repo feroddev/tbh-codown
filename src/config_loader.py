@@ -95,7 +95,11 @@ def _load_chest_farms(raw: dict[str, Any]) -> list[ChestFarmSlot]:
         if slot.chest_level not in boss_farm_levels():
             continue
         catalog_entry = find_catalog_entry(slot.stage_key)
-        if catalog_entry is None or catalog_entry.boss_chest_level != slot.chest_level:
+        if (
+            catalog_entry is None
+            or catalog_entry.is_act_boss
+            or catalog_entry.boss_chest_level != slot.chest_level
+        ):
             suggested = suggested_stage_for_chest_level(slot.chest_level)
             slot = ChestFarmSlot(
                 chest_level=slot.chest_level,
