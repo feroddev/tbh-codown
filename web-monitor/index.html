@@ -1,0 +1,950 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>TBH Web Chest Timer</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  </head>
+  <body class="min-h-screen bg-slate-950 text-slate-100">
+    <main
+      class="mx-auto flex w-full max-w-7xl flex-col gap-6 px-4 py-6 sm:px-6 lg:px-8"
+    >
+      <section
+        class="rounded-xl border border-slate-800 bg-slate-900/80 p-5 shadow-lg shadow-slate-950/40"
+      >
+        <h1 id="pageTitle" class="text-2xl font-semibold tracking-tight">
+          TBH Web Chest Timer
+        </h1>
+        <p id="subtitleText" class="mt-2 text-sm text-slate-300">
+          Clique em "Bau dropou" para iniciar o cronometro manualmente.
+        </p>
+      </section>
+
+      <section class="grid gap-6 lg:grid-cols-3">
+        <div
+          class="rounded-xl border border-slate-800 bg-slate-900/80 p-5 lg:col-span-2"
+        >
+          <div class="flex flex-wrap items-end gap-3">
+            <label class="text-sm text-slate-300">
+              <span id="languageLabel">Idioma</span>
+              <select
+                id="languageSelect"
+                class="mt-1 block w-48 rounded-md border border-slate-700 bg-slate-950 px-3 py-2.5 text-base text-slate-100 focus:border-indigo-500 focus:outline-none"
+              >
+                <option value="pt-BR">Portugues (BR)</option>
+                <option value="en">English</option>
+                <option value="ja">日本語</option>
+              </select>
+            </label>
+
+            <label class="text-sm text-slate-300">
+              <span id="durationLabel">Duracao padrao (min)</span>
+              <input
+                id="durationInput"
+                type="number"
+                min="1"
+                step="0.5"
+                class="mt-1 block w-32 rounded-md border border-slate-700 bg-slate-950 px-3 py-2.5 text-base text-slate-100 focus:border-indigo-500 focus:outline-none"
+              />
+            </label>
+
+            <button
+              id="addTimerButton"
+              type="button"
+              class="rounded-md bg-indigo-500 px-4 py-2 text-sm font-medium text-white transition hover:bg-indigo-400"
+            >
+              Adicionar bau
+            </button>
+            <button
+              id="resetAllButton"
+              type="button"
+              class="rounded-md bg-slate-700 px-4 py-2 text-sm font-medium text-slate-100 transition hover:bg-slate-600"
+            >
+              Resetar todos
+            </button>
+          </div>
+
+          <div id="timersContainer" class="mt-5 flex flex-col gap-3"></div>
+        </div>
+
+        <div class="flex flex-col gap-6">
+          <section
+            class="rounded-xl border border-slate-800 bg-slate-900/80 p-5"
+          >
+            <h2 id="downloadTitle" class="text-base font-semibold">
+              Download do pacote completo
+            </h2>
+            <p id="downloadDescription" class="mt-2 text-sm text-slate-300">
+              Baixe a pasta completa do site em arquivo compactado:
+            </p>
+            <a
+              id="desktopDownloadLink"
+              href="./TBH-Monitor.rar"
+              download
+              class="mt-3 inline-flex w-full items-center justify-center rounded-md bg-emerald-500 px-4 py-2 text-sm font-medium text-slate-950 transition hover:bg-emerald-400"
+            >
+              Baixar pacote (.rar)
+            </a>
+          </section>
+
+          <section
+            class="rounded-xl border border-slate-800 bg-slate-900/80 p-5"
+          >
+            <div class="flex items-center justify-between">
+              <h2 id="eventsTitle" class="text-base font-semibold">Eventos</h2>
+              <button
+                id="clearLogsButton"
+                type="button"
+                class="rounded-md bg-slate-700 px-3 py-1.5 text-xs font-medium text-slate-100 transition hover:bg-slate-600"
+              >
+                Limpar
+              </button>
+            </div>
+            <div
+              id="logsContainer"
+              class="mt-3 h-64 overflow-y-auto rounded-md border border-slate-800 bg-slate-950 p-3 font-mono text-xs text-slate-300"
+            ></div>
+          </section>
+        </div>
+      </section>
+      <p class="text-center text-xs text-slate-500">Desenvolvido por -Neath</p>
+    </main>
+
+    <template id="timerRowTemplate">
+      <article class="rounded-lg border border-slate-800 bg-slate-950/70 p-3">
+        <div
+          class="grid gap-3 sm:grid-cols-[8.5rem_minmax(14rem,1fr)_7rem_auto] sm:items-end"
+        >
+          <label class="text-xs text-slate-400">
+            <span data-role="label-level">Bau Lv</span>
+            <select
+              data-role="level"
+              class="mt-1 block w-full rounded-md border border-slate-700 bg-slate-900 px-3 py-2.5 text-sm text-slate-100 focus:border-indigo-500 focus:outline-none"
+            ></select>
+          </label>
+
+          <label class="text-xs text-slate-400">
+            <span data-role="label-map">Mapa</span>
+            <select
+              data-role="map"
+              class="mt-1 block w-full rounded-md border border-slate-700 bg-slate-900 px-3 py-2.5 text-sm text-slate-100 focus:border-indigo-500 focus:outline-none"
+            ></select>
+          </label>
+
+          <div>
+            <p data-role="label-timer" class="text-xs text-slate-400">Timer</p>
+            <p
+              data-role="timer"
+              class="mt-1 font-mono text-xl font-semibold text-slate-300"
+            >
+              --:--
+            </p>
+          </div>
+
+          <div class="flex items-center gap-2 whitespace-nowrap">
+            <button
+              data-role="drop"
+              type="button"
+              class="rounded-md bg-gradient-to-r from-fuchsia-500 to-indigo-500 px-3.5 py-2 text-xs font-bold text-white shadow-lg shadow-indigo-900/40 ring-1 ring-fuchsia-300/40 transition hover:scale-105 hover:from-fuchsia-400 hover:to-indigo-400"
+            >
+              Bau dropou
+            </button>
+            <button
+              data-role="reset"
+              type="button"
+              class="rounded-md bg-slate-700 px-3 py-2 text-xs font-semibold text-slate-100 transition hover:bg-slate-600"
+            >
+              Reset
+            </button>
+            <button
+              data-role="remove"
+              type="button"
+              class="inline-flex h-9 w-9 items-center justify-center rounded-md border border-rose-400/40 bg-rose-500/20 text-rose-300 transition hover:bg-rose-500/30"
+            >
+              <svg
+                viewBox="0 0 24 24"
+                class="h-4 w-4"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M3 6h18"></path>
+                <path d="M8 6V4h8v2"></path>
+                <path d="M6 6l1 14h10l1-14"></path>
+                <path d="M10 10v7"></path>
+                <path d="M14 10v7"></path>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </article>
+    </template>
+
+    <script>
+      const STORAGE_KEY = "tbh-web-monitor-state-v2";
+      const CHEST_LEVELS = [4, 5, 7, 15, 20, 30, 40, 50, 65, 80];
+      const DIFFICULTY_CODE = { Normal: 1, Nightmare: 2, Hell: 3, Torment: 4 };
+      const DIFFICULTY_ORDER = { Normal: 0, Nightmare: 1, Hell: 2, Torment: 3 };
+      const RECOMMENDED_STAGE_BY_LEVEL = {
+        4: 1101,
+        5: 1104,
+        7: 1108,
+        15: 1203,
+        20: 1208,
+        30: 1308,
+        40: 2201,
+        50: 3101,
+        65: 3205,
+        80: 4103,
+      };
+
+      const MAP_NAMES_PT_BR = {
+        "Bug Nest": "Ninho de Insetos",
+        "Burning Ravine": "Ravina Ardente",
+        "Burning Village Entrance": "Entrada da Vila em Chamas",
+        Cemetery: "Cemiterio",
+        "Citadel of Ruin": "Cidadela das Ruinas",
+        "City Outskirts": "Arredores da Cidade",
+        "Core of the Abyss": "Nucleo do Abismo",
+        "Cursed Land": "Terra Amaldicoada",
+        "Desert Underground Cave": "Caverna Subterranea do Deserto",
+        "Eerie Canyon": "Canion Sinistro",
+        "Frozen Battlefield": "Campo de Batalha Gelado",
+        "Frozen Glacier Cavern": "Caverna Glacial Congelada",
+        "Glacial Cave Entrance": "Entrada da Caverna Glacial",
+        "Hell Command Chamber": "Camara de Comando do Inferno",
+        "Hell Gate": "Portao do Inferno",
+        "Midnight Sands": "Areias da Meia-noite",
+        "Oasis Road": "Estrada do Oasis",
+        Pasture: "Pasto",
+        "Pharaoh's Crypt": "Cripta do Farao",
+        "Pharaoh's Underchannel": "Canal Subterraneo do Farao",
+        "Plains of Torment": "Planicies do Tormento",
+        "Rumstreet Square": "Praca Rumstreet",
+        "Sacred Tomb": "Tumulo Sagrado",
+        "Sandstorm Valley": "Vale da Tempestade de Areia",
+        "Scorching Dunes": "Dunas Escaldantes",
+        "Shadow Meadow": "Prado Sombrio",
+        "Snowbound Outpost": "Posto Avancado Nevada",
+        "Sunset Ruins": "Ruinas do Entardecer",
+        "Throne of Darkness": "Trono das Trevas",
+        Wasteland: "Terra Devastada",
+      };
+
+      const MAP_NAMES_JA = {
+        "Bug Nest": "バグの巣",
+        "Burning Ravine": "灼熱の峡谷",
+        "Burning Village Entrance": "炎の村の入口",
+        Cemetery: "墓地",
+        "Citadel of Ruin": "破滅の城塞",
+        "City Outskirts": "街の外縁部",
+        "Core of the Abyss": "深淵の核",
+        "Cursed Land": "呪われた大地",
+        "Desert Underground Cave": "砂漠地下洞窟",
+        "Eerie Canyon": "不気味な渓谷",
+        "Frozen Battlefield": "凍結戦場",
+        "Frozen Glacier Cavern": "凍った氷河洞窟",
+        "Glacial Cave Entrance": "氷河洞窟の入口",
+        "Hell Command Chamber": "地獄司令室",
+        "Hell Gate": "地獄の門",
+        "Midnight Sands": "真夜中の砂地",
+        "Oasis Road": "オアシス街道",
+        Pasture: "牧草地",
+        "Pharaoh's Crypt": "ファラオの墓",
+        "Pharaoh's Underchannel": "ファラオの地下水路",
+        "Plains of Torment": "苦痛の平原",
+        "Rumstreet Square": "ラムストリート広場",
+        "Sacred Tomb": "聖なる墓所",
+        "Sandstorm Valley": "砂嵐の谷",
+        "Scorching Dunes": "灼熱の砂丘",
+        "Shadow Meadow": "影の草原",
+        "Snowbound Outpost": "雪原の前哨基地",
+        "Sunset Ruins": "夕日の遺跡",
+        "Throne of Darkness": "闇の玉座",
+        Wasteland: "荒野",
+      };
+
+      const I18N = {
+        "pt-BR": {
+          pageTitle: "TBH Web Chest Timer",
+          subtitle:
+            'Clique em "Bau dropou" para iniciar o cronometro manualmente.',
+          languageLabel: "Idioma",
+          durationLabel: "Duracao padrao (min)",
+          addTimerButton: "Adicionar bau",
+          resetAllButton: "Resetar todos",
+          downloadTitle: "Download do pacote completo",
+          downloadDescription:
+            "Baixe a pasta completa do site em arquivo compactado:",
+          downloadButton: "Baixar pacote (.rar)",
+          eventsTitle: "Eventos",
+          clearLogsButton: "Limpar",
+          rowLevel: "Bau Lv",
+          rowMap: "Mapa",
+          rowTimer: "Timer",
+          rowDrop: "Bau dropou",
+          rowReset: "Reset",
+          rowRemove: "Remover",
+          emptyTimers: 'Nenhum bau configurado. Clique em "Adicionar bau".',
+          mapNotAvailable: "Sem mapas para este bau",
+          invalidDuration:
+            "Duracao invalida. Use um valor entre 1 e 999 minutos.",
+          logAdded: "Novo bau Lv{level} adicionado.",
+          logRemoved: "Bau Lv{level} removido.",
+          logLevelUpdated: "Bau atualizado para Lv{level}.",
+          logResetAll: "Todos os cronometros foram resetados.",
+          logResetSingle: "Timer Lv{level} resetado.",
+          logAlreadyCounting:
+            "Lv{level} ignorado: cronometro ja esta contando.",
+          logStarted:
+            "Drop confirmado: Lv{level} | {map}. Timer iniciado ({minutes} min).",
+          logExpired: "Timer Lv{level} expirou.",
+          logDurationUpdated: "Duracao padrao atualizada para {minutes} min.",
+          logLoaded:
+            'Site carregado. Clique em "Bau dropou" para iniciar um cronometro.',
+          unknownMap: "Mapa nao selecionado",
+          difficulty: {
+            Normal: "Normal",
+            Nightmare: "Pesadelo",
+            Hell: "Inferno",
+            Torment: "Tormenta",
+          },
+        },
+        en: {
+          pageTitle: "TBH Web Chest Timer",
+          subtitle: 'Click "Chest dropped" to start each timer manually.',
+          languageLabel: "Language",
+          durationLabel: "Default duration (min)",
+          addTimerButton: "Add chest",
+          resetAllButton: "Reset all",
+          downloadTitle: "Full package download",
+          downloadDescription:
+            "Download the full website folder as an archive:",
+          downloadButton: "Download package (.rar)",
+          eventsTitle: "Events",
+          clearLogsButton: "Clear",
+          rowLevel: "Chest Lv",
+          rowMap: "Map",
+          rowTimer: "Timer",
+          rowDrop: "Chest dropped",
+          rowReset: "Reset",
+          rowRemove: "Remove",
+          emptyTimers: 'No chests configured. Click "Add chest".',
+          mapNotAvailable: "No maps for this chest",
+          invalidDuration:
+            "Invalid duration. Use a value between 1 and 999 minutes.",
+          logAdded: "New chest Lv{level} added.",
+          logRemoved: "Chest Lv{level} removed.",
+          logLevelUpdated: "Chest updated to Lv{level}.",
+          logResetAll: "All timers were reset.",
+          logResetSingle: "Timer Lv{level} reset.",
+          logAlreadyCounting: "Lv{level} ignored: timer is already running.",
+          logStarted:
+            "Drop confirmed: Lv{level} | {map}. Timer started ({minutes} min).",
+          logExpired: "Timer Lv{level} expired.",
+          logDurationUpdated: "Default duration updated to {minutes} min.",
+          logLoaded: 'Site loaded. Click "Chest dropped" to start a timer.',
+          unknownMap: "Map not selected",
+          difficulty: {
+            Normal: "Normal",
+            Nightmare: "Nightmare",
+            Hell: "Hell",
+            Torment: "Torment",
+          },
+        },
+        ja: {
+          pageTitle: "TBH Web Chest Timer",
+          subtitle: "「宝箱ドロップ」を押すと手動でタイマーを開始します。",
+          languageLabel: "言語",
+          durationLabel: "標準時間 (分)",
+          addTimerButton: "宝箱を追加",
+          resetAllButton: "すべてリセット",
+          downloadTitle: "フルパッケージのダウンロード",
+          downloadDescription:
+            "サイトのフォルダ全体を圧縮ファイルでダウンロードできます:",
+          downloadButton: "パッケージ (.rar) をダウンロード",
+          eventsTitle: "イベント",
+          clearLogsButton: "クリア",
+          rowLevel: "宝箱 Lv",
+          rowMap: "マップ",
+          rowTimer: "タイマー",
+          rowDrop: "宝箱ドロップ",
+          rowReset: "リセット",
+          rowRemove: "削除",
+          emptyTimers:
+            "設定された宝箱がありません。「宝箱を追加」を押してください。",
+          mapNotAvailable: "この宝箱レベルに対応するマップがありません",
+          invalidDuration: "無効な時間です。1〜999分で入力してください。",
+          logAdded: "宝箱 Lv{level} を追加しました。",
+          logRemoved: "宝箱 Lv{level} を削除しました。",
+          logLevelUpdated: "宝箱レベルを Lv{level} に変更しました。",
+          logResetAll: "すべてのタイマーをリセットしました。",
+          logResetSingle: "Lv{level} のタイマーをリセットしました。",
+          logAlreadyCounting:
+            "Lv{level} は無視されました: 既にカウント中です。",
+          logStarted:
+            "ドロップ確認: Lv{level} | {map}。タイマー開始 ({minutes} 分)。",
+          logExpired: "Lv{level} のタイマーが終了しました。",
+          logDurationUpdated: "標準時間を {minutes} 分に更新しました。",
+          logLoaded:
+            "サイトを読み込みました。「宝箱ドロップ」でタイマーを開始できます。",
+          unknownMap: "マップ未選択",
+          difficulty: {
+            Normal: "ノーマル",
+            Nightmare: "ナイトメア",
+            Hell: "ヘル",
+            Torment: "トーメント",
+          },
+        },
+      };
+
+      const stageCache = [];
+      const stageByKey = new Map();
+
+      const durationInput = document.querySelector("#durationInput");
+      const languageSelect = document.querySelector("#languageSelect");
+      const timersContainer = document.querySelector("#timersContainer");
+      const logsContainer = document.querySelector("#logsContainer");
+      const timerRowTemplate = document.querySelector("#timerRowTemplate");
+      const pageTitle = document.querySelector("#pageTitle");
+      const subtitleText = document.querySelector("#subtitleText");
+      const languageLabel = document.querySelector("#languageLabel");
+      const durationLabel = document.querySelector("#durationLabel");
+      const addTimerButton = document.querySelector("#addTimerButton");
+      const resetAllButton = document.querySelector("#resetAllButton");
+      const downloadTitle = document.querySelector("#downloadTitle");
+      const downloadDescription = document.querySelector(
+        "#downloadDescription",
+      );
+      const desktopDownloadLink = document.querySelector(
+        "#desktopDownloadLink",
+      );
+      const eventsTitle = document.querySelector("#eventsTitle");
+      const clearLogsButton = document.querySelector("#clearLogsButton");
+      let lastSavedStateSnapshot = "";
+
+      let state = createDefaultState();
+
+      async function loadStages() {
+        const candidates = ["./data/stages.json", "../src/data/stages.json"];
+        for (const path of candidates) {
+          try {
+            const response = await fetch(path);
+            if (!response.ok) continue;
+            const data = await response.json();
+            if (!Array.isArray(data)) continue;
+            for (const item of data) {
+              const difficultyCode = DIFFICULTY_CODE[item.difficulty];
+              if (!difficultyCode) continue;
+              const stageKey =
+                difficultyCode * 1000 +
+                Number(item.act) * 100 +
+                Number(item.stage);
+              const entry = {
+                name: String(item.name),
+                act: Number(item.act),
+                stage: Number(item.stage),
+                difficulty: String(item.difficulty),
+                enemyLevel: Number(item.enemy_level),
+                bossChestLevel: Number(item.boss_chest_level),
+                stageKey,
+              };
+              stageCache.push(entry);
+              stageByKey.set(stageKey, entry);
+            }
+            return;
+          } catch {
+            continue;
+          }
+        }
+        throw new Error("stages.json not found");
+      }
+
+      function createDefaultState() {
+        return {
+          language: "pt-BR",
+          durationMinutes: 14,
+          timers: [
+            {
+              id: crypto.randomUUID(),
+              level: 30,
+              stageKey: 1308,
+              expiresAt: null,
+              expired: false,
+            },
+            {
+              id: crypto.randomUUID(),
+              level: 40,
+              stageKey: 2201,
+              expiresAt: null,
+              expired: false,
+            },
+            {
+              id: crypto.randomUUID(),
+              level: 50,
+              stageKey: 3101,
+              expiresAt: null,
+              expired: false,
+            },
+            {
+              id: crypto.randomUUID(),
+              level: 65,
+              stageKey: 3205,
+              expiresAt: null,
+              expired: false,
+            },
+          ],
+        };
+      }
+
+      function t(key, vars = {}) {
+        const bucket = I18N[state.language] ?? I18N.en;
+        let text = bucket[key] ?? I18N.en[key] ?? key;
+        for (const [name, value] of Object.entries(vars)) {
+          text = text.replaceAll(`{${name}}`, String(value));
+        }
+        return text;
+      }
+
+      function localizeMapName(mapName) {
+        if (state.language === "pt-BR")
+          return MAP_NAMES_PT_BR[mapName] ?? mapName;
+        if (state.language === "ja") return MAP_NAMES_JA[mapName] ?? mapName;
+        return mapName;
+      }
+
+      function localizeDifficulty(difficulty) {
+        const bucket = I18N[state.language] ?? I18N.en;
+        return bucket.difficulty?.[difficulty] ?? difficulty;
+      }
+
+      function sortStages(a, b) {
+        return (
+          a.enemyLevel - b.enemyLevel ||
+          a.act - b.act ||
+          a.stage - b.stage ||
+          (DIFFICULTY_ORDER[a.difficulty] ?? 99) -
+            (DIFFICULTY_ORDER[b.difficulty] ?? 99)
+        );
+      }
+
+      function stagesForLevel(level) {
+        return stageCache
+          .filter((item) => item.bossChestLevel === level)
+          .sort(sortStages);
+      }
+
+      function suggestedStageKey(level) {
+        const suggested = RECOMMENDED_STAGE_BY_LEVEL[level];
+        if (suggested && stageByKey.has(suggested)) return suggested;
+        const first = stagesForLevel(level)[0];
+        return first ? first.stageKey : null;
+      }
+
+      function stageLabel(entry, includeStar = true) {
+        const base = `${entry.act}-${entry.stage} ${localizeMapName(entry.name)} · ${localizeDifficulty(entry.difficulty)}`;
+        if (
+          includeStar &&
+          RECOMMENDED_STAGE_BY_LEVEL[entry.bossChestLevel] === entry.stageKey
+        ) {
+          return `★ ${base}`;
+        }
+        return base;
+      }
+
+      function mapLabelForTimer(timer) {
+        const entry = stageByKey.get(timer.stageKey);
+        if (!entry) return t("unknownMap");
+        return stageLabel(entry, false);
+      }
+
+      function normalizeState() {
+        if (!I18N[state.language]) state.language = "pt-BR";
+        if (
+          !Number.isFinite(state.durationMinutes) ||
+          state.durationMinutes < 1 ||
+          state.durationMinutes > 999
+        ) {
+          state.durationMinutes = 14;
+        }
+
+        if (!Array.isArray(state.timers) || !state.timers.length) {
+          state.timers = createDefaultState().timers;
+        }
+
+        state.timers = state.timers.map((timer) => {
+          const level = CHEST_LEVELS.includes(Number(timer.level))
+            ? Number(timer.level)
+            : 30;
+          const allowedStageKeys = new Set(
+            stagesForLevel(level).map((item) => item.stageKey),
+          );
+          let stageKey = Number.isFinite(Number(timer.stageKey))
+            ? Number(timer.stageKey)
+            : null;
+          if (!stageKey || !allowedStageKeys.has(stageKey)) {
+            stageKey = suggestedStageKey(level);
+          }
+          return {
+            id: typeof timer.id === "string" ? timer.id : crypto.randomUUID(),
+            level,
+            stageKey,
+            expiresAt: Number.isFinite(Number(timer.expiresAt))
+              ? Number(timer.expiresAt)
+              : null,
+            expired: Boolean(timer.expired),
+          };
+        });
+      }
+
+      function saveState(force = false) {
+        const snapshot = JSON.stringify(state);
+        if (!force && snapshot === lastSavedStateSnapshot) {
+          return;
+        }
+        localStorage.setItem(STORAGE_KEY, snapshot);
+        lastSavedStateSnapshot = snapshot;
+      }
+
+      function loadState() {
+        try {
+          const raw = localStorage.getItem(STORAGE_KEY);
+          if (!raw) return createDefaultState();
+          const parsed = JSON.parse(raw);
+          return {
+            language:
+              typeof parsed.language === "string" ? parsed.language : "pt-BR",
+            durationMinutes: Number(parsed.durationMinutes),
+            timers: Array.isArray(parsed.timers) ? parsed.timers : [],
+          };
+        } catch {
+          return createDefaultState();
+        }
+      }
+
+      function applyLanguage() {
+        document.documentElement.lang = state.language;
+        document.title = t("pageTitle");
+        pageTitle.textContent = t("pageTitle");
+        subtitleText.textContent = t("subtitle");
+        languageLabel.textContent = t("languageLabel");
+        durationLabel.textContent = t("durationLabel");
+        addTimerButton.textContent = t("addTimerButton");
+        resetAllButton.textContent = t("resetAllButton");
+        downloadTitle.textContent = t("downloadTitle");
+        downloadDescription.textContent = t("downloadDescription");
+        desktopDownloadLink.textContent = t("downloadButton");
+        eventsTitle.textContent = t("eventsTitle");
+        clearLogsButton.textContent = t("clearLogsButton");
+        languageSelect.value = state.language;
+      }
+
+      function populateMapSelect(selectElement, timer) {
+        const options = stagesForLevel(timer.level);
+        selectElement.innerHTML = "";
+
+        if (!options.length) {
+          const option = document.createElement("option");
+          option.value = "";
+          option.textContent = t("mapNotAvailable");
+          selectElement.appendChild(option);
+          timer.stageKey = null;
+          return;
+        }
+
+        const allowed = new Set(options.map((entry) => entry.stageKey));
+        if (!allowed.has(timer.stageKey)) {
+          timer.stageKey = suggestedStageKey(timer.level);
+        }
+
+        for (const entry of options) {
+          const option = document.createElement("option");
+          option.value = String(entry.stageKey);
+          option.textContent = stageLabel(entry, true);
+          if (entry.stageKey === timer.stageKey) option.selected = true;
+          selectElement.appendChild(option);
+        }
+      }
+
+      function renderTimers() {
+        timersContainer.innerHTML = "";
+
+        if (!state.timers.length) {
+          const empty = document.createElement("p");
+          empty.className =
+            "rounded-md border border-slate-800 bg-slate-950 p-3 text-sm text-slate-400";
+          empty.textContent = t("emptyTimers");
+          timersContainer.appendChild(empty);
+          return;
+        }
+
+        for (const timer of state.timers) {
+          const node =
+            timerRowTemplate.content.firstElementChild.cloneNode(true);
+          const levelSelect = node.querySelector("[data-role='level']");
+          const mapSelect = node.querySelector("[data-role='map']");
+          const timerLabel = node.querySelector("[data-role='timer']");
+          const labelLevel = node.querySelector("[data-role='label-level']");
+          const labelMap = node.querySelector("[data-role='label-map']");
+          const labelTimer = node.querySelector("[data-role='label-timer']");
+          const dropButton = node.querySelector("[data-role='drop']");
+          const resetButton = node.querySelector("[data-role='reset']");
+          const removeButton = node.querySelector("[data-role='remove']");
+
+          labelLevel.textContent = t("rowLevel");
+          labelMap.textContent = t("rowMap");
+          labelTimer.textContent = t("rowTimer");
+          dropButton.textContent = t("rowDrop");
+          resetButton.textContent = t("rowReset");
+          removeButton.title = t("rowRemove");
+          removeButton.setAttribute("aria-label", t("rowRemove"));
+
+          for (const level of CHEST_LEVELS) {
+            const option = document.createElement("option");
+            option.value = String(level);
+            option.textContent = `Lv ${level}`;
+            if (timer.level === level) option.selected = true;
+            levelSelect.appendChild(option);
+          }
+
+          populateMapSelect(mapSelect, timer);
+          refreshTimerLabel(timer, timerLabel);
+
+          levelSelect.addEventListener("change", () => {
+            timer.level = Number(levelSelect.value);
+            populateMapSelect(mapSelect, timer);
+            saveState();
+            appendLog(t("logLevelUpdated", { level: timer.level }));
+          });
+
+          mapSelect.addEventListener("change", () => {
+            timer.stageKey = Number(mapSelect.value) || null;
+            saveState();
+          });
+
+          dropButton.addEventListener("click", () => {
+            if (timer.expiresAt && timer.expiresAt > Date.now()) {
+              appendLog(t("logAlreadyCounting", { level: timer.level }));
+              return;
+            }
+            timer.expiresAt = Date.now() + state.durationMinutes * 60_000;
+            timer.expired = false;
+            saveState();
+            refreshTimerLabel(timer, timerLabel);
+            playDropSound();
+            appendLog(
+              t("logStarted", {
+                level: timer.level,
+                map: mapLabelForTimer(timer),
+                minutes: state.durationMinutes,
+              }),
+            );
+          });
+
+          resetButton.addEventListener("click", () => {
+            timer.expiresAt = null;
+            timer.expired = false;
+            saveState();
+            refreshTimerLabel(timer, timerLabel);
+            appendLog(t("logResetSingle", { level: timer.level }));
+          });
+
+          removeButton.addEventListener("click", () => {
+            state.timers = state.timers.filter((item) => item.id !== timer.id);
+            saveState();
+            renderTimers();
+            appendLog(t("logRemoved", { level: timer.level }));
+          });
+
+          timersContainer.appendChild(node);
+        }
+      }
+
+      function refreshTimerLabel(timer, labelElement) {
+        if (timer.expired) {
+          labelElement.textContent = "0:00";
+          labelElement.className =
+            "mt-1 font-mono text-xl font-semibold text-rose-400";
+          return;
+        }
+
+        if (!timer.expiresAt) {
+          labelElement.textContent = "--:--";
+          labelElement.className =
+            "mt-1 font-mono text-xl font-semibold text-slate-300";
+          return;
+        }
+
+        const remainingMs = timer.expiresAt - Date.now();
+        if (remainingMs <= 0) {
+          timer.expiresAt = null;
+          timer.expired = true;
+          labelElement.textContent = "0:00";
+          labelElement.className =
+            "mt-1 font-mono text-xl font-semibold text-rose-400";
+          playExpiredSound();
+          appendLog(t("logExpired", { level: timer.level }));
+          saveState();
+          return;
+        }
+
+        const totalSeconds = Math.floor(remainingMs / 1000);
+        const minutes = Math.floor(totalSeconds / 60);
+        const seconds = totalSeconds % 60;
+        labelElement.textContent = `${minutes}:${String(seconds).padStart(2, "0")}`;
+        labelElement.className =
+          "mt-1 font-mono text-xl font-semibold text-emerald-400";
+      }
+
+      function formatTimestamp() {
+        return new Date().toLocaleTimeString("pt-BR", { hour12: false });
+      }
+
+      function appendLog(message) {
+        const row = document.createElement("div");
+        row.textContent = `[${formatTimestamp()}] ${message}`;
+        logsContainer.appendChild(row);
+        logsContainer.scrollTop = logsContainer.scrollHeight;
+      }
+
+      function playToneSequence(tones) {
+        const AudioContextRef =
+          window.AudioContext || window.webkitAudioContext;
+        if (!AudioContextRef) return;
+
+        const ctx = new AudioContextRef();
+        let offset = ctx.currentTime;
+        for (const [frequency, durationMs] of tones) {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = "sine";
+          osc.frequency.setValueAtTime(frequency, offset);
+          gain.gain.setValueAtTime(0.0001, offset);
+          gain.gain.exponentialRampToValueAtTime(0.08, offset + 0.01);
+          gain.gain.exponentialRampToValueAtTime(
+            0.0001,
+            offset + durationMs / 1000,
+          );
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start(offset);
+          osc.stop(offset + durationMs / 1000);
+          offset += durationMs / 1000 + 0.03;
+        }
+
+        setTimeout(() => ctx.close(), 1000);
+      }
+
+      function playDropSound() {
+        playToneSequence([
+          [523, 55],
+          [659, 70],
+        ]);
+      }
+
+      function playExpiredSound() {
+        playToneSequence([
+          [440, 90],
+          [349, 110],
+        ]);
+      }
+
+      async function bootstrap() {
+        try {
+          await loadStages();
+        } catch {
+          subtitleText.textContent =
+            "Erro ao carregar lista de mapas (stages.json).";
+          return;
+        }
+
+        state = loadState();
+        normalizeState();
+        applyLanguage();
+        durationInput.value = String(state.durationMinutes);
+        renderTimers();
+        saveState(true);
+        appendLog(t("logLoaded"));
+      }
+
+      document
+        .querySelector("#addTimerButton")
+        .addEventListener("click", () => {
+          const nextLevel =
+            CHEST_LEVELS.find(
+              (level) => !state.timers.some((timer) => timer.level === level),
+            ) ?? 30;
+          state.timers.push({
+            id: crypto.randomUUID(),
+            level: nextLevel,
+            stageKey: suggestedStageKey(nextLevel),
+            expiresAt: null,
+            expired: false,
+          });
+          saveState();
+          renderTimers();
+          appendLog(t("logAdded", { level: nextLevel }));
+        });
+
+      document
+        .querySelector("#resetAllButton")
+        .addEventListener("click", () => {
+          state.timers = state.timers.map((timer) => ({
+            ...timer,
+            expiresAt: null,
+            expired: false,
+          }));
+          saveState();
+          renderTimers();
+          appendLog(t("logResetAll"));
+        });
+
+      document
+        .querySelector("#clearLogsButton")
+        .addEventListener("click", () => {
+          logsContainer.innerHTML = "";
+        });
+
+      durationInput.addEventListener("change", () => {
+        const parsed = Number(durationInput.value);
+        if (!Number.isFinite(parsed) || parsed < 1 || parsed > 999) {
+          durationInput.value = String(state.durationMinutes);
+          appendLog(t("invalidDuration"));
+          return;
+        }
+        state.durationMinutes = parsed;
+        saveState();
+        appendLog(t("logDurationUpdated", { minutes: parsed }));
+      });
+
+      languageSelect.addEventListener("change", () => {
+        state.language = languageSelect.value;
+        if (!I18N[state.language]) state.language = "pt-BR";
+        applyLanguage();
+        renderTimers();
+        saveState();
+      });
+
+      setInterval(() => {
+        const rows = timersContainer.querySelectorAll("article");
+        rows.forEach((row, index) => {
+          const timer = state.timers[index];
+          if (!timer) return;
+          const label = row.querySelector("[data-role='timer']");
+          if (!label) return;
+          refreshTimerLabel(timer, label);
+        });
+      }, 250);
+
+      setInterval(() => {
+        saveState();
+      }, 1000);
+
+      bootstrap();
+    </script>
+  </body>
+</html>

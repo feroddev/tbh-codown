@@ -1,0 +1,13 @@
+venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.mypy_cache/
+build/
+dist/
+*.spec
+state.json
+config.yaml
+.env
+.DS_Store
+Thumbs.db
