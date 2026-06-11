@@ -28,6 +28,7 @@ jobs:
 
       - name: Prepare static site bundle
         run: |
+          mkdir -p site
           cp -R web-monitor/. site/
           touch site/.nojekyll
 
