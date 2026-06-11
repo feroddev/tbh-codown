@@ -188,6 +188,111 @@
           </section>
 
           <section
+            id="farmRecommendationSection"
+            class="rounded-xl border border-indigo-500/30 bg-slate-900/80 p-5"
+          >
+            <h2 id="farmRecommendationTitle" class="text-base font-semibold">
+              Farm Recommendation
+            </h2>
+            <p
+              id="farmRecommendationHint"
+              class="mt-1 text-xs text-slate-400"
+            ></p>
+
+            <div class="mt-3 flex flex-wrap gap-2">
+              <button
+                id="farmModePlayerButton"
+                type="button"
+                class="rounded-md px-3 py-1.5 text-xs font-medium transition"
+              ></button>
+              <button
+                id="farmModeCubeButton"
+                type="button"
+                class="rounded-md px-3 py-1.5 text-xs font-medium transition"
+              ></button>
+            </div>
+
+            <div class="mt-3 grid gap-3">
+              <label
+                id="farmPlayerLevelField"
+                class="text-xs text-slate-400"
+              >
+                <span id="farmPlayerLevelLabel">Player level</span>
+                <input
+                  id="farmPlayerLevelInput"
+                  type="number"
+                  min="1"
+                  max="999"
+                  class="mt-1 block w-full rounded-md border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 focus:border-indigo-500 focus:outline-none"
+                />
+              </label>
+
+              <label id="farmCubeLevelField" class="hidden text-xs text-slate-400">
+                <span id="farmCubeLevelLabel">Cube level</span>
+                <input
+                  id="farmCubeLevelInput"
+                  type="number"
+                  min="1"
+                  max="999"
+                  class="mt-1 block w-full rounded-md border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 focus:border-indigo-500 focus:outline-none"
+                />
+              </label>
+
+              <div class="text-xs text-slate-400">
+                <label>
+                  <span class="flex items-center gap-1.5">
+                    <span id="farmRuneBonusLabel">Rune bonus (%)</span>
+                    <span class="group relative inline-flex shrink-0">
+                      <button
+                        id="farmRuneBonusHelpButton"
+                        type="button"
+                        class="inline-flex h-4 w-4 items-center justify-center rounded-full border border-slate-600 bg-slate-800 text-[10px] font-bold leading-none text-slate-300 transition hover:border-indigo-400 hover:text-indigo-200"
+                        aria-describedby="farmRuneBonusTooltip"
+                      >
+                        ?
+                      </button>
+                      <div
+                        id="farmRuneBonusTooltip"
+                        role="tooltip"
+                        class="pointer-events-none invisible absolute right-0 top-full z-30 mt-1.5 w-[600px] max-w-[calc(100vw-2rem)] rounded-md border border-slate-600 bg-slate-950 p-2 opacity-0 shadow-xl shadow-black/60 transition-opacity duration-150 group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100"
+                      >
+                        <img
+                          id="farmRuneBonusImage"
+                          src="./images/rune-bonus-guide.png"
+                          alt=""
+                          class="max-h-[1048px] w-full rounded object-contain"
+                          loading="lazy"
+                        />
+                        <p
+                          id="farmRuneBonusImageCaption"
+                          class="mt-1 text-center text-[10px] leading-snug text-slate-400"
+                        ></p>
+                      </div>
+                    </span>
+                  </span>
+                  <input
+                    id="farmRuneBonusInput"
+                    type="number"
+                    min="0"
+                    max="9999"
+                    step="50"
+                    class="mt-1 block w-full rounded-md border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 focus:border-indigo-500 focus:outline-none"
+                  />
+                  <span
+                    id="farmRuneBonusHint"
+                    class="mt-1 block text-[11px] text-slate-500"
+                  ></span>
+                </label>
+              </div>
+            </div>
+
+            <div
+              id="farmRecommendationsList"
+              class="mt-4 flex max-h-80 flex-col gap-2 overflow-y-auto"
+            ></div>
+          </section>
+
+          <section
             class="rounded-xl border border-slate-800 bg-slate-900/80 p-5"
           >
             <h2 id="downloadTitle" class="text-base font-semibold">
@@ -307,18 +412,10 @@
       const CHEST_LEVELS = [4, 5, 7, 15, 20, 30, 40, 50, 65, 80];
       const DIFFICULTY_CODE = { Normal: 1, Nightmare: 2, Hell: 3, Torment: 4 };
       const DIFFICULTY_ORDER = { Normal: 0, Nightmare: 1, Hell: 2, Torment: 3 };
-      const RECOMMENDED_STAGE_BY_LEVEL = {
-        4: 1101,
-        5: 1104,
-        7: 1108,
-        15: 1203,
-        20: 1208,
-        30: 1308,
-        40: 2201,
-        50: 2305,
-        65: 3205,
-        80: 4103,
-      };
+      const CUBE_LEVEL_SAFE_GAP = 10;
+      const MAX_FARM_RECOMMENDATIONS = 8;
+      const FARM_WAVE_SECONDS_ESTIMATE = 25;
+      const RUNE_BONUS_GUIDE_IMAGE = "./images/rune-bonus-guide.png";
 
       const MAP_NAMES_PT_BR = {
         "Bug Nest": "Ninho de Insetos",
@@ -549,6 +646,42 @@
           footerDevelopedBy: "Desenvolvido por -Neath",
           footerRecommendations:
             "Envie recomendacoes pelo Discord (@.neath).",
+          farmRecommendationTitle: "Farm Recommendation",
+          farmRecommendationHint:
+            "Sugestoes de mapa com base no seu nivel. Clique para adicionar ao tracker.",
+          farmModePlayer: "Por nivel do jogador",
+          farmModeCube: "Por nivel do cubo",
+          farmPlayerLevelLabel: "Nivel do personagem",
+          farmCubeLevelLabel: "Nivel do cubo",
+          farmRuneBonusLabel: "Bonus da runa (%)",
+          farmRuneBonusHint:
+            "Opcional. Ex.: +300% no multiplicador de bau de chefe.",
+          farmRuneBonusImageAlt:
+            "Onde ver o bonus da runa de bau de chefe no jogo",
+          farmRuneBonusImageCaption:
+            "Consulte a imagem para localizar o bonus da runa no jogo.",
+          farmAddToTracker: "Adicionar ao tracker",
+          farmEmptyRecommendations:
+            "Nenhuma recomendacao para os niveis informados.",
+          farmInvalidLevel: "Informe um nivel entre 1 e 999.",
+          farmRecChestLevel: "Bau Lv {level}",
+          farmRecStage: "Fase",
+          farmRecBaseDrop: "Drop base",
+          farmRecEffectiveDrop: "Drop com runa",
+          farmRecReason: "Motivo",
+          farmRecNotApplicable: "—",
+          logRecommendationAdded:
+            "Recomendacao adicionada: Lv{level} | {map}.",
+          logRecommendationUpdated:
+            "Recomendacao aplicada: Lv{level} | {map}.",
+          logRecommendationNoSlot:
+            "Nao foi possivel adicionar Lv{level}: todos os slots estao em uso.",
+          reasonBestDrop: "Maior drop ({drop}) para bau Lv {level}",
+          reasonLowWavesHp: "Menos waves e menor HP entre mapas elegiveis",
+          reasonCubeSafe:
+            "Dentro do range seguro do cubo (±{gap} niveis do cubo Lv {cube})",
+          reasonPlayerAccessible:
+            "Acessivel no seu nivel de personagem (Lv {player})",
           difficulty: {
             Normal: "Normal",
             Nightmare: "Pesadelo",
@@ -640,6 +773,43 @@
           unknownMap: "Map not selected",
           footerDevelopedBy: "Developed by -Neath",
           footerRecommendations: "Send recommendations via Discord (@.neath).",
+          farmRecommendationTitle: "Farm Recommendation",
+          farmRecommendationHint:
+            "Map suggestions based on your level. Click to add to the tracker.",
+          farmModePlayer: "By player level",
+          farmModeCube: "By cube level",
+          farmPlayerLevelLabel: "Player level",
+          farmCubeLevelLabel: "Cube level",
+          farmRuneBonusLabel: "Rune bonus (%)",
+          farmRuneBonusHint:
+            "Optional. E.g. +300% boss chest multiplier.",
+          farmRuneBonusImageAlt:
+            "Where to find the boss chest rune bonus in the game",
+          farmRuneBonusImageCaption:
+            "Use the image above to find your boss chest rune bonus in-game.",
+          farmAddToTracker: "Add to tracker",
+          farmEmptyRecommendations:
+            "No recommendations for the levels entered.",
+          farmInvalidLevel: "Enter a level between 1 and 999.",
+          farmRecChestLevel: "Chest Lv {level}",
+          farmRecStage: "Stage",
+          farmRecBaseDrop: "Base drop",
+          farmRecEffectiveDrop: "Drop with rune",
+          farmRecReason: "Reason",
+          farmRecNotApplicable: "—",
+          logRecommendationAdded:
+            "Recommendation added: Lv{level} | {map}.",
+          logRecommendationUpdated:
+            "Recommendation applied: Lv{level} | {map}.",
+          logRecommendationNoSlot:
+            "Could not add Lv{level}: all timer slots are in use.",
+          reasonBestDrop: "Highest drop ({drop}) for chest Lv {level}",
+          reasonLowWavesHp:
+            "Fewest waves and lowest HP among eligible maps",
+          reasonCubeSafe:
+            "Within safe cube range (±{gap} levels from cube Lv {cube})",
+          reasonPlayerAccessible:
+            "Accessible at your player level (Lv {player})",
           difficulty: {
             Normal: "Normal",
             Nightmare: "Nightmare",
@@ -736,6 +906,43 @@
           footerDevelopedBy: "Desarrollado por -Neath",
           footerRecommendations:
             "Envia recomendaciones por Discord (@.neath).",
+          farmRecommendationTitle: "Farm Recommendation",
+          farmRecommendationHint:
+            "Sugerencias de mapa segun tu nivel. Haz clic para agregar al tracker.",
+          farmModePlayer: "Por nivel del jugador",
+          farmModeCube: "Por nivel del cubo",
+          farmPlayerLevelLabel: "Nivel del personaje",
+          farmCubeLevelLabel: "Nivel del cubo",
+          farmRuneBonusLabel: "Bonus de runa (%)",
+          farmRuneBonusHint:
+            "Opcional. Ej.: +300% en multiplicador de cofre de jefe.",
+          farmRuneBonusImageAlt:
+            "Donde ver el bonus de la runa de cofre de jefe en el juego",
+          farmRuneBonusImageCaption:
+            "Consulta la imagen para ubicar el bonus de la runa en el juego.",
+          farmAddToTracker: "Agregar al tracker",
+          farmEmptyRecommendations:
+            "Sin recomendaciones para los niveles ingresados.",
+          farmInvalidLevel: "Ingresa un nivel entre 1 y 999.",
+          farmRecChestLevel: "Cofre Nv {level}",
+          farmRecStage: "Fase",
+          farmRecBaseDrop: "Drop base",
+          farmRecEffectiveDrop: "Drop con runa",
+          farmRecReason: "Motivo",
+          farmRecNotApplicable: "—",
+          logRecommendationAdded:
+            "Recomendacion agregada: Nv{level} | {map}.",
+          logRecommendationUpdated:
+            "Recomendacion aplicada: Nv{level} | {map}.",
+          logRecommendationNoSlot:
+            "No se pudo agregar Nv{level}: todos los slots estan en uso.",
+          reasonBestDrop: "Mayor drop ({drop}) para cofre Nv {level}",
+          reasonLowWavesHp:
+            "Menos oleadas y menor HP entre mapas elegibles",
+          reasonCubeSafe:
+            "Dentro del rango seguro del cubo (±{gap} niveles del cubo Nv {cube})",
+          reasonPlayerAccessible:
+            "Accesible en tu nivel de personaje (Nv {player})",
           difficulty: {
             Normal: "Normal",
             Nightmare: "Pesadilla",
@@ -833,6 +1040,43 @@
           footerDevelopedBy: "Developpe par -Neath",
           footerRecommendations:
             "Envoyez vos recommandations sur Discord (@.neath).",
+          farmRecommendationTitle: "Farm Recommendation",
+          farmRecommendationHint:
+            "Suggestions de carte selon votre niveau. Cliquez pour ajouter au tracker.",
+          farmModePlayer: "Par niveau du joueur",
+          farmModeCube: "Par niveau du cube",
+          farmPlayerLevelLabel: "Niveau du personnage",
+          farmCubeLevelLabel: "Niveau du cube",
+          farmRuneBonusLabel: "Bonus de rune (%)",
+          farmRuneBonusHint:
+            "Optionnel. Ex. : +300% sur le multiplicateur de coffre de boss.",
+          farmRuneBonusImageAlt:
+            "Ou trouver le bonus de rune de coffre de boss dans le jeu",
+          farmRuneBonusImageCaption:
+            "Consultez l'image pour trouver le bonus de rune dans le jeu.",
+          farmAddToTracker: "Ajouter au tracker",
+          farmEmptyRecommendations:
+            "Aucune recommandation pour les niveaux saisis.",
+          farmInvalidLevel: "Entrez un niveau entre 1 et 999.",
+          farmRecChestLevel: "Coffre Nv {level}",
+          farmRecStage: "Phase",
+          farmRecBaseDrop: "Drop de base",
+          farmRecEffectiveDrop: "Drop avec rune",
+          farmRecReason: "Raison",
+          farmRecNotApplicable: "—",
+          logRecommendationAdded:
+            "Recommandation ajoutee : Nv{level} | {map}.",
+          logRecommendationUpdated:
+            "Recommandation appliquee : Nv{level} | {map}.",
+          logRecommendationNoSlot:
+            "Impossible d'ajouter Nv{level} : tous les slots sont utilises.",
+          reasonBestDrop: "Plus haut drop ({drop}) pour coffre Nv {level}",
+          reasonLowWavesHp:
+            "Moins de vagues et moins de PV parmi les cartes eligibles",
+          reasonCubeSafe:
+            "Dans la plage sure du cube (±{gap} niveaux du cube Nv {cube})",
+          reasonPlayerAccessible:
+            "Accessible a votre niveau de personnage (Nv {player})",
           difficulty: {
             Normal: "Normal",
             Nightmare: "Cauchemar",
@@ -921,6 +1165,35 @@
           unknownMap: "未选择地图",
           footerDevelopedBy: "由 -Neath 开发",
           footerRecommendations: "请通过 Discord (@.neath) 发送建议。",
+          farmRecommendationTitle: "Farm Recommendation",
+          farmRecommendationHint:
+            "根据等级推荐地图。点击即可添加到追踪器。",
+          farmModePlayer: "按玩家等级",
+          farmModeCube: "按魔方等级",
+          farmPlayerLevelLabel: "角色等级",
+          farmCubeLevelLabel: "魔方等级",
+          farmRuneBonusLabel: "符文加成 (%)",
+          farmRuneBonusHint: "可选。例如 Boss 宝箱倍率 +300%。",
+          farmRuneBonusImageAlt: "游戏中 Boss 宝箱符文加成位置",
+          farmRuneBonusImageCaption: "参考上图在游戏中找到 Boss 宝箱符文加成。",
+          farmAddToTracker: "添加到追踪器",
+          farmEmptyRecommendations: "当前等级没有可用推荐。",
+          farmInvalidLevel: "请输入 1 至 999 之间的等级。",
+          farmRecChestLevel: "宝箱 Lv {level}",
+          farmRecStage: "阶段",
+          farmRecBaseDrop: "基础掉落",
+          farmRecEffectiveDrop: "含符文掉落",
+          farmRecReason: "原因",
+          farmRecNotApplicable: "—",
+          logRecommendationAdded: "已添加推荐：Lv{level} | {map}。",
+          logRecommendationUpdated: "已应用推荐：Lv{level} | {map}。",
+          logRecommendationNoSlot:
+            "无法添加 Lv{level}：所有计时器槽位已占用。",
+          reasonBestDrop: "宝箱 Lv {level} 最高掉落率 ({drop})",
+          reasonLowWavesHp: "符合条件地图中波次最少、怪物血量最低",
+          reasonCubeSafe:
+            "在魔方安全范围内（魔方 Lv {cube} ±{gap} 级）",
+          reasonPlayerAccessible: "可在当前角色等级 (Lv {player}) 进入",
           difficulty: {
             Normal: "普通",
             Nightmare: "噩梦",
@@ -1015,6 +1288,42 @@
           footerDevelopedBy: "開発: -Neath",
           footerRecommendations:
             "Discord (@.neath) でご提案をお送りください。",
+          farmRecommendationTitle: "Farm Recommendation",
+          farmRecommendationHint:
+            "レベルに基づくマップ提案。クリックでトラッカーに追加します。",
+          farmModePlayer: "プレイヤーレベル別",
+          farmModeCube: "キューブレベル別",
+          farmPlayerLevelLabel: "キャラクターレベル",
+          farmCubeLevelLabel: "キューブレベル",
+          farmRuneBonusLabel: "ルーンボーナス (%)",
+          farmRuneBonusHint:
+            "任意。例: ボス宝箱倍率 +300%。",
+          farmRuneBonusImageAlt: "ゲーム内のボス宝箱ルーンボーナスの表示場所",
+          farmRuneBonusImageCaption:
+            "画像を参考に、ゲーム内でルーンボーナスを確認してください。",
+          farmAddToTracker: "トラッカーに追加",
+          farmEmptyRecommendations:
+            "入力されたレベルに対する推奨がありません。",
+          farmInvalidLevel: "1〜999のレベルを入力してください。",
+          farmRecChestLevel: "宝箱 Lv {level}",
+          farmRecStage: "ステージ",
+          farmRecBaseDrop: "基本ドロップ",
+          farmRecEffectiveDrop: "ルーン込みドロップ",
+          farmRecReason: "理由",
+          farmRecNotApplicable: "—",
+          logRecommendationAdded:
+            "推奨を追加しました: Lv{level} | {map}。",
+          logRecommendationUpdated:
+            "推奨を適用しました: Lv{level} | {map}。",
+          logRecommendationNoSlot:
+            "Lv{level} を追加できません: スロットがすべて使用中です。",
+          reasonBestDrop: "宝箱 Lv {level} で最高ドロップ ({drop})",
+          reasonLowWavesHp:
+            "対象マップの中でウェーブ最少・HP最低",
+          reasonCubeSafe:
+            "キューブ安全範囲内 (キューブ Lv {cube} ±{gap})",
+          reasonPlayerAccessible:
+            "現在のキャラレベル (Lv {player}) で入場可能",
           difficulty: {
             Normal: "ノーマル",
             Nightmare: "ナイトメア",
@@ -1100,6 +1409,41 @@
       const footerRecommendations = document.querySelector(
         "#footerRecommendations",
       );
+      const farmRecommendationTitle = document.querySelector(
+        "#farmRecommendationTitle",
+      );
+      const farmRecommendationHint = document.querySelector(
+        "#farmRecommendationHint",
+      );
+      const farmModePlayerButton = document.querySelector(
+        "#farmModePlayerButton",
+      );
+      const farmModeCubeButton = document.querySelector("#farmModeCubeButton");
+      const farmPlayerLevelField = document.querySelector(
+        "#farmPlayerLevelField",
+      );
+      const farmCubeLevelField = document.querySelector("#farmCubeLevelField");
+      const farmPlayerLevelInput = document.querySelector(
+        "#farmPlayerLevelInput",
+      );
+      const farmCubeLevelInput = document.querySelector("#farmCubeLevelInput");
+      const farmRuneBonusInput = document.querySelector("#farmRuneBonusInput");
+      const farmPlayerLevelLabel = document.querySelector(
+        "#farmPlayerLevelLabel",
+      );
+      const farmCubeLevelLabel = document.querySelector("#farmCubeLevelLabel");
+      const farmRuneBonusLabel = document.querySelector("#farmRuneBonusLabel");
+      const farmRuneBonusHint = document.querySelector("#farmRuneBonusHint");
+      const farmRuneBonusHelpButton = document.querySelector(
+        "#farmRuneBonusHelpButton",
+      );
+      const farmRuneBonusImage = document.querySelector("#farmRuneBonusImage");
+      const farmRuneBonusImageCaption = document.querySelector(
+        "#farmRuneBonusImageCaption",
+      );
+      const farmRecommendationsList = document.querySelector(
+        "#farmRecommendationsList",
+      );
       let lastSavedStateSnapshot = "";
 
       let state = createDefaultState();
@@ -1119,6 +1463,9 @@
                 difficultyCode * 1000 +
                 Number(item.act) * 100 +
                 Number(item.stage);
+              const chestLevel = Number(item.boss_chest_level);
+              const waves = Number(item.waves ?? item.stage ?? 1);
+              const monsterHp = Number(item.monster_hp ?? item.enemy_level);
               const entry = {
                 name: String(item.name),
                 act: Number(item.act),
@@ -1126,11 +1473,29 @@
                 difficulty: String(item.difficulty),
                 enemyLevel: Number(item.enemy_level),
                 isActBoss: Boolean(item.is_act_boss),
-                bossChestLevel: Number(item.boss_chest_level),
+                bossChestLevel: chestLevel,
                 bossChestDropPercent:
                   item.boss_chest_drop_percent != null
                     ? Number(item.boss_chest_drop_percent)
                     : null,
+                waves,
+                monsterHp,
+                requiredPlayerLevel: Number(
+                  item.required_player_level ?? item.enemy_level,
+                ),
+                cubeLevelRangeMin: Number(
+                  item.cube_level_range_min ??
+                    chestLevel - CUBE_LEVEL_SAFE_GAP,
+                ),
+                cubeLevelRangeMax: Number(
+                  item.cube_level_range_max ??
+                    chestLevel + CUBE_LEVEL_SAFE_GAP,
+                ),
+                difficultyScore: DIFFICULTY_ORDER[item.difficulty] ?? 99,
+                estimatedTimeSec: Number(
+                  item.estimated_time_sec ??
+                    waves * FARM_WAVE_SECONDS_ESTIMATE,
+                ),
                 stageKey,
               };
               stageCache.push(entry);
@@ -1168,6 +1533,10 @@
           language: loadLanguagePreference(),
           durationMinutes: 14,
           alertVolume: 100,
+          farmMode: "player",
+          playerLevel: 50,
+          cubeLevel: 50,
+          runeBonusPercent: 0,
           timers: [
             {
               id: crypto.randomUUID(),
@@ -1221,20 +1590,132 @@
         return bucket.difficulty?.[difficulty] ?? difficulty;
       }
 
-      function sortStages(a, b) {
+      function compareFarmEntries(a, b) {
+        const dropA = a.bossChestDropPercent ?? 0;
+        const dropB = b.bossChestDropPercent ?? 0;
+        if (dropB !== dropA) return dropB - dropA;
+        if (a.waves !== b.waves) return a.waves - b.waves;
+        if (a.monsterHp !== b.monsterHp) return a.monsterHp - b.monsterHp;
+        if (a.difficultyScore !== b.difficultyScore) {
+          return a.difficultyScore - b.difficultyScore;
+        }
+        if (a.estimatedTimeSec !== b.estimatedTimeSec) {
+          return a.estimatedTimeSec - b.estimatedTimeSec;
+        }
         return (
           a.enemyLevel - b.enemyLevel ||
           a.act - b.act ||
-          a.stage - b.stage ||
-          (DIFFICULTY_ORDER[a.difficulty] ?? 99) -
-            (DIFFICULTY_ORDER[b.difficulty] ?? 99)
+          a.stage - b.stage
         );
       }
 
       function stagesForLevel(level) {
         return stageCache
           .filter((item) => item.bossChestLevel === level && !item.isActBoss)
-          .sort(sortStages);
+          .sort(compareFarmEntries);
+      }
+
+      function bestStageKeyForLevel(level) {
+        const stages = stagesForLevel(level);
+        return stages.length ? stages[0].stageKey : null;
+      }
+
+      function isBestStageForChest(entry) {
+        return bestStageKeyForLevel(entry.bossChestLevel) === entry.stageKey;
+      }
+
+      function effectiveDropPercent(basePercent, runeBonusPercent) {
+        if (basePercent == null || !Number.isFinite(basePercent)) return null;
+        const bonus = Number.isFinite(runeBonusPercent) ? runeBonusPercent : 0;
+        return basePercent * (1 + bonus / 100);
+      }
+
+      function formatPercentValue(percent) {
+        if (percent == null || !Number.isFinite(percent)) {
+          return t("farmRecNotApplicable");
+        }
+        const rounded = Math.round(percent * 10) / 10;
+        return Number.isInteger(rounded) ? `${rounded}%` : `${rounded}%`;
+      }
+
+      function farmCandidatesForPlayerLevel(playerLevel) {
+        return stageCache.filter(
+          (entry) =>
+            !entry.isActBoss &&
+            entry.requiredPlayerLevel <= playerLevel &&
+            CHEST_LEVELS.includes(entry.bossChestLevel),
+        );
+      }
+
+      function farmCandidatesForCubeLevel(cubeLevel) {
+        const minLevel = cubeLevel - CUBE_LEVEL_SAFE_GAP;
+        const maxLevel = cubeLevel + CUBE_LEVEL_SAFE_GAP;
+        return stageCache.filter(
+          (entry) =>
+            !entry.isActBoss &&
+            entry.bossChestLevel >= minLevel &&
+            entry.bossChestLevel <= maxLevel &&
+            cubeLevel >= entry.cubeLevelRangeMin &&
+            cubeLevel <= entry.cubeLevelRangeMax &&
+            CHEST_LEVELS.includes(entry.bossChestLevel),
+        );
+      }
+
+      function bestStagePerChestLevel(candidates) {
+        const bestByLevel = new Map();
+        for (const entry of candidates) {
+          const current = bestByLevel.get(entry.bossChestLevel);
+          if (!current || compareFarmEntries(entry, current) < 0) {
+            bestByLevel.set(entry.bossChestLevel, entry);
+          }
+        }
+        return [...bestByLevel.values()].sort(compareFarmEntries);
+      }
+
+      function buildRecommendationReason(entry, mode) {
+        const reasons = [
+          t("reasonBestDrop", {
+            drop: formatPercentValue(entry.bossChestDropPercent),
+            level: entry.bossChestLevel,
+          }),
+          t("reasonLowWavesHp"),
+        ];
+        if (mode === "player") {
+          reasons.push(
+            t("reasonPlayerAccessible", { player: state.playerLevel }),
+          );
+        } else {
+          reasons.push(
+            t("reasonCubeSafe", {
+              gap: CUBE_LEVEL_SAFE_GAP,
+              cube: state.cubeLevel,
+            }),
+          );
+        }
+        return reasons.join(" · ");
+      }
+
+      function buildFarmRecommendations() {
+        const mode = state.farmMode === "cube" ? "cube" : "player";
+        const level =
+          mode === "cube" ? Number(state.cubeLevel) : Number(state.playerLevel);
+        if (!Number.isFinite(level) || level < 1 || level > 999) {
+          return { valid: false, items: [] };
+        }
+
+        const candidates =
+          mode === "cube"
+            ? farmCandidatesForCubeLevel(level)
+            : farmCandidatesForPlayerLevel(level);
+
+        const items = bestStagePerChestLevel(candidates)
+          .slice(0, MAX_FARM_RECOMMENDATIONS)
+          .map((entry) => ({
+            entry,
+            reason: buildRecommendationReason(entry, mode),
+          }));
+
+        return { valid: true, items };
       }
 
       function usedLevels(excludeTimerId = null) {
@@ -1264,10 +1745,7 @@
       }
 
       function suggestedStageKey(level) {
-        const suggested = RECOMMENDED_STAGE_BY_LEVEL[level];
-        if (suggested && stageByKey.has(suggested)) return suggested;
-        const first = stagesForLevel(level)[0];
-        return first ? first.stageKey : null;
+        return bestStageKeyForLevel(level);
       }
 
       function formatBossDropPercent(percent) {
@@ -1281,10 +1759,7 @@
       function stageLabel(entry, includeStar = true) {
         const dropPrefix = formatBossDropPercent(entry.bossChestDropPercent);
         const base = `${dropPrefix}${entry.act}-${entry.stage} ${localizeMapName(entry.name)} · ${localizeDifficulty(entry.difficulty)}`;
-        if (
-          includeStar &&
-          RECOMMENDED_STAGE_BY_LEVEL[entry.bossChestLevel] === entry.stageKey
-        ) {
+        if (includeStar && isBestStageForChest(entry)) {
           return `★ ${base}`;
         }
         return base;
@@ -1314,6 +1789,35 @@
           state.alertVolume > 100
         ) {
           state.alertVolume = 100;
+        }
+
+        state.farmMode = state.farmMode === "cube" ? "cube" : "player";
+        if (
+          !Number.isFinite(Number(state.playerLevel)) ||
+          state.playerLevel < 1 ||
+          state.playerLevel > 999
+        ) {
+          state.playerLevel = 50;
+        } else {
+          state.playerLevel = Number(state.playerLevel);
+        }
+        if (
+          !Number.isFinite(Number(state.cubeLevel)) ||
+          state.cubeLevel < 1 ||
+          state.cubeLevel > 999
+        ) {
+          state.cubeLevel = 50;
+        } else {
+          state.cubeLevel = Number(state.cubeLevel);
+        }
+        if (
+          !Number.isFinite(Number(state.runeBonusPercent)) ||
+          state.runeBonusPercent < 0 ||
+          state.runeBonusPercent > 9999
+        ) {
+          state.runeBonusPercent = 0;
+        } else {
+          state.runeBonusPercent = Number(state.runeBonusPercent);
         }
 
         if (!Array.isArray(state.timers) || !state.timers.length) {
@@ -1387,6 +1891,10 @@
               : loadLanguagePreference(),
             durationMinutes: Number(parsed.durationMinutes),
             alertVolume: Number(parsed.alertVolume),
+            farmMode: parsed.farmMode,
+            playerLevel: Number(parsed.playerLevel),
+            cubeLevel: Number(parsed.cubeLevel),
+            runeBonusPercent: Number(parsed.runeBonusPercent),
             timers: Array.isArray(parsed.timers) ? parsed.timers : [],
           };
         } catch {
@@ -1433,7 +1941,140 @@
         languageSelect.value = state.language;
         footerDevelopedBy.textContent = t("footerDevelopedBy");
         footerRecommendations.textContent = t("footerRecommendations");
+        farmRecommendationTitle.textContent = t("farmRecommendationTitle");
+        farmRecommendationHint.textContent = t("farmRecommendationHint");
+        farmModePlayerButton.textContent = t("farmModePlayer");
+        farmModeCubeButton.textContent = t("farmModeCube");
+        farmPlayerLevelLabel.textContent = t("farmPlayerLevelLabel");
+        farmCubeLevelLabel.textContent = t("farmCubeLevelLabel");
+        farmRuneBonusLabel.textContent = t("farmRuneBonusLabel");
+        farmRuneBonusHint.textContent = t("farmRuneBonusHint");
+        farmRuneBonusHelpButton.title = t("farmRuneBonusImageAlt");
+        farmRuneBonusHelpButton.setAttribute(
+          "aria-label",
+          t("farmRuneBonusImageAlt"),
+        );
+        farmRuneBonusImage.src = RUNE_BONUS_GUIDE_IMAGE;
+        farmRuneBonusImage.alt = t("farmRuneBonusImageAlt");
+        farmRuneBonusImageCaption.textContent = t("farmRuneBonusImageCaption");
         renderTutorial();
+        updateFarmModeUi();
+        renderFarmRecommendations();
+      }
+
+      function updateFarmModeUi() {
+        const isPlayerMode = state.farmMode !== "cube";
+        farmPlayerLevelField.classList.toggle("hidden", !isPlayerMode);
+        farmCubeLevelField.classList.toggle("hidden", isPlayerMode);
+        farmPlayerLevelInput.value = String(state.playerLevel);
+        farmCubeLevelInput.value = String(state.cubeLevel);
+        farmRuneBonusInput.value = String(state.runeBonusPercent);
+
+        const activeClass =
+          "bg-indigo-500 text-white hover:bg-indigo-400";
+        const inactiveClass =
+          "border border-slate-700 bg-slate-950 text-slate-300 hover:bg-slate-800";
+
+        farmModePlayerButton.className = `rounded-md px-3 py-1.5 text-xs font-medium transition ${
+          isPlayerMode ? activeClass : inactiveClass
+        }`;
+        farmModeCubeButton.className = `rounded-md px-3 py-1.5 text-xs font-medium transition ${
+          isPlayerMode ? inactiveClass : activeClass
+        }`;
+      }
+
+      function addTimerFromRecommendation(level, stageKey) {
+        const existing = state.timers.find((timer) => timer.level === level);
+        if (existing) {
+          existing.stageKey = stageKey;
+          saveState();
+          renderTimers();
+          appendLog(
+            t("logRecommendationUpdated", {
+              level,
+              map: mapLabelForTimer(existing),
+            }),
+          );
+          return;
+        }
+
+        if (!canAddTimer()) {
+          appendLog(t("logRecommendationNoSlot", { level }));
+          return;
+        }
+
+        const timer = {
+          id: crypto.randomUUID(),
+          level,
+          stageKey,
+          expiresAt: null,
+          expired: false,
+        };
+        state.timers.push(timer);
+        saveState();
+        renderTimers();
+        appendLog(
+          t("logRecommendationAdded", {
+            level,
+            map: mapLabelForTimer(timer),
+          }),
+        );
+      }
+
+      function renderFarmRecommendations() {
+        const result = buildFarmRecommendations();
+        farmRecommendationsList.innerHTML = "";
+
+        if (!result.valid) {
+          const invalid = document.createElement("p");
+          invalid.className = "text-xs text-rose-300";
+          invalid.textContent = t("farmInvalidLevel");
+          farmRecommendationsList.appendChild(invalid);
+          return;
+        }
+
+        if (!result.items.length) {
+          const empty = document.createElement("p");
+          empty.className = "text-xs text-slate-400";
+          empty.textContent = t("farmEmptyRecommendations");
+          farmRecommendationsList.appendChild(empty);
+          return;
+        }
+
+        for (const { entry, reason } of result.items) {
+          const card = document.createElement("article");
+          card.className =
+            "rounded-md border border-slate-800 bg-slate-950/70 p-3 text-xs text-slate-300";
+
+          const effectiveDrop = effectiveDropPercent(
+            entry.bossChestDropPercent,
+            state.runeBonusPercent,
+          );
+          const stageText = stageLabel(entry, false);
+
+          card.innerHTML = `
+            <div class="flex items-start justify-between gap-2">
+              <p class="font-semibold text-slate-100">${t("farmRecChestLevel", { level: entry.bossChestLevel })}</p>
+              <button
+                type="button"
+                data-role="add-recommendation"
+                class="shrink-0 rounded-md bg-indigo-500 px-2.5 py-1 text-[11px] font-semibold text-white transition hover:bg-indigo-400"
+              >${t("farmAddToTracker")}</button>
+            </div>
+            <p class="mt-1"><span class="text-slate-500">${t("farmRecStage")}:</span> ${stageText}</p>
+            <p><span class="text-slate-500">${t("farmRecBaseDrop")}:</span> ${formatPercentValue(entry.bossChestDropPercent)}</p>
+            <p><span class="text-slate-500">${t("farmRecEffectiveDrop")}:</span> ${formatPercentValue(effectiveDrop)}</p>
+            <p class="mt-1 text-slate-400"><span class="text-slate-500">${t("farmRecReason")}:</span> ${reason}</p>
+          `;
+
+          card
+            .querySelector("[data-role='add-recommendation']")
+            .addEventListener("click", () => {
+              addTimerFromRecommendation(entry.bossChestLevel, entry.stageKey);
+            });
+
+          farmRecommendationsList.appendChild(card);
+        }
       }
 
       function populateMapSelect(selectElement, timer) {
@@ -1687,10 +2328,58 @@
         applyLanguage();
         durationInput.value = String(state.durationMinutes);
         updateAlertVolumeDisplay();
+        updateFarmModeUi();
         renderTimers();
+        renderFarmRecommendations();
         saveState(true);
         appendLog(t("logLoaded"));
       }
+
+      farmModePlayerButton.addEventListener("click", () => {
+        state.farmMode = "player";
+        updateFarmModeUi();
+        renderFarmRecommendations();
+        saveState();
+      });
+
+      farmModeCubeButton.addEventListener("click", () => {
+        state.farmMode = "cube";
+        updateFarmModeUi();
+        renderFarmRecommendations();
+        saveState();
+      });
+
+      function handleFarmLevelInput() {
+        const isCubeMode = state.farmMode === "cube";
+        const raw = Number(
+          isCubeMode ? farmCubeLevelInput.value : farmPlayerLevelInput.value,
+        );
+        if (!Number.isFinite(raw) || raw < 1 || raw > 999) {
+          renderFarmRecommendations();
+          return;
+        }
+        if (isCubeMode) {
+          state.cubeLevel = raw;
+        } else {
+          state.playerLevel = raw;
+        }
+        saveState();
+        renderFarmRecommendations();
+      }
+
+      farmPlayerLevelInput.addEventListener("input", handleFarmLevelInput);
+      farmCubeLevelInput.addEventListener("input", handleFarmLevelInput);
+
+      farmRuneBonusInput.addEventListener("input", () => {
+        const parsed = Number(farmRuneBonusInput.value);
+        if (!Number.isFinite(parsed) || parsed < 0 || parsed > 9999) {
+          renderFarmRecommendations();
+          return;
+        }
+        state.runeBonusPercent = parsed;
+        saveState();
+        renderFarmRecommendations();
+      });
 
       document
         .querySelector("#addTimerButton")
@@ -1769,6 +2458,7 @@
         saveLanguagePreference();
         applyLanguage();
         renderTimers();
+        renderFarmRecommendations();
         saveState(true);
       });
 
