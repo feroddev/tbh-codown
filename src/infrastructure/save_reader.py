@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import logging
 import shutil
 import tempfile
 import time
@@ -10,7 +11,9 @@ from pathlib import Path
 from es3_modifier.main import ES3
 
 from src.domain.chest_event import ChestEvent, ChestType
-from src.infrastructure.game_paths import discover_es3_password
+from src.infrastructure.game_paths import discover_es3_password, list_active_save_candidates
+
+logger = logging.getLogger(__name__)
 
 
 BOSS_BOX_TYPE = 1
@@ -61,28 +64,50 @@ class SaveChestDetection:
     stage_key: int
 
 
+def pick_preferred_snapshot(
+    snapshots: list[tuple[Path, SaveSnapshot]],
+) -> tuple[Path, SaveSnapshot]:
+    if not snapshots:
+        raise FileNotFoundError("No readable save snapshots found")
+
+    def ranking(item: tuple[Path, SaveSnapshot]) -> tuple[int, int, float]:
+        path, snapshot = item
+        return (
+            snapshot.boss_box_count,
+            snapshot.box_data.normal_box_count(),
+            path.stat().st_mtime,
+        )
+
+    return max(snapshots, key=ranking)
+
+
 class SaveReader:
     def __init__(self, save_path: Path, password: str | None = None) -> None:
         self._save_path = save_path
         self._password = password or discover_es3_password()
+        self._last_source_path: Path | None = None
 
-    def _read_encrypted_bytes(self) -> bytes:
+    @property
+    def last_source_path(self) -> Path | None:
+        return self._last_source_path
+
+    def _read_encrypted_bytes(self, save_path: Path) -> bytes:
         try:
-            return self._save_path.read_bytes()
+            return save_path.read_bytes()
         except PermissionError:
-            return self._read_via_temp_copy()
+            return self._read_via_temp_copy(save_path)
 
-    def _read_via_temp_copy(self) -> bytes:
+    def _read_via_temp_copy(self, save_path: Path) -> bytes:
         temp_dir = Path(tempfile.gettempdir())
-        temp_copy = temp_dir / f"tbh_monitor_{self._save_path.name}"
-        shutil.copy2(self._save_path, temp_copy)
+        temp_copy = temp_dir / f"tbh_monitor_{save_path.name}"
+        shutil.copy2(save_path, temp_copy)
         try:
             return temp_copy.read_bytes()
         finally:
             temp_copy.unlink(missing_ok=True)
 
-    def read_snapshot(self) -> SaveSnapshot:
-        encrypted = self._read_encrypted_bytes()
+    def _read_snapshot_from(self, save_path: Path) -> SaveSnapshot:
+        encrypted = self._read_encrypted_bytes(save_path)
         player_payload = ES3(encrypted, self._password).load()["PlayerSaveData"]["value"]
         player = json.loads(player_payload)
         common = player["commonSaveData"]
@@ -91,6 +116,36 @@ class SaveReader:
             current_stage_key=int(common["currentStageKey"]),
             box_data=BoxDataSnapshot.from_raw(player.get("BoxData", {})),
         )
+
+    def read_snapshot(self) -> SaveSnapshot:
+        candidates = list_active_save_candidates(self._save_path)
+        if not candidates:
+            raise FileNotFoundError(self._save_path)
+
+        readable: list[tuple[Path, SaveSnapshot]] = []
+        last_error: Exception | None = None
+        for candidate in candidates:
+            try:
+                readable.append((candidate, self._read_snapshot_from(candidate)))
+            except Exception as error:
+                last_error = error
+                logger.debug("Failed to read save candidate %s: %s", candidate.name, error)
+
+        if not readable:
+            if last_error is not None:
+                raise last_error
+            raise FileNotFoundError(self._save_path)
+
+        source_path, snapshot = pick_preferred_snapshot(readable)
+        if self._last_source_path != source_path:
+            logger.debug(
+                "Using save snapshot from %s (boss=%s, normal=%s)",
+                source_path.name,
+                snapshot.boss_box_count,
+                snapshot.box_data.normal_box_count(),
+            )
+        self._last_source_path = source_path
+        return snapshot
 
 
 class SaveChestDetector:

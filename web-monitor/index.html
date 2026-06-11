@@ -25,6 +25,54 @@
         </p>
       </section>
 
+      <div
+        class="flex flex-col gap-2 rounded-lg border border-amber-500/40 bg-amber-950/30 px-4 py-2.5 text-sm shadow-sm shadow-amber-950/25"
+      >
+        <p
+          class="flex flex-wrap items-center justify-center gap-x-3 gap-y-1.5"
+        >
+          <span id="footerDevelopedBy" class="font-medium text-amber-100"
+            >Developed by -Neath</span
+          >
+          <span aria-hidden="true" class="hidden text-amber-600/80 sm:inline"
+            >·</span
+          >
+          <a
+            id="footerLinkedInLink"
+            href="https://www.linkedin.com/in/feroddev/"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="font-medium text-amber-400 transition hover:text-amber-300"
+            >LinkedIn</a
+          >
+          <span aria-hidden="true" class="text-amber-600/80">·</span>
+          <a
+            id="footerGitHubLink"
+            href="https://github.com/feroddev"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="font-medium text-amber-400 transition hover:text-amber-300"
+            >GitHub</a
+          >
+          <span aria-hidden="true" class="text-amber-600/80">·</span>
+          <a
+            id="footerDiscordLink"
+            href="https://discord.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="font-medium text-amber-400 transition hover:text-amber-300"
+            >Discord</a
+          >
+          <span class="font-mono text-amber-200">(@.neath)</span>
+        </p>
+        <p
+          id="footerRecommendations"
+          class="text-center text-xs text-amber-200/85"
+        >
+          Send recommendations via Discord (@.neath).
+        </p>
+      </div>
+
       <section class="grid gap-6 lg:grid-cols-3">
         <div
           class="rounded-xl border border-slate-800 bg-slate-900/80 p-5 lg:col-span-2"
@@ -178,29 +226,6 @@
           </section>
         </div>
       </section>
-      <footer class="text-center text-xs text-slate-500">
-        <p class="flex flex-wrap items-center justify-center gap-x-2 gap-y-1">
-          <span id="footerDevelopedBy">Developed by -Neath</span>
-          <span aria-hidden="true" class="text-slate-600">·</span>
-          <a
-            id="footerLinkedInLink"
-            href="https://www.linkedin.com/in/feroddev/"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="text-emerald-400/90 transition hover:text-emerald-300"
-            >LinkedIn</a
-          >
-          <span aria-hidden="true" class="text-slate-600">·</span>
-          <a
-            id="footerGitHubLink"
-            href="https://github.com/feroddev"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="text-emerald-400/90 transition hover:text-emerald-300"
-            >GitHub</a
-          >
-        </p>
-      </footer>
     </main>
 
     <template id="timerRowTemplate">
@@ -522,6 +547,8 @@
             'Site carregado. Clique em "Bau dropou" para iniciar um cronometro.',
           unknownMap: "Mapa nao selecionado",
           footerDevelopedBy: "Desenvolvido por -Neath",
+          footerRecommendations:
+            "Envie recomendacoes pelo Discord (@.neath).",
           difficulty: {
             Normal: "Normal",
             Nightmare: "Pesadelo",
@@ -612,6 +639,7 @@
           logLoaded: 'Site loaded. Click "Chest dropped" to start a timer.',
           unknownMap: "Map not selected",
           footerDevelopedBy: "Developed by -Neath",
+          footerRecommendations: "Send recommendations via Discord (@.neath).",
           difficulty: {
             Normal: "Normal",
             Nightmare: "Nightmare",
@@ -706,6 +734,8 @@
             'Sitio cargado. Haz clic en "Cofre caido" para iniciar un cronometro.',
           unknownMap: "Mapa no seleccionado",
           footerDevelopedBy: "Desarrollado por -Neath",
+          footerRecommendations:
+            "Envia recomendaciones por Discord (@.neath).",
           difficulty: {
             Normal: "Normal",
             Nightmare: "Pesadilla",
@@ -801,6 +831,8 @@
             'Site charge. Cliquez sur "Coffre obtenu" pour demarrer un chrono.',
           unknownMap: "Carte non selectionnee",
           footerDevelopedBy: "Developpe par -Neath",
+          footerRecommendations:
+            "Envoyez vos recommandations sur Discord (@.neath).",
           difficulty: {
             Normal: "Normal",
             Nightmare: "Cauchemar",
@@ -888,6 +920,7 @@
           logLoaded: "网站已加载。点击「宝箱掉落」开始计时。",
           unknownMap: "未选择地图",
           footerDevelopedBy: "由 -Neath 开发",
+          footerRecommendations: "请通过 Discord (@.neath) 发送建议。",
           difficulty: {
             Normal: "普通",
             Nightmare: "噩梦",
@@ -980,6 +1013,8 @@
             "サイトを読み込みました。「宝箱ドロップ」でタイマーを開始できます。",
           unknownMap: "マップ未選択",
           footerDevelopedBy: "開発: -Neath",
+          footerRecommendations:
+            "Discord (@.neath) でご提案をお送りください。",
           difficulty: {
             Normal: "ノーマル",
             Nightmare: "ナイトメア",
@@ -1062,6 +1097,9 @@
       const tutorialTitle = document.querySelector("#tutorialTitle");
       const tutorialContent = document.querySelector("#tutorialContent");
       const footerDevelopedBy = document.querySelector("#footerDevelopedBy");
+      const footerRecommendations = document.querySelector(
+        "#footerRecommendations",
+      );
       let lastSavedStateSnapshot = "";
 
       let state = createDefaultState();
@@ -1394,6 +1432,7 @@
         clearLogsButton.textContent = t("clearLogsButton");
         languageSelect.value = state.language;
         footerDevelopedBy.textContent = t("footerDevelopedBy");
+        footerRecommendations.textContent = t("footerRecommendations");
         renderTutorial();
       }
 

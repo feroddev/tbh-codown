@@ -10,6 +10,8 @@ DEFAULT_ES3_PASSWORD = "emuMqG3bLYJ938ZDCfieWJ"
 COMPANY_NAME = "TesseractStudio"
 GAME_FOLDER = "TaskbarHero"
 SAVE_FILE_NAME = "SaveFile_Live.es3"
+SAVE_FILE_TEST_BACKUP_NAME = "SaveFile_Live.es3.test_backup"
+ACTIVE_SAVE_FILE_PATTERN = re.compile(r"^SaveFile_Live_\d+\.es3\.bak$")
 PLAYER_LOG_NAME = "Player.log"
 GAME_EXE_NAME = "TaskBarHero.exe"
 
@@ -84,6 +86,27 @@ def discover_player_log() -> Path:
     if default.exists():
         return default
     return default
+
+
+def is_active_save_file_name(name: str) -> bool:
+    if name == SAVE_FILE_NAME or name == SAVE_FILE_TEST_BACKUP_NAME:
+        return True
+    return ACTIVE_SAVE_FILE_PATTERN.fullmatch(name) is not None
+
+
+def list_active_save_candidates(base_path: Path) -> list[Path]:
+    directory = base_path.parent
+    if not directory.is_dir():
+        return [base_path] if base_path.exists() else []
+
+    candidates = [
+        entry
+        for entry in directory.iterdir()
+        if entry.is_file() and is_active_save_file_name(entry.name)
+    ]
+    if candidates:
+        return sorted(candidates, key=lambda path: path.stat().st_mtime, reverse=True)
+    return [base_path] if base_path.exists() else []
 
 
 def discover_save_file() -> Path:
