@@ -5,7 +5,6 @@ __pycache__/
 .mypy_cache/
 build/
 dist/
-*.spec
 state.json
 config.yaml
 .env
