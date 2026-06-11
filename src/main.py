@@ -46,7 +46,6 @@ def run_status(config_path: Path) -> int:
     snapshot = reader.read_snapshot()
     stage = decode_stage_key(snapshot.current_stage_key)
     print(f"stageKey={snapshot.current_stage_key} ({stage.label})")
-    print(f"wave={snapshot.current_stage_wave}")
     print(f"baús de chefe={snapshot.boss_box_count}")
     print(f"baús comuns={snapshot.box_data.normal_box_count()}")
     return 0

@@ -38,7 +38,6 @@ class MonitorSettings:
 class AppConfig:
     player_log_path: Path
     save_file_path: Path
-    game_exe_path: Path
     state_file_path: Path
     es3_password: str
     language: Language
@@ -47,7 +46,6 @@ class AppConfig:
     monitor: MonitorSettings
     strategy: StrategySettings
     chest_item_keys: dict[str, list[str]]
-    global_ui: dict[str, dict[str, int | float]]
     chest_farms: list[ChestFarmSlot]
     maps: list[MapConfig]
 
@@ -172,7 +170,6 @@ def load_raw_config(config_path: Path) -> dict[str, Any]:
 def load_config(config_path: Path) -> AppConfig:
     from src.infrastructure.game_paths import (
         discover_es3_password,
-        discover_game_exe,
         discover_player_log,
         discover_save_file,
         resolve_path,
@@ -192,7 +189,6 @@ def load_config(config_path: Path) -> AppConfig:
     return AppConfig(
         player_log_path=resolve_path(paths.get("player_log"), discover=discover_player_log),
         save_file_path=resolve_path(paths.get("save_file"), discover=discover_save_file),
-        game_exe_path=resolve_path(paths.get("game_exe"), discover=discover_game_exe),
         state_file_path=resolve_app_relative_path(paths.get("state_file", "state.json")),
         es3_password=str(paths.get("es3_password", discover_es3_password())),
         language=Language.from_code(ui_raw.get("language")),
@@ -216,7 +212,6 @@ def load_config(config_path: Path) -> AppConfig:
                 default_chest_item_keys()["normal_brown"],
             ),
         },
-        global_ui=raw.get("global_ui", {}),
         chest_farms=chest_farms,
         maps=enabled_farm_maps(chest_farms),
     )
@@ -227,7 +222,6 @@ def save_config(config_path: Path, app_config: AppConfig) -> None:
     raw["paths"] = {
         "player_log": str(app_config.player_log_path).replace("\\", "/"),
         "save_file": str(app_config.save_file_path).replace("\\", "/"),
-        "game_exe": str(app_config.game_exe_path).replace("\\", "/"),
         "state_file": str(app_config.state_file_path).replace("\\", "/"),
         "es3_password": app_config.es3_password,
     }
@@ -248,7 +242,7 @@ def save_config(config_path: Path, app_config: AppConfig) -> None:
         "window_height": app_config.window_height,
     }
     raw["chest_item_keys"] = app_config.chest_item_keys
-    raw["global_ui"] = app_config.global_ui
+    raw.pop("global_ui", None)
     raw["chest_farms"] = [
         _chest_farm_to_dict(slot)
         for slot in sorted(app_config.chest_farms, key=lambda item: item.priority)

@@ -48,7 +48,6 @@ class BoxDataSnapshot:
 @dataclass(frozen=True)
 class SaveSnapshot:
     current_stage_key: int
-    current_stage_wave: int
     box_data: BoxDataSnapshot
 
     @property
@@ -90,7 +89,6 @@ class SaveReader:
 
         return SaveSnapshot(
             current_stage_key=int(common["currentStageKey"]),
-            current_stage_wave=int(common.get("currentStageWave", 0)),
             box_data=BoxDataSnapshot.from_raw(player.get("BoxData", {})),
         )
 
