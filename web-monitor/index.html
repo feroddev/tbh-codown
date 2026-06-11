@@ -1,9 +1,12 @@
 <!doctype html>
-<html lang="pt-BR">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>TBH Web Chest Timer</title>
+    <link rel="icon" href="./favicon.ico" sizes="any" />
+    <link rel="icon" type="image/png" href="./tbh_monitor.png" />
+    <link rel="apple-touch-icon" href="./tbh_monitor.png" />
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
   </head>
   <body class="min-h-screen bg-slate-950 text-slate-100">
@@ -17,7 +20,8 @@
           TBH Web Chest Timer
         </h1>
         <p id="subtitleText" class="mt-2 text-sm text-slate-300">
-          Clique em "Bau dropou" para iniciar o cronometro manualmente.
+          Clique em "Bau dropou" para iniciar o cronometro. Veja o guia de rota
+          na barra lateral.
         </p>
       </section>
 
@@ -30,10 +34,13 @@
               <span id="languageLabel">Idioma</span>
               <select
                 id="languageSelect"
-                class="mt-1 block w-48 rounded-md border border-slate-700 bg-slate-950 px-3 py-2.5 text-base text-slate-100 focus:border-indigo-500 focus:outline-none"
+                class="mt-1 block w-56 rounded-md border border-slate-700 bg-slate-950 px-3 py-2.5 text-base text-slate-100 focus:border-indigo-500 focus:outline-none"
               >
                 <option value="pt-BR">Portugues (BR)</option>
                 <option value="en">English</option>
+                <option value="es">Espanol</option>
+                <option value="fr">Francais</option>
+                <option value="zh">中文</option>
                 <option value="ja">日本語</option>
               </select>
             </label>
@@ -97,6 +104,42 @@
 
         <div class="flex flex-col gap-6">
           <section
+            id="tutorialSection"
+            class="rounded-xl border border-emerald-500/40 bg-emerald-950/25 p-5 shadow-lg shadow-emerald-950/30"
+          >
+            <details id="tutorialDetails" class="group">
+              <summary
+                id="tutorialSummary"
+                class="cursor-pointer select-none list-none marker:content-none [&::-webkit-details-marker]:hidden"
+              >
+                <span class="flex items-center justify-between gap-3">
+                  <span class="flex min-w-0 items-center gap-3">
+                    <span
+                      aria-hidden="true"
+                      class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-emerald-500 text-lg font-extrabold text-emerald-950 shadow-md shadow-emerald-500/40 ring-2 ring-emerald-300/60"
+                      >?</span
+                    >
+                    <span
+                      id="tutorialTitle"
+                      class="text-base font-semibold text-emerald-100"
+                      >Como usar - Rota de baus</span
+                    >
+                  </span>
+                  <span
+                    aria-hidden="true"
+                    class="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md border border-emerald-400/30 bg-emerald-500/10 text-xs text-emerald-200 transition group-open:rotate-180"
+                    >▼</span
+                  >
+                </span>
+              </summary>
+              <div
+                id="tutorialContent"
+                class="mt-4 space-y-4 border-t border-emerald-500/20 pt-4 text-sm leading-relaxed text-slate-300"
+              ></div>
+            </details>
+          </section>
+
+          <section
             class="rounded-xl border border-slate-800 bg-slate-900/80 p-5"
           >
             <h2 id="downloadTitle" class="text-base font-semibold">
@@ -135,7 +178,29 @@
           </section>
         </div>
       </section>
-      <p class="text-center text-xs text-slate-500">Desenvolvido por -Neath</p>
+      <footer class="text-center text-xs text-slate-500">
+        <p class="flex flex-wrap items-center justify-center gap-x-2 gap-y-1">
+          <span id="footerDevelopedBy">Developed by -Neath</span>
+          <span aria-hidden="true" class="text-slate-600">·</span>
+          <a
+            id="footerLinkedInLink"
+            href="https://www.linkedin.com/in/feroddev/"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="text-emerald-400/90 transition hover:text-emerald-300"
+            >LinkedIn</a
+          >
+          <span aria-hidden="true" class="text-slate-600">·</span>
+          <a
+            id="footerGitHubLink"
+            href="https://github.com/feroddev"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="text-emerald-400/90 transition hover:text-emerald-300"
+            >GitHub</a
+          >
+        </p>
+      </footer>
     </main>
 
     <template id="timerRowTemplate">
@@ -213,6 +278,7 @@
 
     <script>
       const STORAGE_KEY = "tbh-web-monitor-state-v2";
+      const LANGUAGE_STORAGE_KEY = "tbh-web-monitor-language-v1";
       const CHEST_LEVELS = [4, 5, 7, 15, 20, 30, 40, 50, 65, 80];
       const DIFFICULTY_CODE = { Normal: 1, Nightmare: 2, Hell: 3, Torment: 4 };
       const DIFFICULTY_ORDER = { Normal: 0, Nightmare: 1, Hell: 2, Torment: 3 };
@@ -295,11 +361,127 @@
         Wasteland: "荒野",
       };
 
+      const MAP_NAMES_ES = {
+        "Bug Nest": "Nido de Insectos",
+        "Burning Ravine": "Barranco Ardiente",
+        "Burning Village Entrance": "Entrada de la Aldea en Llamas",
+        Cemetery: "Cementerio",
+        "Citadel of Ruin": "Ciudadela de las Ruinas",
+        "City Outskirts": "Afueras de la Ciudad",
+        "Core of the Abyss": "Nucleo del Abismo",
+        "Cursed Land": "Tierra Maldita",
+        "Desert Underground Cave": "Cueva Subterranea del Desierto",
+        "Eerie Canyon": "Canon Siniestro",
+        "Frozen Battlefield": "Campo de Batalla Congelado",
+        "Frozen Glacier Cavern": "Caverna Glacial Congelada",
+        "Glacial Cave Entrance": "Entrada de la Caverna Glacial",
+        "Hell Command Chamber": "Camara de Mando del Infierno",
+        "Hell Gate": "Puerta del Infierno",
+        "Midnight Sands": "Arenas de Medianoche",
+        "Oasis Road": "Camino del Oasis",
+        Pasture: "Pastizal",
+        "Pharaoh's Crypt": "Cripta del Faraon",
+        "Pharaoh's Underchannel": "Canal Subterraneo del Faraon",
+        "Plains of Torment": "Llanuras del Tormento",
+        "Rumstreet Square": "Plaza Rumstreet",
+        "Sacred Tomb": "Tumba Sagrada",
+        "Sandstorm Valley": "Valle de la Tormenta de Arena",
+        "Scorching Dunes": "Dunas Abrasadoras",
+        "Shadow Meadow": "Prado Sombrío",
+        "Snowbound Outpost": "Puesto de Avanzada Nevada",
+        "Sunset Ruins": "Ruinas del Atardecer",
+        "Throne of Darkness": "Trono de la Oscuridad",
+        Wasteland: "Tierra Yerma",
+      };
+
+      const MAP_NAMES_FR = {
+        "Bug Nest": "Nid d'insectes",
+        "Burning Ravine": "Ravin brulant",
+        "Burning Village Entrance": "Entree du village brule",
+        Cemetery: "Cimetiere",
+        "Citadel of Ruin": "Citadelle des ruines",
+        "City Outskirts": "Faubourgs de la ville",
+        "Core of the Abyss": "Coeur de l'abime",
+        "Cursed Land": "Terre maudite",
+        "Desert Underground Cave": "Grotte souterraine du desert",
+        "Eerie Canyon": "Canyon sinistre",
+        "Frozen Battlefield": "Champ de bataille gele",
+        "Frozen Glacier Cavern": "Caverne glaciaire gelee",
+        "Glacial Cave Entrance": "Entree de la caverne glaciaire",
+        "Hell Command Chamber": "Chambre de commandement infernale",
+        "Hell Gate": "Porte de l'enfer",
+        "Midnight Sands": "Sables de minuit",
+        "Oasis Road": "Route de l'oasis",
+        Pasture: "Paturage",
+        "Pharaoh's Crypt": "Crypte du pharaon",
+        "Pharaoh's Underchannel": "Canal souterrain du pharaon",
+        "Plains of Torment": "Plaines du tourment",
+        "Rumstreet Square": "Place Rumstreet",
+        "Sacred Tomb": "Tombeau sacre",
+        "Sandstorm Valley": "Vallee de la tempete de sable",
+        "Scorching Dunes": "Dunes brulantes",
+        "Shadow Meadow": "Prairie ombragee",
+        "Snowbound Outpost": "Avant-poste enneige",
+        "Sunset Ruins": "Ruines du coucher du soleil",
+        "Throne of Darkness": "Trone des tenebres",
+        Wasteland: "Terres desolees",
+      };
+
+      const MAP_NAMES_ZH = {
+        "Bug Nest": "虫巢",
+        "Burning Ravine": "燃烧峡谷",
+        "Burning Village Entrance": "燃烧村庄入口",
+        Cemetery: "墓地",
+        "Citadel of Ruin": "毁灭要塞",
+        "City Outskirts": "城市外围",
+        "Core of the Abyss": "深渊核心",
+        "Cursed Land": "诅咒之地",
+        "Desert Underground Cave": "沙漠地下洞穴",
+        "Eerie Canyon": "诡异峡谷",
+        "Frozen Battlefield": "冰冻战场",
+        "Frozen Glacier Cavern": "冰冻冰川洞穴",
+        "Glacial Cave Entrance": "冰川洞穴入口",
+        "Hell Command Chamber": "地狱指挥室",
+        "Hell Gate": "地狱之门",
+        "Midnight Sands": "午夜沙地",
+        "Oasis Road": "绿洲之路",
+        Pasture: "牧场",
+        "Pharaoh's Crypt": "法老陵墓",
+        "Pharaoh's Underchannel": "法老地下水道",
+        "Plains of Torment": "折磨平原",
+        "Rumstreet Square": "朗姆街广场",
+        "Sacred Tomb": "神圣陵墓",
+        "Sandstorm Valley": "沙暴山谷",
+        "Scorching Dunes": "灼热沙丘",
+        "Shadow Meadow": "暗影草原",
+        "Snowbound Outpost": "雪封前哨",
+        "Sunset Ruins": "夕阳遗迹",
+        "Throne of Darkness": "黑暗王座",
+        Wasteland: "荒原",
+      };
+
+      const LOCALE_BY_LANGUAGE = {
+        "pt-BR": "pt-BR",
+        en: "en-US",
+        es: "es-ES",
+        fr: "fr-FR",
+        zh: "zh-CN",
+        ja: "ja-JP",
+      };
+
+      const MAP_NAMES_BY_LANGUAGE = {
+        "pt-BR": MAP_NAMES_PT_BR,
+        es: MAP_NAMES_ES,
+        fr: MAP_NAMES_FR,
+        zh: MAP_NAMES_ZH,
+        ja: MAP_NAMES_JA,
+      };
+
       const I18N = {
         "pt-BR": {
           pageTitle: "TBH Web Chest Timer",
           subtitle:
-            'Clique em "Bau dropou" para iniciar o cronometro manualmente.',
+            'Clique em "Bau dropou" para iniciar o cronometro. Veja o guia de rota na barra lateral.',
           languageLabel: "Idioma",
           durationLabel: "Duracao padrao (min)",
           alertVolumeLabel: "Volume do alerta",
@@ -339,16 +521,59 @@
           logLoaded:
             'Site carregado. Clique em "Bau dropou" para iniciar um cronometro.',
           unknownMap: "Mapa nao selecionado",
+          footerDevelopedBy: "Desenvolvido por -Neath",
           difficulty: {
             Normal: "Normal",
             Nightmare: "Pesadelo",
             Hell: "Inferno",
             Torment: "Tormenta",
           },
+          tutorialTitle: "Como usar — Rota de baus",
+          tutorialSections: [
+            {
+              heading: "Tempo do cronometro",
+              items: [
+                "O bau comum tem cerca de <strong>14 minutos</strong> de cooldown. Ajuste o campo <strong>Duracao padrao (min)</strong> no topo para 14 enquanto farmar baús comuns.",
+                "Quando os baús comuns estiverem cheios, mude a duracao para <strong>12 minutos</strong> e faca a rotacao de baús de chefe.",
+              ],
+            },
+            {
+              heading: "Escolha do mapa",
+              items: [
+                "Adicione os niveis de bau que deseja farmar com <strong>Adicionar bau</strong>.",
+                "No seletor de mapa, a % de drop aparece antes do numero da fase, separada por traco (ex.: <strong>15% - 2-5</strong> Nome do mapa).",
+                "O mapa marcado com <strong>★</strong> e a fase recomendada: maior % de chance de drop para aquele nivel.",
+                "Se varias fases tiverem a mesma %, o site prioriza a que tem <strong>menos waves</strong> e <strong>menos vida nos monstros</strong> (fase mais curta e inimigos mais fracos).",
+                "Voce pode trocar o mapa manualmente se preferir outra fase.",
+              ],
+            },
+            {
+              heading: "Calculo do drop % (runa)",
+              items: [
+                "A % mostrada no mapa e o <strong>drop base da fase</strong>, antes do bonus da runa.",
+                "Essa % e multiplicada pelo bonus da sua <strong>runa de bau de chefe</strong>.",
+                "Exemplo: mapa com <strong>15%</strong> e runa com <strong>+300%</strong> no multiplicador de bau de chefe — o jogo aplica esse +300% em cima dos 15% da fase (15% × 4 = <strong>60%</strong> de chance efetiva).",
+                "Quanto maior a % da fase e o bonus da runa, maior a chance real de dropar o bau.",
+              ],
+            },
+            {
+              heading: "Exemplo — baús Lv 50, 40 e 30",
+              items: [
+                "Adicione os 3 baús (Lv 50, Lv 40 e Lv 30) no site.",
+                "Entre em um mapa (ex.: Lv 50) e farme ate dropar o bau.",
+                "Quando dropar, clique em <strong>Bau dropou</strong> — o cronometro daquele nivel comeca a contar.",
+                "Enquanto o cronometro estiver ativo, ha <strong>0% de chance</strong> de dropar outro bau daquele nivel.",
+                "Use esse tempo para ir a outro mapa (ex.: Lv 40 ou Lv 30) e farmar um nivel diferente.",
+                "Quando um timer expirar (<strong>0:00</strong>), volte aquele mapa para tentar o proximo drop.",
+                "Assim voce maximiza itens no mesmo periodo, alternando entre niveis enquanto os cronometros rodam.",
+              ],
+            },
+          ],
         },
         en: {
           pageTitle: "TBH Web Chest Timer",
-          subtitle: 'Click "Chest dropped" to start each timer manually.',
+          subtitle:
+            'Click "Chest dropped" to start each timer. See the route guide in the sidebar.',
           languageLabel: "Language",
           durationLabel: "Default duration (min)",
           alertVolumeLabel: "Alert volume",
@@ -386,16 +611,335 @@
           logDurationUpdated: "Default duration updated to {minutes} min.",
           logLoaded: 'Site loaded. Click "Chest dropped" to start a timer.',
           unknownMap: "Map not selected",
+          footerDevelopedBy: "Developed by -Neath",
           difficulty: {
             Normal: "Normal",
             Nightmare: "Nightmare",
             Hell: "Hell",
             Torment: "Torment",
           },
+          tutorialTitle: "How to use — Chest route",
+          tutorialSections: [
+            {
+              heading: "Timer duration",
+              items: [
+                "Common chests have about a <strong>14-minute</strong> cooldown. Set <strong>Default duration (min)</strong> at the top to 14 while farming common chests.",
+                "When common chest slots are full, switch the duration to <strong>12 minutes</strong> and rotate boss chests.",
+              ],
+            },
+            {
+              heading: "Map selection",
+              items: [
+                "Add the chest levels you want to farm with <strong>Add chest</strong>.",
+                "In the map selector, the drop % appears before the stage number, separated by a dash (e.g. <strong>15% - 2-5</strong> Map name).",
+                "The map marked with <strong>★</strong> is the recommended stage: highest drop % for that level.",
+                "If several stages share the same %, the site picks the one with <strong>fewer waves</strong> and <strong>lower monster HP</strong> (shorter stage, weaker enemies).",
+                "You can change the map manually if you prefer another stage.",
+              ],
+            },
+            {
+              heading: "Drop % calculation (rune)",
+              items: [
+                "The % shown on each map is the <strong>base stage drop rate</strong>, before rune bonuses.",
+                "That % is multiplied by your <strong>boss chest rune</strong> bonus.",
+                "Example: a map with <strong>15%</strong> and a rune with <strong>+300%</strong> boss chest multiplier — the game applies +300% on top of the stage's 15% (15% × 4 = <strong>60%</strong> effective chance).",
+                "The higher the stage % and rune bonus, the higher your real drop chance.",
+              ],
+            },
+            {
+              heading: "Example — Lv 50, 40 and 30 chests",
+              items: [
+                "Add all three chests (Lv 50, Lv 40 and Lv 30) on the site.",
+                "Enter a map (e.g. Lv 50) and farm until a chest drops.",
+                "When it drops, click <strong>Chest dropped</strong> — the timer for that level starts.",
+                "While the timer is running, there is <strong>0% chance</strong> to drop another chest of that level.",
+                "Use that time to go to another map (e.g. Lv 40 or Lv 30) and farm a different level.",
+                "When a timer expires (<strong>0:00</strong>), return to that map to try the next drop.",
+                "This way you maximize loot in the same period by alternating levels while timers count down.",
+              ],
+            },
+          ],
+        },
+        es: {
+          pageTitle: "TBH Web Chest Timer",
+          subtitle:
+            'Haz clic en "Cofre caido" para iniciar cada cronometro. Consulta la guia de ruta en la barra lateral.',
+          languageLabel: "Idioma",
+          durationLabel: "Duracion predeterminada (min)",
+          alertVolumeLabel: "Volumen de alerta",
+          testAlertButton: "Probar alerta",
+          addTimerButton: "Agregar cofre",
+          resetAllButton: "Restablecer todo",
+          downloadTitle: "Descarga del paquete completo",
+          downloadDescription:
+            "Descarga la carpeta completa del sitio como archivo comprimido:",
+          downloadButton: "Descargar paquete (.rar)",
+          eventsTitle: "Eventos",
+          clearLogsButton: "Limpiar",
+          rowLevel: "Cofre Nv",
+          rowMap: "Mapa",
+          rowTimer: "Timer",
+          rowDrop: "Cofre caido",
+          rowReset: "Reiniciar",
+          rowRemove: "Eliminar",
+          emptyTimers:
+            'No hay cofres configurados. Haz clic en "Agregar cofre".',
+          mapNotAvailable: "No hay mapas para este cofre",
+          invalidDuration:
+            "Duracion invalida. Usa un valor entre 1 y 999 minutos.",
+          logAdded: "Nuevo cofre Nv{level} agregado.",
+          logRemoved: "Cofre Nv{level} eliminado.",
+          logLevelUpdated: "Cofre actualizado a Nv{level}.",
+          logLevelDuplicate:
+            "Nv{level} ya esta en uso. Elige otro nivel de cofre.",
+          logAllLevelsUsed: "Todos los niveles de cofre ya estan configurados.",
+          logResetAll: "Todos los cronometros fueron restablecidos.",
+          logResetSingle: "Timer Nv{level} reiniciado.",
+          logAlreadyCounting:
+            "Nv{level} ignorado: el cronometro ya esta en marcha.",
+          logStarted:
+            "Drop confirmado: Nv{level} | {map}. Timer iniciado ({minutes} min).",
+          logExpired: "Timer Nv{level} expirado.",
+          logDurationUpdated:
+            "Duracion predeterminada actualizada a {minutes} min.",
+          logLoaded:
+            'Sitio cargado. Haz clic en "Cofre caido" para iniciar un cronometro.',
+          unknownMap: "Mapa no seleccionado",
+          footerDevelopedBy: "Desarrollado por -Neath",
+          difficulty: {
+            Normal: "Normal",
+            Nightmare: "Pesadilla",
+            Hell: "Infierno",
+            Torment: "Tormento",
+          },
+          tutorialTitle: "Como usar — Ruta de cofres",
+          tutorialSections: [
+            {
+              heading: "Duracion del cronometro",
+              items: [
+                "El cofre comun tiene un cooldown de unos <strong>14 minutos</strong>. Ajusta <strong>Duracion predeterminada (min)</strong> arriba a 14 mientras farmees cofres comunes.",
+                "Cuando los cofres comunes esten llenos, cambia la duracion a <strong>12 minutos</strong> y rota cofres de jefe.",
+              ],
+            },
+            {
+              heading: "Seleccion de mapa",
+              items: [
+                "Agrega los niveles de cofre que quieres farmear con <strong>Agregar cofre</strong>.",
+                "En el selector de mapa, el % de drop aparece antes del numero de fase, separado por guion (ej.: <strong>15% - 2-5</strong> Nombre del mapa).",
+                "El mapa marcado con <strong>★</strong> es la fase recomendada: mayor % de drop para ese nivel.",
+                "Si varias fases tienen el mismo %, el sitio prioriza la que tiene <strong>menos oleadas</strong> y <strong>menos vida en los monstruos</strong> (fase mas corta y enemigos mas debiles).",
+                "Puedes cambiar el mapa manualmente si prefieres otra fase.",
+              ],
+            },
+            {
+              heading: "Calculo del drop % (runa)",
+              items: [
+                "El % mostrado en el mapa es el <strong>drop base de la fase</strong>, antes del bonus de la runa.",
+                "Ese % se multiplica por el bonus de tu <strong>runa de cofre de jefe</strong>.",
+                "Ejemplo: mapa con <strong>15%</strong> y runa con <strong>+300%</strong> en el multiplicador de cofre de jefe — el juego aplica ese +300% sobre el 15% de la fase (15% × 4 = <strong>60%</strong> de probabilidad efectiva).",
+                "Cuanto mayor sea el % de la fase y el bonus de la runa, mayor sera la probabilidad real de drop.",
+              ],
+            },
+            {
+              heading: "Ejemplo — cofres Nv 50, 40 y 30",
+              items: [
+                "Agrega los 3 cofres (Nv 50, Nv 40 y Nv 30) en el sitio.",
+                "Entra a un mapa (ej.: Nv 50) y farmea hasta que caiga el cofre.",
+                "Cuando caiga, haz clic en <strong>Cofre caido</strong> — el cronometro de ese nivel comienza.",
+                "Mientras el cronometro este activo, hay <strong>0% de probabilidad</strong> de dropear otro cofre de ese nivel.",
+                "Usa ese tiempo para ir a otro mapa (ej.: Nv 40 o Nv 30) y farmear un nivel diferente.",
+                "Cuando un timer expire (<strong>0:00</strong>), vuelve a ese mapa para intentar el siguiente drop.",
+                "Asi maximizas objetos en el mismo periodo, alternando niveles mientras los cronometros corren.",
+              ],
+            },
+          ],
+        },
+        fr: {
+          pageTitle: "TBH Web Chest Timer",
+          subtitle:
+            'Cliquez sur "Coffre obtenu" pour demarrer chaque chrono. Consultez le guide de route dans la barre laterale.',
+          languageLabel: "Langue",
+          durationLabel: "Duree par defaut (min)",
+          alertVolumeLabel: "Volume de l'alerte",
+          testAlertButton: "Tester l'alerte",
+          addTimerButton: "Ajouter un coffre",
+          resetAllButton: "Tout reinitialiser",
+          downloadTitle: "Telechargement du pack complet",
+          downloadDescription:
+            "Telechargez le dossier complet du site en archive compressee :",
+          downloadButton: "Telecharger le pack (.rar)",
+          eventsTitle: "Evenements",
+          clearLogsButton: "Effacer",
+          rowLevel: "Coffre Nv",
+          rowMap: "Carte",
+          rowTimer: "Chrono",
+          rowDrop: "Coffre obtenu",
+          rowReset: "Reinitialiser",
+          rowRemove: "Supprimer",
+          emptyTimers:
+            'Aucun coffre configure. Cliquez sur "Ajouter un coffre".',
+          mapNotAvailable: "Aucune carte pour ce coffre",
+          invalidDuration:
+            "Duree invalide. Utilisez une valeur entre 1 et 999 minutes.",
+          logAdded: "Nouveau coffre Nv{level} ajoute.",
+          logRemoved: "Coffre Nv{level} supprime.",
+          logLevelUpdated: "Coffre mis a jour vers Nv{level}.",
+          logLevelDuplicate:
+            "Nv{level} est deja utilise. Choisissez un autre niveau de coffre.",
+          logAllLevelsUsed:
+            "Tous les niveaux de coffre sont deja configures.",
+          logResetAll: "Tous les chronos ont ete reinitialises.",
+          logResetSingle: "Chrono Nv{level} reinitialise.",
+          logAlreadyCounting:
+            "Nv{level} ignore : le chrono est deja en cours.",
+          logStarted:
+            "Drop confirme : Nv{level} | {map}. Chrono demarre ({minutes} min).",
+          logExpired: "Chrono Nv{level} expire.",
+          logDurationUpdated:
+            "Duree par defaut mise a jour a {minutes} min.",
+          logLoaded:
+            'Site charge. Cliquez sur "Coffre obtenu" pour demarrer un chrono.',
+          unknownMap: "Carte non selectionnee",
+          footerDevelopedBy: "Developpe par -Neath",
+          difficulty: {
+            Normal: "Normal",
+            Nightmare: "Cauchemar",
+            Hell: "Enfer",
+            Torment: "Tourment",
+          },
+          tutorialTitle: "Comment utiliser — Route des coffres",
+          tutorialSections: [
+            {
+              heading: "Duree du chrono",
+              items: [
+                "Le coffre commun a un cooldown d'environ <strong>14 minutes</strong>. Reglez <strong>Duree par defaut (min)</strong> en haut sur 14 pendant le farm de coffres communs.",
+                "Quand les coffres communs sont pleins, passez la duree a <strong>12 minutes</strong> et faites la rotation des coffres de boss.",
+              ],
+            },
+            {
+              heading: "Choix de la carte",
+              items: [
+                "Ajoutez les niveaux de coffre a farmer avec <strong>Ajouter un coffre</strong>.",
+                "Dans le selecteur de carte, le % de drop apparait avant le numero de phase, separe par un tiret (ex. : <strong>15% - 2-5</strong> Nom de la carte).",
+                "La carte marquee <strong>★</strong> est la phase recommandee : plus haut % de drop pour ce niveau.",
+                "Si plusieurs phases ont le meme %, le site priorise celle avec <strong>moins de vagues</strong> et <strong>moins de PV sur les monstres</strong> (phase plus courte, ennemis plus faibles).",
+                "Vous pouvez changer de carte manuellement si vous preferez une autre phase.",
+              ],
+            },
+            {
+              heading: "Calcul du drop % (rune)",
+              items: [
+                "Le % affiche sur la carte est le <strong>drop de base de la phase</strong>, avant le bonus de rune.",
+                "Ce % est multiplie par le bonus de votre <strong>rune de coffre de boss</strong>.",
+                "Exemple : carte a <strong>15%</strong> et rune avec <strong>+300%</strong> sur le multiplicateur de coffre de boss — le jeu applique ce +300% sur les 15% de la phase (15% × 4 = <strong>60%</strong> de chance effective).",
+                "Plus le % de la phase et le bonus de rune sont eleves, plus la chance reelle de drop est grande.",
+              ],
+            },
+            {
+              heading: "Exemple — coffres Nv 50, 40 et 30",
+              items: [
+                "Ajoutez les 3 coffres (Nv 50, Nv 40 et Nv 30) sur le site.",
+                "Entrez dans une carte (ex. : Nv 50) et farmez jusqu'au drop du coffre.",
+                "Quand il drop, cliquez sur <strong>Coffre obtenu</strong> — le chrono de ce niveau demarre.",
+                "Pendant que le chrono tourne, il y a <strong>0% de chance</strong> de dropper un autre coffre de ce niveau.",
+                "Utilisez ce temps pour aller sur une autre carte (ex. : Nv 40 ou Nv 30) et farmer un niveau different.",
+                "Quand un chrono expire (<strong>0:00</strong>), revenez sur cette carte pour tenter le prochain drop.",
+                "Ainsi vous maximisez le butin sur la meme periode en alternant les niveaux pendant que les chronos tournent.",
+              ],
+            },
+          ],
+        },
+        zh: {
+          pageTitle: "TBH Web Chest Timer",
+          subtitle:
+            "点击「宝箱掉落」开始计时。请查看侧边栏的路线指南。",
+          languageLabel: "语言",
+          durationLabel: "默认时长 (分钟)",
+          alertVolumeLabel: "提示音量",
+          testAlertButton: "测试提示",
+          addTimerButton: "添加宝箱",
+          resetAllButton: "全部重置",
+          downloadTitle: "完整包下载",
+          downloadDescription: "下载网站完整文件夹压缩包：",
+          downloadButton: "下载压缩包 (.rar)",
+          eventsTitle: "事件",
+          clearLogsButton: "清除",
+          rowLevel: "宝箱 Lv",
+          rowMap: "地图",
+          rowTimer: "计时器",
+          rowDrop: "宝箱掉落",
+          rowReset: "重置",
+          rowRemove: "删除",
+          emptyTimers: "未配置宝箱。请点击「添加宝箱」。",
+          mapNotAvailable: "该宝箱等级没有可用地图",
+          invalidDuration: "无效时长。请输入 1 至 999 分钟之间的数值。",
+          logAdded: "已添加宝箱 Lv{level}。",
+          logRemoved: "已移除宝箱 Lv{level}。",
+          logLevelUpdated: "宝箱已更新为 Lv{level}。",
+          logLevelDuplicate: "Lv{level} 已被使用。请选择其他宝箱等级。",
+          logAllLevelsUsed: "所有宝箱等级均已配置。",
+          logResetAll: "所有计时器已重置。",
+          logResetSingle: "Lv{level} 计时器已重置。",
+          logAlreadyCounting: "Lv{level} 已忽略：计时器已在运行。",
+          logStarted:
+            "掉落确认：Lv{level} | {map}。计时开始 ({minutes} 分钟)。",
+          logExpired: "Lv{level} 计时器已结束。",
+          logDurationUpdated: "默认时长已更新为 {minutes} 分钟。",
+          logLoaded: "网站已加载。点击「宝箱掉落」开始计时。",
+          unknownMap: "未选择地图",
+          footerDevelopedBy: "由 -Neath 开发",
+          difficulty: {
+            Normal: "普通",
+            Nightmare: "噩梦",
+            Hell: "地狱",
+            Torment: "折磨",
+          },
+          tutorialTitle: "使用说明 — 宝箱路线",
+          tutorialSections: [
+            {
+              heading: "计时器时长",
+              items: [
+                "普通宝箱冷却约 <strong>14 分钟</strong>。刷普通宝箱时，将顶部 <strong>默认时长 (分钟)</strong> 设为 14。",
+                "普通宝箱栏满后，将时长改为 <strong>12 分钟</strong>，进行 Boss 宝箱轮换。",
+              ],
+            },
+            {
+              heading: "地图选择",
+              items: [
+                "通过 <strong>添加宝箱</strong> 添加要刷的宝箱等级。",
+                "地图选择器中，掉落率显示在阶段编号前，以短横线分隔（例：<strong>15% - 2-5</strong> 地图名称）。",
+                "带 <strong>★</strong> 的地图为推荐阶段：该等级掉落率最高。",
+                "若多个阶段掉落率相同，网站优先选择 <strong>波次更少</strong>、<strong>怪物血量更低</strong> 的阶段（更短、敌人更弱）。",
+                "也可手动切换其他阶段地图。",
+              ],
+            },
+            {
+              heading: "掉落率计算（符文）",
+              items: [
+                "地图上显示的 % 为 <strong>阶段基础掉落率</strong>，不含符文加成。",
+                "该 % 会与 <strong>Boss 宝箱符文</strong> 加成相乘。",
+                "例：地图 <strong>15%</strong>，符文 Boss 宝箱倍率 <strong>+300%</strong> — 游戏在阶段 15% 上叠加 +300%（15% × 4 = 有效 <strong>60%</strong>）。",
+                "阶段 % 和符文加成越高，实际掉落概率越大。",
+              ],
+            },
+            {
+              heading: "示例 — Lv 50、40、30 宝箱",
+              items: [
+                "在网站添加 Lv 50、Lv 40、Lv 30 三个宝箱。",
+                "进入地图（如 Lv 50）刷到宝箱掉落。",
+                "掉落后点击 <strong>宝箱掉落</strong> — 该等级计时开始。",
+                "计时进行中，该等级宝箱 <strong>0% 概率</strong> 再次掉落。",
+                "利用这段时间前往其他地图（如 Lv 40 或 Lv 30）刷不同等级。",
+                "计时结束（<strong>0:00</strong>）后，返回该地图尝试下一次掉落。",
+                "在计时交替运行期间切换等级，可在相同时间内获得更多物品。",
+              ],
+            },
+          ],
         },
         ja: {
           pageTitle: "TBH Web Chest Timer",
-          subtitle: "「宝箱ドロップ」を押すと手動でタイマーを開始します。",
+          subtitle:
+            "「宝箱ドロップ」でタイマーを開始します。サイドバーのルートガイドをご覧ください。",
           languageLabel: "言語",
           durationLabel: "標準時間 (分)",
           alertVolumeLabel: "アラート音量",
@@ -435,12 +979,54 @@
           logLoaded:
             "サイトを読み込みました。「宝箱ドロップ」でタイマーを開始できます。",
           unknownMap: "マップ未選択",
+          footerDevelopedBy: "開発: -Neath",
           difficulty: {
             Normal: "ノーマル",
             Nightmare: "ナイトメア",
             Hell: "ヘル",
             Torment: "トーメント",
           },
+          tutorialTitle: "使い方 — 宝箱ルート",
+          tutorialSections: [
+            {
+              heading: "タイマー時間",
+              items: [
+                "通常宝箱のクールダウンは約<strong>14分</strong>です。通常宝箱を回す間は、上部の<strong>標準時間 (分)</strong>を14に設定してください。",
+                "通常宝箱の所持枠がいっぱいになったら、時間を<strong>12分</strong>に変更してボス宝箱のローテーションを行います。",
+              ],
+            },
+            {
+              heading: "マップの選び方",
+              items: [
+                "<strong>宝箱を追加</strong>で、狙いたい宝箱レベルを登録します。",
+                "マップ選択では、ドロップ率がステージ番号の前に表示されます（例: <strong>15% - 2-5</strong> マップ名）。",
+                "<strong>★</strong>付きのマップが推奨ステージで、そのレベルで最も高いドロップ率です。",
+                "同じドロップ率のステージが複数ある場合は、<strong>ウェーブ数が少なく</strong>、<strong>モンスターのHPが低い</strong>（短いステージ・弱い敵）方を優先します。",
+                "別のステージを選びたい場合は、手動でマップを変更できます。",
+              ],
+            },
+            {
+              heading: "ドロップ率の計算（ルーン）",
+              items: [
+                "マップに表示される % は、ルーンボーナス適用前の<strong>ステージ基本ドロップ率</strong>です。",
+                "この % は<strong>ボス宝箱ルーン</strong>のボーナスと掛け合わされます。",
+                "例: マップが <strong>15%</strong> で、ルーンがボス宝箱倍率 <strong>+300%</strong> の場合 — ゲームはステージの15%に+300%を適用します（15% × 4 = 実効 <strong>60%</strong>）。",
+                "ステージの % とルーンボーナスが高いほど、実際のドロップ率も上がります。",
+              ],
+            },
+            {
+              heading: "例 — Lv 50・40・30 の宝箱",
+              items: [
+                "サイトに Lv 50、Lv 40、Lv 30 の3つの宝箱を追加します。",
+                "マップに入り（例: Lv 50）、宝箱がドロップするまで周回します。",
+                "ドロップしたら<strong>宝箱ドロップ</strong>を押すと、そのレベルのタイマーが開始します。",
+                "タイマーが動いている間、そのレベルの宝箱は<strong>0%の確率</strong>でしか落ちません。",
+                "その時間を使って別のマップ（例: Lv 40 や Lv 30）で別レベルを周回します。",
+                "タイマーが終了（<strong>0:00</strong>）したら、そのマップに戻って次のドロップを狙います。",
+                "タイマーを交互に回しながらレベルを切り替えることで、同じ時間でより多くのアイテムを獲得できます。",
+              ],
+            },
+          ],
         },
       };
 
@@ -473,6 +1059,9 @@
       );
       const eventsTitle = document.querySelector("#eventsTitle");
       const clearLogsButton = document.querySelector("#clearLogsButton");
+      const tutorialTitle = document.querySelector("#tutorialTitle");
+      const tutorialContent = document.querySelector("#tutorialContent");
+      const footerDevelopedBy = document.querySelector("#footerDevelopedBy");
       let lastSavedStateSnapshot = "";
 
       let state = createDefaultState();
@@ -517,9 +1106,28 @@
         throw new Error("stages.json not found");
       }
 
+      function isSupportedLanguage(code) {
+        return Boolean(code && I18N[code]);
+      }
+
+      function saveLanguagePreference(language = state.language) {
+        if (!isSupportedLanguage(language)) return;
+        localStorage.setItem(LANGUAGE_STORAGE_KEY, language);
+      }
+
+      function loadLanguagePreference() {
+        try {
+          const saved = localStorage.getItem(LANGUAGE_STORAGE_KEY);
+          if (isSupportedLanguage(saved)) return saved;
+        } catch {
+          // ignore storage errors
+        }
+        return "en";
+      }
+
       function createDefaultState() {
         return {
-          language: "pt-BR",
+          language: loadLanguagePreference(),
           durationMinutes: 14,
           alertVolume: 100,
           timers: [
@@ -565,9 +1173,8 @@
       }
 
       function localizeMapName(mapName) {
-        if (state.language === "pt-BR")
-          return MAP_NAMES_PT_BR[mapName] ?? mapName;
-        if (state.language === "ja") return MAP_NAMES_JA[mapName] ?? mapName;
+        const mapTable = MAP_NAMES_BY_LANGUAGE[state.language];
+        if (mapTable) return mapTable[mapName] ?? mapName;
         return mapName;
       }
 
@@ -588,9 +1195,7 @@
 
       function stagesForLevel(level) {
         return stageCache
-          .filter(
-            (item) => item.bossChestLevel === level && !item.isActBoss,
-          )
+          .filter((item) => item.bossChestLevel === level && !item.isActBoss)
           .sort(sortStages);
       }
 
@@ -629,9 +1234,10 @@
 
       function formatBossDropPercent(percent) {
         if (percent == null || !Number.isFinite(percent)) return "";
-        return Number.isInteger(percent)
-          ? `${percent}% `
-          : `${percent}% `;
+        const formatted = Number.isInteger(percent)
+          ? `${percent}%`
+          : `${percent}%`;
+        return `${formatted} - `;
       }
 
       function stageLabel(entry, includeStar = true) {
@@ -653,7 +1259,9 @@
       }
 
       function normalizeState() {
-        if (!I18N[state.language]) state.language = "pt-BR";
+        if (!isSupportedLanguage(state.language)) {
+          state.language = loadLanguagePreference();
+        }
         if (
           !Number.isFinite(state.durationMinutes) ||
           state.durationMinutes < 1 ||
@@ -702,7 +1310,9 @@
         const deduped = [];
         for (const timer of state.timers) {
           if (seenLevels.has(timer.level)) {
-            const nextLevel = CHEST_LEVELS.find((level) => !seenLevels.has(level));
+            const nextLevel = CHEST_LEVELS.find(
+              (level) => !seenLevels.has(level),
+            );
             if (nextLevel === undefined) continue;
             deduped.push({
               ...timer,
@@ -724,6 +1334,7 @@
           return;
         }
         localStorage.setItem(STORAGE_KEY, snapshot);
+        saveLanguagePreference();
         lastSavedStateSnapshot = snapshot;
       }
 
@@ -733,8 +1344,9 @@
           if (!raw) return createDefaultState();
           const parsed = JSON.parse(raw);
           return {
-            language:
-              typeof parsed.language === "string" ? parsed.language : "pt-BR",
+            language: isSupportedLanguage(parsed.language)
+              ? parsed.language
+              : loadLanguagePreference(),
             durationMinutes: Number(parsed.durationMinutes),
             alertVolume: Number(parsed.alertVolume),
             timers: Array.isArray(parsed.timers) ? parsed.timers : [],
@@ -742,6 +1354,26 @@
         } catch {
           return createDefaultState();
         }
+      }
+
+      function renderTutorial() {
+        const bucket = I18N[state.language] ?? I18N.en;
+        const sections =
+          bucket.tutorialSections ?? I18N.en.tutorialSections ?? [];
+        tutorialTitle.textContent =
+          bucket.tutorialTitle ?? I18N.en.tutorialTitle;
+        tutorialContent.innerHTML = sections
+          .map(
+            (section) => `
+              <div>
+                <h3 class="font-medium text-slate-100">${section.heading}</h3>
+                <ul class="mt-2 list-disc space-y-1.5 pl-5 text-slate-400">
+                  ${section.items.map((item) => `<li>${item}</li>`).join("")}
+                </ul>
+              </div>
+            `,
+          )
+          .join("");
       }
 
       function applyLanguage() {
@@ -761,6 +1393,8 @@
         eventsTitle.textContent = t("eventsTitle");
         clearLogsButton.textContent = t("clearLogsButton");
         languageSelect.value = state.language;
+        footerDevelopedBy.textContent = t("footerDevelopedBy");
+        renderTutorial();
       }
 
       function populateMapSelect(selectElement, timer) {
@@ -930,7 +1564,8 @@
       }
 
       function formatTimestamp() {
-        return new Date().toLocaleTimeString("pt-BR", { hour12: false });
+        const locale = LOCALE_BY_LANGUAGE[state.language] ?? "en-US";
+        return new Date().toLocaleTimeString(locale, { hour12: false });
       }
 
       function appendLog(message) {
@@ -1089,10 +1724,13 @@
 
       languageSelect.addEventListener("change", () => {
         state.language = languageSelect.value;
-        if (!I18N[state.language]) state.language = "pt-BR";
+        if (!isSupportedLanguage(state.language)) {
+          state.language = loadLanguagePreference();
+        }
+        saveLanguagePreference();
         applyLanguage();
         renderTimers();
-        saveState();
+        saveState(true);
       });
 
       setInterval(() => {
