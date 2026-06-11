@@ -30,7 +30,8 @@ MESSAGES: dict[str, dict[str, str]] = {
         "lang_pt_br": "Português (BR)",
         "lang_en": "English",
         "chest_timers_title": "Cronômetros",
-        "timers_drag_hint": "Arraste os cards para reordenar a rotação",
+        "timers_drag_hint": "Ordenação automática por urgência · arraste para ajustar prioridade",
+        "timers_next_phase": "Próxima fase: {instruction} ({chest})",
         "timers_none_enabled": "Configure baús à esquerda para ver cronômetros.",
         "watch_title": "Baús monitorados",
         "add_chest": "+ Adicionar baú",
@@ -136,11 +137,7 @@ MESSAGES: dict[str, dict[str, str]] = {
         "error_read_player_log": "Erro ao ler Player.log: {error}",
         "cannot_read_save": "Não foi possível ler o save: {error}",
         "monitor_stopped": "Monitor parado",
-        "notify_simulation_title": "TBH Monitor (simulação)",
-        "notify_simulation_body": "Próximo mapa: {label}",
-        "notify_title": "TBH Monitor",
-        "notify_next_map": "Próximo mapa: {label}\n{instruction}",
-        "mode_simulation": "simulação (sem notificações)",
+        "mode_simulation": "simulação",
         "mode_active": "ativo",
         "switch_save_restart": "save + reinício",
         "switch_ui_clicks": "cliques na UI",
@@ -159,7 +156,8 @@ MESSAGES: dict[str, dict[str, str]] = {
         "lang_pt_br": "Português (BR)",
         "lang_en": "English",
         "chest_timers_title": "Timers",
-        "timers_drag_hint": "Drag cards to reorder rotation",
+        "timers_drag_hint": "Auto-sorted by urgency · drag to adjust priority",
+        "timers_next_phase": "Next phase: {instruction} ({chest})",
         "timers_none_enabled": "Configure chests on the left to see timers.",
         "watch_title": "Watched chests",
         "add_chest": "+ Add chest",
@@ -265,11 +263,7 @@ MESSAGES: dict[str, dict[str, str]] = {
         "error_read_player_log": "Error reading Player.log: {error}",
         "cannot_read_save": "Could not read save: {error}",
         "monitor_stopped": "Monitor stopped",
-        "notify_simulation_title": "TBH Monitor (simulation)",
-        "notify_simulation_body": "Next map: {label}",
-        "notify_title": "TBH Monitor",
-        "notify_next_map": "Next map: {label}\n{instruction}",
-        "mode_simulation": "simulation (no notifications)",
+        "mode_simulation": "simulation",
         "mode_active": "active",
         "switch_save_restart": "save + restart",
         "switch_ui_clicks": "UI clicks",
@@ -383,6 +377,31 @@ def format_watch_map_label(
         localized_name = translate_map_name(map_name, language)
         return f"{stage_part} {localized_name} · {difficulty_part}"
     return f"{stage_part} · {difficulty_part}"
+
+
+def format_game_instruction_for_stage_key(
+    stage_key: int,
+    language: Language | None = None,
+) -> str:
+    from src.data.stage_catalog import find_catalog_entry
+    from src.data.stage_codec import decode_stage_key
+
+    entry = find_catalog_entry(stage_key)
+    if entry is not None:
+        return format_act_stage_arrow(
+            entry.act,
+            entry.stage,
+            entry.difficulty,
+            language=language,
+        )
+
+    stage = decode_stage_key(stage_key)
+    return format_act_stage_arrow(
+        stage.act,
+        stage.stage,
+        stage.difficulty.value,
+        language=language,
+    )
 
 
 def format_watch_map_label_for_stage_key(

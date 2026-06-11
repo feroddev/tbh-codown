@@ -49,6 +49,33 @@
               />
             </label>
 
+            <label class="min-w-48 text-sm text-slate-300">
+              <span id="alertVolumeLabel">Volume do alerta</span>
+              <div class="mt-1 flex items-center gap-2">
+                <input
+                  id="alertVolumeInput"
+                  type="range"
+                  min="0"
+                  max="100"
+                  step="5"
+                  class="h-2 w-full cursor-pointer accent-indigo-500"
+                />
+                <span
+                  id="alertVolumeValue"
+                  class="w-10 shrink-0 text-right font-mono text-xs text-slate-400"
+                  >100%</span
+                >
+              </div>
+            </label>
+
+            <button
+              id="testAlertButton"
+              type="button"
+              class="rounded-md bg-slate-700 px-4 py-2 text-sm font-medium text-slate-100 transition hover:bg-slate-600"
+            >
+              Testar alerta
+            </button>
+
             <button
               id="addTimerButton"
               type="button"
@@ -275,6 +302,8 @@
             'Clique em "Bau dropou" para iniciar o cronometro manualmente.',
           languageLabel: "Idioma",
           durationLabel: "Duracao padrao (min)",
+          alertVolumeLabel: "Volume do alerta",
+          testAlertButton: "Testar alerta",
           addTimerButton: "Adicionar bau",
           resetAllButton: "Resetar todos",
           downloadTitle: "Download do pacote completo",
@@ -319,6 +348,8 @@
           subtitle: 'Click "Chest dropped" to start each timer manually.',
           languageLabel: "Language",
           durationLabel: "Default duration (min)",
+          alertVolumeLabel: "Alert volume",
+          testAlertButton: "Test alert",
           addTimerButton: "Add chest",
           resetAllButton: "Reset all",
           downloadTitle: "Full package download",
@@ -361,6 +392,8 @@
           subtitle: "「宝箱ドロップ」を押すと手動でタイマーを開始します。",
           languageLabel: "言語",
           durationLabel: "標準時間 (分)",
+          alertVolumeLabel: "アラート音量",
+          testAlertButton: "アラートをテスト",
           addTimerButton: "宝箱を追加",
           resetAllButton: "すべてリセット",
           downloadTitle: "フルパッケージのダウンロード",
@@ -405,7 +438,12 @@
       const stageCache = [];
       const stageByKey = new Map();
 
+      const ALERT_PEAK_GAIN = 1.0;
+
       const durationInput = document.querySelector("#durationInput");
+      const alertVolumeInput = document.querySelector("#alertVolumeInput");
+      const alertVolumeValue = document.querySelector("#alertVolumeValue");
+      const testAlertButton = document.querySelector("#testAlertButton");
       const languageSelect = document.querySelector("#languageSelect");
       const timersContainer = document.querySelector("#timersContainer");
       const logsContainer = document.querySelector("#logsContainer");
@@ -414,6 +452,7 @@
       const subtitleText = document.querySelector("#subtitleText");
       const languageLabel = document.querySelector("#languageLabel");
       const durationLabel = document.querySelector("#durationLabel");
+      const alertVolumeLabel = document.querySelector("#alertVolumeLabel");
       const addTimerButton = document.querySelector("#addTimerButton");
       const resetAllButton = document.querySelector("#resetAllButton");
       const downloadTitle = document.querySelector("#downloadTitle");
@@ -468,6 +507,7 @@
         return {
           language: "pt-BR",
           durationMinutes: 14,
+          alertVolume: 100,
           timers: [
             {
               id: crypto.randomUUID(),
@@ -572,6 +612,14 @@
           state.durationMinutes = 14;
         }
 
+        if (
+          !Number.isFinite(state.alertVolume) ||
+          state.alertVolume < 0 ||
+          state.alertVolume > 100
+        ) {
+          state.alertVolume = 100;
+        }
+
         if (!Array.isArray(state.timers) || !state.timers.length) {
           state.timers = createDefaultState().timers;
         }
@@ -619,6 +667,7 @@
             language:
               typeof parsed.language === "string" ? parsed.language : "pt-BR",
             durationMinutes: Number(parsed.durationMinutes),
+            alertVolume: Number(parsed.alertVolume),
             timers: Array.isArray(parsed.timers) ? parsed.timers : [],
           };
         } catch {
@@ -633,6 +682,8 @@
         subtitleText.textContent = t("subtitle");
         languageLabel.textContent = t("languageLabel");
         durationLabel.textContent = t("durationLabel");
+        alertVolumeLabel.textContent = t("alertVolumeLabel");
+        testAlertButton.textContent = t("testAlertButton");
         addTimerButton.textContent = t("addTimerButton");
         resetAllButton.textContent = t("resetAllButton");
         downloadTitle.textContent = t("downloadTitle");
@@ -811,45 +862,62 @@
         logsContainer.scrollTop = logsContainer.scrollHeight;
       }
 
-      function playToneSequence(tones) {
+      function alertPeakGain() {
+        return ALERT_PEAK_GAIN * (state.alertVolume / 100);
+      }
+
+      function updateAlertVolumeDisplay() {
+        alertVolumeInput.value = String(state.alertVolume);
+        alertVolumeValue.textContent = `${state.alertVolume}%`;
+      }
+
+      function playToneSequence(tones, options = {}) {
+        const peakGain = alertPeakGain();
+        if (peakGain <= 0.0001) return;
+
         const AudioContextRef =
           window.AudioContext || window.webkitAudioContext;
         if (!AudioContextRef) return;
 
         const ctx = new AudioContextRef();
+        const masterGain = ctx.createGain();
+        masterGain.gain.setValueAtTime(peakGain, ctx.currentTime);
+        masterGain.connect(ctx.destination);
+
+        const waveform = options.waveform ?? "square";
         let offset = ctx.currentTime;
         for (const [frequency, durationMs] of tones) {
           const osc = ctx.createOscillator();
           const gain = ctx.createGain();
-          osc.type = "sine";
+          osc.type = waveform;
           osc.frequency.setValueAtTime(frequency, offset);
           gain.gain.setValueAtTime(0.0001, offset);
-          gain.gain.exponentialRampToValueAtTime(0.08, offset + 0.01);
+          gain.gain.exponentialRampToValueAtTime(1, offset + 0.005);
           gain.gain.exponentialRampToValueAtTime(
             0.0001,
             offset + durationMs / 1000,
           );
           osc.connect(gain);
-          gain.connect(ctx.destination);
+          gain.connect(masterGain);
           osc.start(offset);
           osc.stop(offset + durationMs / 1000);
-          offset += durationMs / 1000 + 0.03;
+          offset += durationMs / 1000 + 0.04;
         }
 
-        setTimeout(() => ctx.close(), 1000);
+        setTimeout(() => ctx.close(), 1500);
       }
 
       function playDropSound() {
         playToneSequence([
-          [523, 55],
-          [659, 70],
+          [523, 70],
+          [659, 90],
         ]);
       }
 
       function playExpiredSound() {
         playToneSequence([
-          [440, 90],
-          [349, 110],
+          [880, 120],
+          [440, 160],
         ]);
       }
 
@@ -866,6 +934,7 @@
         normalizeState();
         applyLanguage();
         durationInput.value = String(state.durationMinutes);
+        updateAlertVolumeDisplay();
         renderTimers();
         saveState(true);
         appendLog(t("logLoaded"));
@@ -919,6 +988,16 @@
         state.durationMinutes = parsed;
         saveState();
         appendLog(t("logDurationUpdated", { minutes: parsed }));
+      });
+
+      alertVolumeInput.addEventListener("input", () => {
+        state.alertVolume = Number(alertVolumeInput.value);
+        updateAlertVolumeDisplay();
+        saveState();
+      });
+
+      testAlertButton.addEventListener("click", () => {
+        playExpiredSound();
       });
 
       languageSelect.addEventListener("change", () => {

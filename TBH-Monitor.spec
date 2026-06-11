@@ -37,7 +37,7 @@ a = Analysis(
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
-    excludes=[],
+    excludes=["plyer"],
     noarchive=False,
     optimize=0,
 )

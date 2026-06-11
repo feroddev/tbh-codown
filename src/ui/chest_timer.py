@@ -8,7 +8,13 @@ import customtkinter as ctk
 
 from src.data.chest_catalog import chest_display_label
 from src.domain.chest_farm import ChestFarmSlot
-from src.ui.i18n import Language, format_watch_map_label_for_stage_key, t
+from src.domain.timer_urgency import TimerSortState, sort_timer_keys_by_urgency
+from src.ui.i18n import (
+    Language,
+    format_game_instruction_for_stage_key,
+    format_watch_map_label_for_stage_key,
+    t,
+)
 from src.ui.sound_notifier import play_chest_drop_sound, play_timer_expired_sound
 from src.ui.theme import (
     BG_ELEVATED,
@@ -17,6 +23,7 @@ from src.ui.theme import (
     BORDER,
     BORDER_SUBTLE,
     DANGER,
+    SUCCESS,
     PAD_INNER,
     PAD_TIGHT,
     RADIUS_CARD,
@@ -24,6 +31,7 @@ from src.ui.theme import (
     TEXT_MUTED,
     TEXT_PRIMARY,
     TEXT_SECONDARY,
+    NEXT_TARGET_BORDER,
     TIMER_ACTIVE,
     TIMER_WAITING,
     hint_label,
@@ -82,6 +90,7 @@ class ChestTimerRow(ctk.CTkFrame):
         self._on_drag_start = on_drag_start
         self._on_drag_motion = on_drag_motion
         self._on_drag_end = on_drag_end
+        self._is_next_target = False
 
         self.grid_columnconfigure(3, weight=1)
 
@@ -148,7 +157,13 @@ class ChestTimerRow(ctk.CTkFrame):
         self._refresh()
 
     def set_drop_highlight(self, active: bool) -> None:
+        if self._is_next_target:
+            return
         self.configure(border_color=TIMER_ACTIVE if active else BORDER)
+
+    def set_next_target_highlight(self, active: bool) -> None:
+        self._is_next_target = active
+        self.configure(border_color=NEXT_TARGET_BORDER if active else BORDER)
 
     def set_dragging(self, active: bool) -> None:
         self.configure(fg_color=BG_ELEVATED if active else BG_INSET)
@@ -156,6 +171,10 @@ class ChestTimerRow(ctk.CTkFrame):
     @property
     def is_counting(self) -> bool:
         return self._expires_at is not None
+
+    @property
+    def is_expired(self) -> bool:
+        return self._expired
 
     def capture_state(self) -> tuple[float | None, bool]:
         return self._expires_at, self._expired
@@ -249,18 +268,32 @@ class ChestTimerBoard(ctk.CTkFrame):
 
         header = ctk.CTkFrame(self, fg_color="transparent")
         header.pack(fill="x", padx=PAD_INNER, pady=(PAD_INNER, PAD_TIGHT))
+        header.grid_columnconfigure(0, weight=1)
+
+        title_row = ctk.CTkFrame(header, fg_color="transparent")
+        title_row.grid(row=0, column=0, sticky="ew")
+        title_row.grid_columnconfigure(0, weight=1)
 
         self.title_label = section_label(
-            header,
+            title_row,
             text=t("chest_timers_title", language=language),
         )
-        self.title_label.pack(side="left")
+        self.title_label.grid(row=0, column=0, sticky="w")
 
         self.hint_label = hint_label(
-            header,
+            title_row,
             text=t("timers_drag_hint", language=language),
         )
-        self.hint_label.pack(side="right")
+        self.hint_label.grid(row=0, column=1, sticky="e")
+
+        self.next_phase_label = ctk.CTkLabel(
+            header,
+            text="",
+            font=ctk.CTkFont(family="Segoe UI", size=11, weight="bold"),
+            text_color=SUCCESS,
+            anchor="w",
+        )
+        self.next_phase_label.grid(row=1, column=0, sticky="ew", pady=(PAD_TIGHT, 0))
 
         self.empty_label = hint_label(
             self,
@@ -286,6 +319,7 @@ class ChestTimerBoard(ctk.CTkFrame):
         for row in self._rows.values():
             row.set_language(language)
         self._refresh_map_labels()
+        self._update_next_target_highlight()
 
     def set_watch_targets(self, slots: list[ChestFarmSlot]) -> None:
         self._watch_targets = [
@@ -371,6 +405,76 @@ class ChestTimerBoard(ctk.CTkFrame):
                 row.restore_state(expires_at, expired)
 
         self._layout_rows()
+        self._auto_sort_by_urgency()
+
+    def _collect_sort_states(self) -> list[TimerSortState]:
+        states: list[TimerSortState] = []
+        for timer_key in self._order:
+            row = self._rows.get(timer_key)
+            target = self._target_for_key(timer_key)
+            if row is None or target is None:
+                continue
+            expires_at, expired = row.capture_state()
+            states.append(
+                TimerSortState(
+                    timer_key=timer_key,
+                    priority=target.priority,
+                    expires_at=expires_at,
+                    expired=expired,
+                )
+            )
+        return states
+
+    def _auto_sort_by_urgency(self) -> None:
+        if self._dragging_key is not None or not self._rows:
+            return
+
+        states = self._collect_sort_states()
+        new_order = sort_timer_keys_by_urgency(states)
+        for timer_key in self._order:
+            if timer_key not in new_order:
+                new_order.append(timer_key)
+
+        if new_order != self._order:
+            self._order = new_order
+            self._layout_rows()
+
+        self._update_next_target_highlight()
+
+    def _next_target_key(self) -> TimerKey | None:
+        if not self._order:
+            return None
+        return self._order[0]
+
+    def _update_next_target_highlight(self) -> None:
+        next_key = self._next_target_key()
+        for timer_key, row in self._rows.items():
+            row.set_next_target_highlight(next_key is not None and timer_key == next_key)
+
+        if next_key is None:
+            self.next_phase_label.configure(text="")
+            return
+
+        target = self._target_for_key(next_key)
+        if target is None or target.stage_key <= 0:
+            self.next_phase_label.configure(
+                text=chest_display_label(next_key, language=self._language, short=True)
+            )
+            return
+
+        instruction = format_game_instruction_for_stage_key(
+            target.stage_key,
+            language=self._language,
+        )
+        chest_label = chest_display_label(next_key, language=self._language, short=True)
+        self.next_phase_label.configure(
+            text=t(
+                "timers_next_phase",
+                language=self._language,
+                instruction=instruction,
+                chest=chest_label,
+            )
+        )
 
     def _on_row_drag_start(self, row: ChestTimerRow) -> None:
         self._dragging_key = row.timer_key
@@ -395,6 +499,7 @@ class ChestTimerBoard(ctk.CTkFrame):
                     merged.append(key)
             self._order = merged
             self._layout_rows()
+            self._auto_sort_by_urgency()
         finally:
             self._syncing_order = False
 
@@ -424,6 +529,7 @@ class ChestTimerBoard(ctk.CTkFrame):
 
         drop_key = self._row_at_position(self.winfo_pointerx(), self.winfo_pointery())
         if drop_key is None or drop_key == dragging_key:
+            self._auto_sort_by_urgency()
             return
 
         from_index = self._order.index(dragging_key)
@@ -432,6 +538,7 @@ class ChestTimerBoard(ctk.CTkFrame):
         self._order.insert(to_index, dragging_key)
         self._layout_rows()
         self._emit_order_changed()
+        self._update_next_target_highlight()
 
     def _emit_order_changed(self) -> None:
         if self._on_order_changed is None or self._syncing_order:
@@ -442,12 +549,16 @@ class ChestTimerBoard(ctk.CTkFrame):
         row = self._rows.get(timer_key)
         if row is not None:
             row.start_countdown()
+            self._auto_sort_by_urgency()
 
     def start_timer_on_drop(self, timer_key: TimerKey) -> bool:
         row = self._rows.get(timer_key)
         if row is None:
             return False
-        return row.start_countdown_on_drop()
+        started = row.start_countdown_on_drop()
+        if started:
+            self._auto_sort_by_urgency()
+        return started
 
     def is_timer_counting(self, timer_key: TimerKey) -> bool:
         row = self._rows.get(timer_key)
@@ -456,7 +567,9 @@ class ChestTimerBoard(ctk.CTkFrame):
     def reset_all(self) -> None:
         for row in self._rows.values():
             row.reset()
+        self._auto_sort_by_urgency()
 
     def tick(self) -> None:
         for row in self._rows.values():
             row.tick()
+        self._auto_sort_by_urgency()
