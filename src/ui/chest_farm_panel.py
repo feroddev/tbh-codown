@@ -342,7 +342,7 @@ class ChestWatchPanel(ctk.CTkFrame):
 
     def _default_slots(self) -> list[ChestFarmSlot]:
         defaults: list[ChestFarmSlot] = []
-        for index, level in enumerate((40, 50), start=1):
+        for index, level in enumerate((65, 50, 40, 30), start=1):
             suggested = suggested_stage_for_chest_level(level)
             defaults.append(
                 ChestFarmSlot(

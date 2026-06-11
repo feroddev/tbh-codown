@@ -191,123 +191,162 @@
             id="farmRecommendationSection"
             class="rounded-xl border border-indigo-500/30 bg-slate-900/80 p-5"
           >
-            <h2 id="farmRecommendationTitle" class="text-base font-semibold">
-              Farm Recommendation
-            </h2>
-            <p
-              id="farmRecommendationHint"
-              class="mt-1 text-xs text-slate-400"
-            ></p>
-
-            <div class="mt-3 flex flex-wrap gap-2">
-              <button
-                id="farmModePlayerButton"
-                type="button"
-                class="rounded-md px-3 py-1.5 text-xs font-medium transition"
-              ></button>
-              <button
-                id="farmModeCubeButton"
-                type="button"
-                class="rounded-md px-3 py-1.5 text-xs font-medium transition"
-              ></button>
-            </div>
-
-            <div class="mt-3 grid gap-3">
-              <label
-                id="farmPlayerLevelField"
-                class="text-xs text-slate-400"
+            <details id="farmRecommendationDetails" class="group/farm">
+              <summary
+                id="farmRecommendationSummary"
+                class="cursor-pointer select-none list-none marker:content-none [&::-webkit-details-marker]:hidden"
               >
-                <span id="farmPlayerLevelLabel">Player level</span>
-                <input
-                  id="farmPlayerLevelInput"
-                  type="number"
-                  min="1"
-                  max="999"
-                  class="mt-1 block w-full rounded-md border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 focus:border-indigo-500 focus:outline-none"
-                />
-              </label>
-
-              <label id="farmCubeLevelField" class="hidden text-xs text-slate-400">
-                <span id="farmCubeLevelLabel">Cube level</span>
-                <input
-                  id="farmCubeLevelInput"
-                  type="number"
-                  min="1"
-                  max="999"
-                  class="mt-1 block w-full rounded-md border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 focus:border-indigo-500 focus:outline-none"
-                />
-              </label>
-
-              <div class="text-xs text-slate-400">
-                <label>
-                  <span class="flex items-center gap-1.5">
-                    <span id="farmRuneBonusLabel">Rune bonus (%)</span>
-                    <span class="group relative inline-flex shrink-0">
-                      <button
-                        id="farmRuneBonusHelpButton"
-                        type="button"
-                        class="inline-flex h-4 w-4 items-center justify-center rounded-full border border-slate-600 bg-slate-800 text-[10px] font-bold leading-none text-slate-300 transition hover:border-indigo-400 hover:text-indigo-200"
-                        aria-describedby="farmRuneBonusTooltip"
-                      >
-                        ?
-                      </button>
-                      <div
-                        id="farmRuneBonusTooltip"
-                        role="tooltip"
-                        class="pointer-events-none invisible absolute right-0 top-full z-30 mt-1.5 w-[600px] max-w-[calc(100vw-2rem)] rounded-md border border-slate-600 bg-slate-950 p-2 opacity-0 shadow-xl shadow-black/60 transition-opacity duration-150 group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100"
-                      >
-                        <img
-                          id="farmRuneBonusImage"
-                          src="./images/rune-bonus-guide.png"
-                          alt=""
-                          class="max-h-[1048px] w-full rounded object-contain"
-                          loading="lazy"
-                        />
-                        <p
-                          id="farmRuneBonusImageCaption"
-                          class="mt-1 text-center text-[10px] leading-snug text-slate-400"
-                        ></p>
-                      </div>
-                    </span>
+                <span class="flex items-center justify-between gap-3">
+                  <span class="flex min-w-0 items-center gap-3">
+                    <span
+                      aria-hidden="true"
+                      class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-indigo-500 text-lg font-extrabold text-indigo-950 shadow-md shadow-indigo-500/40 ring-2 ring-indigo-300/60"
+                      >⚡</span
+                    >
+                    <span
+                      id="farmRecommendationTitle"
+                      class="text-base font-semibold text-indigo-100"
+                      >Farm Recommendation</span
+                    >
                   </span>
-                  <input
-                    id="farmRuneBonusInput"
-                    type="number"
-                    min="0"
-                    max="9999"
-                    step="50"
-                    class="mt-1 block w-full rounded-md border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 focus:border-indigo-500 focus:outline-none"
-                  />
                   <span
-                    id="farmRuneBonusHint"
-                    class="mt-1 block text-[11px] text-slate-500"
-                  ></span>
-                </label>
-              </div>
-            </div>
+                    aria-hidden="true"
+                    class="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md border border-indigo-400/30 bg-indigo-500/10 text-xs text-indigo-200 transition group-open/farm:rotate-180"
+                    >▼</span
+                  >
+                </span>
+              </summary>
 
-            <div
-              id="farmRecommendationsList"
-              class="mt-4 flex max-h-80 flex-col gap-2 overflow-y-auto"
-            ></div>
+              <div
+                id="farmRecommendationContent"
+                class="mt-4 space-y-3 border-t border-indigo-500/20 pt-4"
+              >
+                <p
+                  id="farmRecommendationHint"
+                  class="text-xs text-slate-400"
+                ></p>
+
+                <div class="flex flex-wrap gap-2">
+                  <button
+                    id="farmModePlayerButton"
+                    type="button"
+                    class="rounded-md px-3 py-1.5 text-xs font-medium transition"
+                  ></button>
+                  <button
+                    id="farmModeCubeButton"
+                    type="button"
+                    class="rounded-md px-3 py-1.5 text-xs font-medium transition"
+                  ></button>
+                </div>
+
+                <div class="grid gap-3">
+                  <label
+                    id="farmPlayerLevelField"
+                    class="text-xs text-slate-400"
+                  >
+                    <span id="farmPlayerLevelLabel">Player level</span>
+                    <input
+                      id="farmPlayerLevelInput"
+                      type="number"
+                      min="1"
+                      max="999"
+                      class="mt-1 block w-full rounded-md border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 focus:border-indigo-500 focus:outline-none"
+                    />
+                  </label>
+
+                  <label
+                    id="farmCubeLevelField"
+                    class="hidden text-xs text-slate-400"
+                  >
+                    <span id="farmCubeLevelLabel">Cube level</span>
+                    <input
+                      id="farmCubeLevelInput"
+                      type="number"
+                      min="1"
+                      max="999"
+                      class="mt-1 block w-full rounded-md border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 focus:border-indigo-500 focus:outline-none"
+                    />
+                  </label>
+
+                  <div class="text-xs text-slate-400">
+                    <label>
+                      <span class="flex items-center gap-1.5">
+                        <span id="farmRuneBonusLabel">Rune bonus (%)</span>
+                        <span class="group relative inline-flex shrink-0">
+                          <button
+                            id="farmRuneBonusHelpButton"
+                            type="button"
+                            class="inline-flex h-4 w-4 items-center justify-center rounded-full border border-slate-600 bg-slate-800 text-[10px] font-bold leading-none text-slate-300 transition hover:border-indigo-400 hover:text-indigo-200"
+                            aria-describedby="farmRuneBonusTooltip"
+                          >
+                            ?
+                          </button>
+                          <div
+                            id="farmRuneBonusTooltip"
+                            role="tooltip"
+                            class="pointer-events-none invisible absolute right-0 top-full z-30 mt-1.5 w-[600px] max-w-[calc(100vw-2rem)] rounded-md border border-slate-600 bg-slate-950 p-2 opacity-0 shadow-xl shadow-black/60 transition-opacity duration-150 group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100"
+                          >
+                            <img
+                              id="farmRuneBonusImage"
+                              src="./images/rune-bonus-guide.png"
+                              alt=""
+                              class="max-h-[1048px] w-full rounded object-contain"
+                              loading="lazy"
+                            />
+                            <p
+                              id="farmRuneBonusImageCaption"
+                              class="mt-1 text-center text-[10px] leading-snug text-slate-400"
+                            ></p>
+                          </div>
+                        </span>
+                      </span>
+                      <input
+                        id="farmRuneBonusInput"
+                        type="number"
+                        min="0"
+                        max="9999"
+                        step="50"
+                        class="mt-1 block w-full rounded-md border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 focus:border-indigo-500 focus:outline-none"
+                      />
+                      <span
+                        id="farmRuneBonusHint"
+                        class="mt-1 block text-[11px] text-slate-500"
+                      ></span>
+                    </label>
+                  </div>
+                </div>
+
+                <div
+                  id="farmRecommendationsList"
+                  class="flex max-h-80 flex-col gap-2 overflow-y-auto"
+                ></div>
+              </div>
+            </details>
           </section>
 
           <section
             class="rounded-xl border border-slate-800 bg-slate-900/80 p-5"
           >
             <h2 id="downloadTitle" class="text-base font-semibold">
-              Download do pacote completo
+              Download do TBH Monitor (desktop)
             </h2>
             <p id="downloadDescription" class="mt-2 text-sm text-slate-300">
-              Baixe a pasta completa do site em arquivo compactado:
+              O TBH Monitor e o software para Windows com praticamente as
+              mesmas funcoes deste site: cronometros de baus, guia de rotas e
+              recomendacoes de farm.
+            </p>
+            <p id="downloadDetails" class="mt-2 text-sm text-slate-400">
+              A diferenca e que o programa le os logs do jogo automaticamente
+              e marca o cronometro quando um bau dropa, sem precisar clicar em
+              "Bau dropou" manualmente.
             </p>
             <a
               id="desktopDownloadLink"
-              href="./TBH-Monitor.rar"
+              href="./TBH-Monitor.zip"
               download
               class="mt-3 inline-flex w-full items-center justify-center rounded-md bg-emerald-500 px-4 py-2 text-sm font-medium text-slate-950 transition hover:bg-emerald-400"
             >
-              Baixar pacote (.rar)
+              Baixar TBH Monitor (.zip)
             </a>
           </section>
 
@@ -610,10 +649,12 @@
           testAlertButton: "Testar alerta",
           addTimerButton: "Adicionar bau",
           resetAllButton: "Resetar todos",
-          downloadTitle: "Download do pacote completo",
+          downloadTitle: "Download do TBH Monitor (desktop)",
           downloadDescription:
-            "Baixe a pasta completa do site em arquivo compactado:",
-          downloadButton: "Baixar pacote (.rar)",
+            "O TBH Monitor e o software para Windows com praticamente as mesmas funcoes deste site: cronometros de baus, guia de rotas e recomendacoes de farm.",
+          downloadDetails:
+            'A diferenca e que o programa le os logs do jogo automaticamente e marca o cronometro quando um bau dropa, sem precisar clicar em "Bau dropou" manualmente.',
+          downloadButton: "Baixar TBH Monitor (.zip)",
           eventsTitle: "Eventos",
           clearLogsButton: "Limpar",
           rowLevel: "Bau Lv",
@@ -740,10 +781,12 @@
           testAlertButton: "Test alert",
           addTimerButton: "Add chest",
           resetAllButton: "Reset all",
-          downloadTitle: "Full package download",
+          downloadTitle: "Download TBH Monitor (desktop)",
           downloadDescription:
-            "Download the full website folder as an archive:",
-          downloadButton: "Download package (.rar)",
+            "TBH Monitor is the Windows app with practically the same features as this site: chest timers, route guide, and farm recommendations.",
+          downloadDetails:
+            'The difference is that it reads the game logs automatically and starts the timer when a chest drops, with no need to click "Chest dropped" manually.',
+          downloadButton: "Download TBH Monitor (.zip)",
           eventsTitle: "Events",
           clearLogsButton: "Clear",
           rowLevel: "Chest Lv",
@@ -868,10 +911,12 @@
           testAlertButton: "Probar alerta",
           addTimerButton: "Agregar cofre",
           resetAllButton: "Restablecer todo",
-          downloadTitle: "Descarga del paquete completo",
+          downloadTitle: "Descarga de TBH Monitor (escritorio)",
           downloadDescription:
-            "Descarga la carpeta completa del sitio como archivo comprimido:",
-          downloadButton: "Descargar paquete (.rar)",
+            "TBH Monitor es la aplicacion de Windows con practicamente las mismas funciones que este sitio: cronometros de cofres, guia de rutas y recomendaciones de farm.",
+          downloadDetails:
+            'La diferencia es que lee los logs del juego automaticamente y marca el cronometro cuando cae un cofre, sin necesidad de hacer clic en "Cofre caido" manualmente.',
+          downloadButton: "Descargar TBH Monitor (.zip)",
           eventsTitle: "Eventos",
           clearLogsButton: "Limpiar",
           rowLevel: "Cofre Nv",
@@ -1001,10 +1046,12 @@
           testAlertButton: "Tester l'alerte",
           addTimerButton: "Ajouter un coffre",
           resetAllButton: "Tout reinitialiser",
-          downloadTitle: "Telechargement du pack complet",
+          downloadTitle: "Telechargement de TBH Monitor (bureau)",
           downloadDescription:
-            "Telechargez le dossier complet du site en archive compressee :",
-          downloadButton: "Telecharger le pack (.rar)",
+            "TBH Monitor est l'application Windows avec pratiquement les memes fonctions que ce site : chronos de coffres, guide de route et recommandations de farm.",
+          downloadDetails:
+            'La difference est qu\'elle lit automatiquement les logs du jeu et demarre le chrono quand un coffre tombe, sans avoir a cliquer sur "Coffre obtenu" manuellement.',
+          downloadButton: "Telecharger TBH Monitor (.zip)",
           eventsTitle: "Evenements",
           clearLogsButton: "Effacer",
           rowLevel: "Coffre Nv",
@@ -1135,9 +1182,12 @@
           testAlertButton: "测试提示",
           addTimerButton: "添加宝箱",
           resetAllButton: "全部重置",
-          downloadTitle: "完整包下载",
-          downloadDescription: "下载网站完整文件夹压缩包：",
-          downloadButton: "下载压缩包 (.rar)",
+          downloadTitle: "下载 TBH Monitor（桌面版）",
+          downloadDescription:
+            "TBH Monitor 是 Windows 桌面程序，功能与本网站基本相同：宝箱计时、路线指南和刷图建议。",
+          downloadDetails:
+            "区别在于它会自动读取游戏日志，在宝箱掉落时自动启动计时器，无需手动点击「宝箱掉落」。",
+          downloadButton: "下载 TBH Monitor (.zip)",
           eventsTitle: "事件",
           clearLogsButton: "清除",
           rowLevel: "宝箱 Lv",
@@ -1252,10 +1302,12 @@
           testAlertButton: "アラートをテスト",
           addTimerButton: "宝箱を追加",
           resetAllButton: "すべてリセット",
-          downloadTitle: "フルパッケージのダウンロード",
+          downloadTitle: "TBH Monitor のダウンロード（デスクトップ版）",
           downloadDescription:
-            "サイトのフォルダ全体を圧縮ファイルでダウンロードできます:",
-          downloadButton: "パッケージ (.rar) をダウンロード",
+            "TBH Monitor は Windows 向けアプリで、このサイトとほぼ同じ機能（宝箱タイマー、ルートガイド、ファーム提案）を備えています。",
+          downloadDetails:
+            "違いは、ゲームログを自動で読み取り、宝箱ドロップ時にタイマーを自動開始することです。「宝箱ドロップ」を手動で押す必要はありません。",
+          downloadButton: "TBH Monitor (.zip) をダウンロード",
           eventsTitle: "イベント",
           clearLogsButton: "クリア",
           rowLevel: "宝箱 Lv",
@@ -1398,6 +1450,7 @@
       const downloadDescription = document.querySelector(
         "#downloadDescription",
       );
+      const downloadDetails = document.querySelector("#downloadDetails");
       const desktopDownloadLink = document.querySelector(
         "#desktopDownloadLink",
       );
@@ -1540,15 +1593,8 @@
           timers: [
             {
               id: crypto.randomUUID(),
-              level: 30,
-              stageKey: 1308,
-              expiresAt: null,
-              expired: false,
-            },
-            {
-              id: crypto.randomUUID(),
-              level: 40,
-              stageKey: 2201,
+              level: 65,
+              stageKey: 3205,
               expiresAt: null,
               expired: false,
             },
@@ -1561,8 +1607,15 @@
             },
             {
               id: crypto.randomUUID(),
-              level: 65,
-              stageKey: 3205,
+              level: 40,
+              stageKey: 2201,
+              expiresAt: null,
+              expired: false,
+            },
+            {
+              id: crypto.randomUUID(),
+              level: 30,
+              stageKey: 1308,
               expiresAt: null,
               expired: false,
             },
@@ -1935,6 +1988,7 @@
         resetAllButton.textContent = t("resetAllButton");
         downloadTitle.textContent = t("downloadTitle");
         downloadDescription.textContent = t("downloadDescription");
+        downloadDetails.textContent = t("downloadDetails");
         desktopDownloadLink.textContent = t("downloadButton");
         eventsTitle.textContent = t("eventsTitle");
         clearLogsButton.textContent = t("clearLogsButton");
