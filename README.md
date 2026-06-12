@@ -71,7 +71,7 @@ chest_farms:
     enabled: true
     priority: 2
   - chest_level: 40
-    stage_key: 2201
+    stage_key: 2109
     enabled: true
     priority: 3
   - chest_level: 30

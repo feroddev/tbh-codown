@@ -105,9 +105,9 @@ RECOMMENDED_FARM_PRESET: dict[int, dict[str, object]] = {
         "reason": "Stage Boss Box Lv30 — wiki.",
     },
     40: {
-        "label": "2-1 Oasis Road (Nightmare)",
-        "act": 2,
-        "stage": 1,
+        "label": "1-9 Cursed Land (Nightmare)",
+        "act": 1,
+        "stage": 9,
         "difficulty": "Nightmare",
         "boss_key": "920401",
         "reason": "15% boss drop no Pesadelo (wiki); menor HP entre mapas Lv40.",
@@ -134,7 +134,7 @@ RECOMMENDED_FARM_PRESET: dict[int, dict[str, object]] = {
         "stage": 3,
         "difficulty": "Torment",
         "boss_key": "920801",
-        "reason": "Primeiro mapa Torment com Boss Lv80 — wiki.",
+        "reason": "8% boss drop na Torment (wiki); mesma % do 2-1 com menor HP entre mapas Lv80.",
     },
 }
 

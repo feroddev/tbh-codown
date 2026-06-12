@@ -455,6 +455,18 @@
       const MAX_FARM_RECOMMENDATIONS = 8;
       const FARM_WAVE_SECONDS_ESTIMATE = 25;
       const RUNE_BONUS_GUIDE_IMAGE = "./images/rune-bonus-guide.png";
+      const RECOMMENDED_FARM_PRESET = {
+        4: 1101,
+        5: 1104,
+        7: 1108,
+        15: 1203,
+        20: 1208,
+        30: 1308,
+        40: 2109,
+        50: 2305,
+        65: 3205,
+        80: 4103,
+      };
 
       const MAP_NAMES_PT_BR = {
         "Bug Nest": "Ninho de Insetos",
@@ -1608,7 +1620,7 @@
             {
               id: crypto.randomUUID(),
               level: 40,
-              stageKey: 2201,
+              stageKey: 2109,
               expiresAt: null,
               expired: false,
             },
@@ -1668,9 +1680,33 @@
           .sort(compareFarmEntries);
       }
 
+      function recommendedStageForLevel(level, candidates = null) {
+        const presetKey = RECOMMENDED_FARM_PRESET[level];
+        if (presetKey != null) {
+          const preset = stageByKey.get(presetKey);
+          if (preset && !preset.isActBoss && preset.bossChestLevel === level) {
+            if (
+              candidates == null ||
+              candidates.some((entry) => entry.stageKey === presetKey)
+            ) {
+              return preset;
+            }
+          }
+        }
+        const stages =
+          candidates == null
+            ? stagesForLevel(level)
+            : candidates
+                .filter(
+                  (item) => item.bossChestLevel === level && !item.isActBoss,
+                )
+                .sort(compareFarmEntries);
+        return stages.length ? stages[0] : null;
+      }
+
       function bestStageKeyForLevel(level) {
-        const stages = stagesForLevel(level);
-        return stages.length ? stages[0].stageKey : null;
+        const stage = recommendedStageForLevel(level);
+        return stage ? stage.stageKey : null;
       }
 
       function isBestStageForChest(entry) {
@@ -1715,14 +1751,13 @@
       }
 
       function bestStagePerChestLevel(candidates) {
-        const bestByLevel = new Map();
-        for (const entry of candidates) {
-          const current = bestByLevel.get(entry.bossChestLevel);
-          if (!current || compareFarmEntries(entry, current) < 0) {
-            bestByLevel.set(entry.bossChestLevel, entry);
-          }
-        }
-        return [...bestByLevel.values()].sort(compareFarmEntries);
+        const levels = [
+          ...new Set(candidates.map((entry) => entry.bossChestLevel)),
+        ];
+        return levels
+          .map((level) => recommendedStageForLevel(level, candidates))
+          .filter(Boolean)
+          .sort(compareFarmEntries);
       }
 
       function buildRecommendationReason(entry, mode) {
