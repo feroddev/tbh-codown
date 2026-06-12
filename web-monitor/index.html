@@ -460,7 +460,7 @@
     <script>
       const STORAGE_KEY = "tbh-web-monitor-state-v2";
       const LANGUAGE_STORAGE_KEY = "tbh-web-monitor-language-v1";
-      const CHEST_LEVELS = [4, 5, 7, 15, 20, 30, 40, 50, 65, 80];
+      const CHEST_LEVELS = [7, 15, 20, 30, 40, 50, 65, 80];
       const DIFFICULTY_CODE = { Normal: 1, Nightmare: 2, Hell: 3, Torment: 4 };
       const DIFFICULTY_ORDER = { Normal: 0, Nightmare: 1, Hell: 2, Torment: 3 };
       const CUBE_LEVEL_SAFE_GAP = 10;
@@ -468,8 +468,6 @@
       const FARM_WAVE_SECONDS_ESTIMATE = 25;
       const RUNE_BONUS_GUIDE_IMAGE = "./images/rune-bonus-guide.png";
       const RECOMMENDED_FARM_PRESET = {
-        4: 1101,
-        5: 1104,
         7: 1108,
         15: 1203,
         20: 1208,
@@ -781,10 +779,10 @@
             {
               heading: "Calculo do drop % (runa)",
               items: [
-                "A % mostrada no mapa e o <strong>drop base da fase</strong>, antes do bonus da runa.",
-                "Essa % e multiplicada pelo bonus da sua <strong>runa de bau de chefe</strong>.",
-                "Exemplo: mapa com <strong>15%</strong> e runa com <strong>+300%</strong> no multiplicador de bau de chefe — o jogo aplica esse +300% em cima dos 15% da fase (15% × 4 = <strong>60%</strong> de chance efetiva).",
-                "Quanto maior a % da fase e o bonus da runa, maior a chance real de dropar o bau.",
+                "A % mostrada no mapa e o <strong>drop base da fase</strong> (no jogo usa escala 1/1000: 20% = 200/1000), antes do bonus da runa.",
+                "O valor <strong>+N%</strong> da lista de stats e um aumento no multiplicador: total = <strong>100% + N%</strong>. A chance efetiva e <strong>floor(base × (100% + N%))</strong>, com arredondamento inteiro na escala 1/1000 e teto de <strong>100%</strong>.",
+                "Exemplo: mapa <strong>15%</strong> e runa <strong>+300%</strong> → 15% × 4 = <strong>60%</strong>. Mapa <strong>20%</strong> e runa <strong>+490%</strong> → calcularia 118%, mas o teto do jogo e <strong>100%</strong>.",
+                "Quanto maior a % da fase e o bonus da runa, maior a chance real de dropar o bau (ate o maximo de 100%).",
               ],
             },
             {
@@ -917,10 +915,10 @@
             {
               heading: "Drop % calculation (rune)",
               items: [
-                "The % shown on each map is the <strong>base stage drop rate</strong>, before rune bonuses.",
-                "That % is multiplied by your <strong>boss chest rune</strong> bonus.",
-                "Example: a map with <strong>15%</strong> and a rune with <strong>+300%</strong> boss chest multiplier — the game applies +300% on top of the stage's 15% (15% × 4 = <strong>60%</strong> effective chance).",
-                "The higher the stage % and rune bonus, the higher your real drop chance.",
+                "The % on each map is the <strong>base stage drop rate</strong> (in-game 1/1000 scale: 20% = 200/1000), before rune bonuses.",
+                "The stat list <strong>+N%</strong> is an increased modifier: total multiplier = <strong>100% + N%</strong>. Effective chance = <strong>floor(base × (100% + N%))</strong> with integer per-mille math, capped at <strong>100%</strong>.",
+                "Example: map <strong>15%</strong> and rune <strong>+300%</strong> → 15% × 4 = <strong>60%</strong>. Map <strong>20%</strong> and rune <strong>+490%</strong> → would be 118%, but the game caps at <strong>100%</strong>.",
+                "Higher stage % and rune bonus raise your real drop chance (up to the 100% cap).",
               ],
             },
             {
@@ -1058,10 +1056,10 @@
             {
               heading: "Calculo del drop % (runa)",
               items: [
-                "El % mostrado en el mapa es el <strong>drop base de la fase</strong>, antes del bonus de la runa.",
-                "Ese % se multiplica por el bonus de tu <strong>runa de cofre de jefe</strong>.",
-                "Ejemplo: mapa con <strong>15%</strong> y runa con <strong>+300%</strong> en el multiplicador de cofre de jefe — el juego aplica ese +300% sobre el 15% de la fase (15% × 4 = <strong>60%</strong> de probabilidad efectiva).",
-                "Cuanto mayor sea el % de la fase y el bonus de la runa, mayor sera la probabilidad real de drop.",
+                "El % del mapa es el <strong>drop base de la fase</strong> (escala 1/1000: 20% = 200/1000), antes del bonus de la runa.",
+                "El <strong>+N%</strong> de la lista de stats es un aumento del multiplicador: total = <strong>100% + N%</strong>. Chance efectiva = <strong>floor(base × (100% + N%))</strong> con math entero en per-mille, tope <strong>100%</strong>.",
+                "Ejemplo: mapa <strong>15%</strong> y runa <strong>+300%</strong> → 15% × 4 = <strong>60%</strong>. Mapa <strong>20%</strong> y runa <strong>+490%</strong> → seria 118%, pero el juego limita a <strong>100%</strong>.",
+                "Mayor % de fase y bonus de runa aumentan la probabilidad real (hasta el maximo de 100%).",
               ],
             },
             {
@@ -1200,10 +1198,10 @@
             {
               heading: "Calcul du drop % (rune)",
               items: [
-                "Le % affiche sur la carte est le <strong>drop de base de la phase</strong>, avant le bonus de rune.",
-                "Ce % est multiplie par le bonus de votre <strong>rune de coffre de boss</strong>.",
-                "Exemple : carte a <strong>15%</strong> et rune avec <strong>+300%</strong> sur le multiplicateur de coffre de boss — le jeu applique ce +300% sur les 15% de la phase (15% × 4 = <strong>60%</strong> de chance effective).",
-                "Plus le % de la phase et le bonus de rune sont eleves, plus la chance reelle de drop est grande.",
+                "Le % sur la carte est le <strong>drop de base de la phase</strong> (echelle 1/1000 : 20% = 200/1000), avant le bonus de rune.",
+                "Le <strong>+N%</strong> de la liste de stats est une augmentation du multiplicateur : total = <strong>100% + N%</strong>. Chance effective = <strong>floor(base × (100% + N%))</strong> avec arrondi entier per-mille, plafond <strong>100%</strong>.",
+                "Exemple : carte <strong>15%</strong> et rune <strong>+300%</strong> → 15% × 4 = <strong>60%</strong>. Carte <strong>20%</strong> et rune <strong>+490%</strong> → donnerait 118%, mais le jeu plafonne a <strong>100%</strong>.",
+                "Plus le % de la phase et le bonus de rune sont eleves, plus la chance reelle de drop est grande (jusqu'au plafond de 100%).",
               ],
             },
             {
@@ -1325,10 +1323,10 @@
             {
               heading: "掉落率计算（符文）",
               items: [
-                "地图上显示的 % 为 <strong>阶段基础掉落率</strong>，不含符文加成。",
-                "该 % 会与 <strong>Boss 宝箱符文</strong> 加成相乘。",
-                "例：地图 <strong>15%</strong>，符文 Boss 宝箱倍率 <strong>+300%</strong> — 游戏在阶段 15% 上叠加 +300%（15% × 4 = 有效 <strong>60%</strong>）。",
-                "阶段 % 和符文加成越高，实际掉落概率越大。",
+                "地图 % 为 <strong>阶段基础掉落率</strong>（游戏内 1/1000 刻度：20% = 200/1000），不含符文加成。",
+                "属性列表中的 <strong>+N%</strong> 为增幅修正：总倍率 = <strong>100% + N%</strong>。有效概率 = <strong>floor(基础 × (100% + N%))</strong>，按 per-mille 整数计算，上限 <strong>100%</strong>。",
+                "例：地图 <strong>15%</strong>、符文 <strong>+300%</strong> → 15% × 4 = <strong>60%</strong>。地图 <strong>20%</strong>、符文 <strong>+490%</strong> → 计算为 118%，但游戏上限为 <strong>100%</strong>。",
+                "阶段 % 与符文加成越高，实际掉落概率越大（最高 100%）。",
               ],
             },
             {
@@ -1462,10 +1460,10 @@
             {
               heading: "ドロップ率の計算（ルーン）",
               items: [
-                "マップに表示される % は、ルーンボーナス適用前の<strong>ステージ基本ドロップ率</strong>です。",
-                "この % は<strong>ボス宝箱ルーン</strong>のボーナスと掛け合わされます。",
-                "例: マップが <strong>15%</strong> で、ルーンがボス宝箱倍率 <strong>+300%</strong> の場合 — ゲームはステージの15%に+300%を適用します（15% × 4 = 実効 <strong>60%</strong>）。",
-                "ステージの % とルーンボーナスが高いほど、実際のドロップ率も上がります。",
+                "マップの % は<strong>ステージ基本ドロップ率</strong>（ゲーム内 1/1000 スケール：20% = 200/1000）で、ルーン前の値です。",
+                "ステータス一覧の <strong>+N%</strong> は増加修正で、総倍率 = <strong>100% + N%</strong>。実効確率 = <strong>floor(基本 × (100% + N%))</strong>、per-mille 整数演算、上限 <strong>100%</strong>。",
+                "例: マップ <strong>15%</strong>、ルーン <strong>+300%</strong> → 15% × 4 = <strong>60%</strong>。マップ <strong>20%</strong>、ルーン <strong>+490%</strong> → 118% になるが、ゲーム上限は <strong>100%</strong>。",
+                "ステージ % とルーンボーナスが高いほど実際のドロップ率も上がります（最大 100%）。",
               ],
             },
             {
@@ -1762,7 +1760,16 @@
       function effectiveDropPercent(basePercent, runeBonusPercent) {
         if (basePercent == null || !Number.isFinite(basePercent)) return null;
         const bonus = Number.isFinite(runeBonusPercent) ? runeBonusPercent : 0;
-        return basePercent * (1 + bonus / 100);
+        // Taskbar Hero rolls drop chance on a 1/1000 scale (20% → 200/1000).
+        // The rune stat (+N%) is an "increased" modifier: total multiplier is
+        // (100% + N%), applied with integer per-mille math and capped at 100%.
+        const basePerMille = Math.round(basePercent * 10);
+        const multiplierPerMille = 1000 + bonus * 10;
+        const effectivePerMille = Math.min(
+          1000,
+          Math.floor((basePerMille * multiplierPerMille) / 1000),
+        );
+        return effectivePerMille / 10;
       }
 
       function formatPercentValue(percent) {
@@ -1977,7 +1984,7 @@
         state.timers = state.timers.map((timer) => {
           const level = CHEST_LEVELS.includes(Number(timer.level))
             ? Number(timer.level)
-            : 30;
+            : CHEST_LEVELS[0];
           const allowedStageKeys = new Set(
             stagesForLevel(level).map((item) => item.stageKey),
           );
