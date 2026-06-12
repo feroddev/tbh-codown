@@ -590,6 +590,7 @@ class MonitorApp(ctk.CTk):
             on_chest_drop=self._handle_chest_drop,
             on_drop_log=lambda message: self._drop_log_queue.put(message),
             on_stage_changed=self._handle_stage_changed,
+            is_timer_counting=self.chest_timer_board.is_timer_counting,
         )
 
         self._monitor_thread = threading.Thread(target=self._run_monitor_safe, daemon=True)

@@ -14,6 +14,7 @@ from src.data.stage_catalog import boss_chest_drop_percent_for_stage_key, find_c
 from src.domain.chest_drop_correlator import ChestDropCorrelator, ConfirmedChestDrop
 from src.domain.chest_event import ChestEvent, ChestType
 from src.domain.chest_event_validator import is_chest_event_consistent_with_stage
+from src.domain.drop_cooldown import DropCooldownRegistry
 from src.domain.drop_filter import should_rotate_on_drop
 from src.domain.rotation_engine import MapConfig, RotationEngine, RotationResult
 from src.infrastructure.log_watcher import PlayerLogPoller
@@ -40,6 +41,7 @@ class PersistedState:
     current_index: int = 0
     last_drop_at: float | None = None
     last_map_label: str | None = None
+    last_drop_by_level: dict[int, float] | None = None
 
 
 class DropDeduplicator:
@@ -72,10 +74,17 @@ class StateStore:
         with self._state_file_path.open("r", encoding="utf-8") as handle:
             raw = json.load(handle)
 
+        raw_levels = raw.get("last_drop_by_level") or {}
+        last_drop_by_level = {
+            int(level): float(timestamp)
+            for level, timestamp in raw_levels.items()
+        }
+
         return PersistedState(
             current_index=int(raw.get("current_index", 0)),
             last_drop_at=raw.get("last_drop_at"),
             last_map_label=raw.get("last_map_label"),
+            last_drop_by_level=last_drop_by_level,
         )
 
     def save(self, state: PersistedState) -> None:
@@ -92,6 +101,7 @@ class MonitorService:
         on_chest_drop: Callable[[ChestEvent, int], None] | None = None,
         on_drop_log: Callable[[str], None] | None = None,
         on_stage_changed: Callable[[int], None] | None = None,
+        is_timer_counting: Callable[[int], bool] | None = None,
     ) -> None:
         self._config = config
         self._language = config.language
@@ -102,6 +112,11 @@ class MonitorService:
         self._on_stage_changed = on_stage_changed
         self._state_store = StateStore(config.state_file_path)
         persisted = self._state_store.load()
+        self._drop_cooldown = DropCooldownRegistry(
+            cooldown_minutes_provider=lambda: self._config.monitor.average_drop_minutes,
+            is_timer_counting=is_timer_counting,
+            last_drop_by_level=persisted.last_drop_by_level,
+        )
         self._rotation = RotationEngine(config.maps, current_index=persisted.current_index)
         self._save_reader = SaveReader(config.save_file_path, password=config.es3_password)
         self._save_detector = SaveChestDetector(
@@ -113,6 +128,7 @@ class MonitorService:
             consider_common_chest=config.strategy.consider_common_chest,
             debounce_seconds=config.monitor.debounce_seconds,
             watch_boss_keys=self._rotation_boss_keys(),
+            flat_count_drop_gate=self._drop_cooldown.should_accept_flat_count_for_key,
         )
         self._drop_deduplicator = DropDeduplicator(
             window_seconds=config.monitor.debounce_seconds + 2.0,
@@ -329,6 +345,8 @@ class MonitorService:
                     language=self._language,
                 )
             )
+            self._drop_cooldown.record_drop(chest_level)
+            self._persist_state()
 
         if self._on_chest_drop is not None:
             self._on_chest_drop(event, stage_key)
@@ -515,11 +533,38 @@ class MonitorService:
                 )
             )
 
+        self._persist_state(
+            current_index=rotation.current_index,
+            last_drop_at=time.time(),
+            last_map_label=localized_map_label(next_map, language=self._language),
+        )
+
+    def _persist_state(
+        self,
+        *,
+        current_index: int | None = None,
+        last_drop_at: float | None = None,
+        last_map_label: str | None = None,
+    ) -> None:
+        existing = self._state_store.load()
         self._state_store.save(
             PersistedState(
-                current_index=rotation.current_index,
-                last_drop_at=time.time(),
-                last_map_label=localized_map_label(next_map, language=self._language),
+                current_index=(
+                    current_index
+                    if current_index is not None
+                    else existing.current_index
+                ),
+                last_drop_at=(
+                    last_drop_at
+                    if last_drop_at is not None
+                    else existing.last_drop_at
+                ),
+                last_map_label=(
+                    last_map_label
+                    if last_map_label is not None
+                    else existing.last_map_label
+                ),
+                last_drop_by_level=self._drop_cooldown.snapshot(),
             )
         )
 

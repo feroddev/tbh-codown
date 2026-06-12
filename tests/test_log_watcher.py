@@ -5,6 +5,7 @@ import unittest
 from pathlib import Path
 
 from src.domain.chest_event import ChestEvent, ChestType
+from src.domain.drop_cooldown import DropCooldownRegistry
 from src.infrastructure.log_watcher import (
     ChestDetector,
     PlayerLogPoller,
@@ -95,6 +96,69 @@ class LogWatcherTests(unittest.TestCase):
 
         self.assertEqual(len(filtered), 1)
         self.assertEqual(filtered[0].item_key, "920401")
+
+    def test_flat_count_drop_accepted_after_cooldown(self) -> None:
+        registry = DropCooldownRegistry(
+            cooldown_minutes_provider=lambda: 13.0,
+            is_timer_counting=lambda _level: False,
+            last_drop_by_level={50: 1_000.0},
+        )
+        detector = ChestDetector(
+            consider_common_chest=True,
+            debounce_seconds=4.0,
+            watch_boss_keys=frozenset({"920501"}),
+            flat_count_drop_gate=registry.should_accept_flat_count_for_key,
+        )
+        detector.enable_count_tracking(True)
+        line = "GetBoxCount Success Count : 1 // ItemKey : 920501"
+
+        detector.seed_line(line)
+        event = detector.process_line(line)
+
+        self.assertIsNotNone(event)
+        self.assertEqual(event.item_key, "920501")
+
+    def test_flat_count_drop_rejected_within_cooldown(self) -> None:
+        import time
+
+        registry = DropCooldownRegistry(
+            cooldown_minutes_provider=lambda: 13.0,
+            is_timer_counting=lambda _level: False,
+            last_drop_by_level={50: time.time()},
+        )
+        detector = ChestDetector(
+            consider_common_chest=True,
+            debounce_seconds=4.0,
+            watch_boss_keys=frozenset({"920501"}),
+            flat_count_drop_gate=registry.should_accept_flat_count_for_key,
+        )
+        detector.enable_count_tracking(True)
+        line = "GetBoxCount Success Count : 1 // ItemKey : 920501"
+
+        detector.seed_line(line)
+        event = detector.process_line(line)
+
+        self.assertIsNone(event)
+
+    def test_flat_count_drop_rejected_when_timer_is_counting(self) -> None:
+        registry = DropCooldownRegistry(
+            cooldown_minutes_provider=lambda: 13.0,
+            is_timer_counting=lambda level: level == 50,
+            last_drop_by_level={50: 1_000.0},
+        )
+        detector = ChestDetector(
+            consider_common_chest=True,
+            debounce_seconds=4.0,
+            watch_boss_keys=frozenset({"920501"}),
+            flat_count_drop_gate=registry.should_accept_flat_count_for_key,
+        )
+        detector.enable_count_tracking(True)
+        line = "GetBoxCount Success Count : 1 // ItemKey : 920501"
+
+        detector.seed_line(line)
+        event = detector.process_line(line)
+
+        self.assertIsNone(event)
 
     def test_seed_from_log_tail_sets_baseline_without_emitting(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
