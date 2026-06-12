@@ -375,7 +375,7 @@
     <template id="timerRowTemplate">
       <article class="rounded-lg border border-slate-800 bg-slate-950/70 p-3">
         <div
-          class="grid gap-3 sm:grid-cols-[8.5rem_minmax(14rem,1fr)_7rem_auto] sm:items-end"
+          class="grid gap-3 sm:grid-cols-[7rem_minmax(11rem,1fr)_5.5rem_7rem_auto] sm:items-end"
         >
           <label class="text-xs text-slate-400">
             <span data-role="label-level">Bau Lv</span>
@@ -391,6 +391,18 @@
               data-role="map"
               class="mt-1 block w-full rounded-md border border-slate-700 bg-slate-900 px-3 py-2.5 text-sm text-slate-100 focus:border-indigo-500 focus:outline-none"
             ></select>
+          </label>
+
+          <label class="text-xs text-slate-400">
+            <span data-role="label-clear-time">Conclusao (s)</span>
+            <input
+              data-role="clear-time"
+              type="number"
+              min="0"
+              step="1"
+              placeholder="opcional"
+              class="mt-1 block w-full rounded-md border border-slate-700 bg-slate-900 px-2 py-2.5 text-sm text-slate-100 placeholder:text-slate-600 focus:border-indigo-500 focus:outline-none"
+            />
           </label>
 
           <div>
@@ -671,6 +683,8 @@
           clearLogsButton: "Limpar",
           rowLevel: "Bau Lv",
           rowMap: "Mapa",
+          rowClearTime: "Conclusao (s)",
+          rowClearTimePlaceholder: "opcional",
           rowTimer: "Timer",
           rowDrop: "Bau dropou",
           rowReset: "Reset",
@@ -679,6 +693,8 @@
           mapNotAvailable: "Sem mapas para este bau",
           invalidDuration:
             "Duracao invalida. Use um valor entre 1 e 999 minutos.",
+          invalidClearTime:
+            "Tempo de conclusao invalido. Use um valor entre 0 e 9999 segundos.",
           logAdded: "Novo bau Lv{level} adicionado.",
           logRemoved: "Bau Lv{level} removido.",
           logLevelUpdated: "Bau atualizado para Lv{level}.",
@@ -691,6 +707,8 @@
             "Lv{level} ignorado: cronometro ja esta contando.",
           logStarted:
             "Drop confirmado: Lv{level} | {map}. Timer iniciado ({minutes} min).",
+          logStartedWithClear:
+            "Drop confirmado: Lv{level} | {map}. Timer de rotacao iniciado ({minutes} min, -{seconds}s conclusao).",
           logExpired: "Timer Lv{level} expirou.",
           logDurationUpdated: "Duracao padrao atualizada para {minutes} min.",
           logLoaded:
@@ -754,7 +772,7 @@
               heading: "Escolha do mapa",
               items: [
                 "Adicione os niveis de bau que deseja farmar com <strong>Adicionar bau</strong>.",
-                "No seletor de mapa, a % de drop aparece antes do numero da fase, separada por traco (ex.: <strong>15% - 2-5</strong> Nome do mapa).",
+                "No seletor de mapa, cada opcao mostra drop, fase e dificuldade (ex.: <strong>★ 20% - 3-8 · Normal</strong>).",
                 "O mapa marcado com <strong>★</strong> e a fase recomendada: maior % de chance de drop para aquele nivel.",
                 "Se varias fases tiverem a mesma %, o site prioriza a que tem <strong>menos waves</strong> e <strong>menos vida nos monstros</strong> (fase mais curta e inimigos mais fracos).",
                 "Voce pode trocar o mapa manualmente se preferir outra fase.",
@@ -803,6 +821,8 @@
           clearLogsButton: "Clear",
           rowLevel: "Chest Lv",
           rowMap: "Map",
+          rowClearTime: "Clear (s)",
+          rowClearTimePlaceholder: "optional",
           rowTimer: "Timer",
           rowDrop: "Chest dropped",
           rowReset: "Reset",
@@ -811,6 +831,8 @@
           mapNotAvailable: "No maps for this chest",
           invalidDuration:
             "Invalid duration. Use a value between 1 and 999 minutes.",
+          invalidClearTime:
+            "Invalid clear time. Use a value between 0 and 9999 seconds.",
           logAdded: "New chest Lv{level} added.",
           logRemoved: "Chest Lv{level} removed.",
           logLevelUpdated: "Chest updated to Lv{level}.",
@@ -822,6 +844,8 @@
           logAlreadyCounting: "Lv{level} ignored: timer is already running.",
           logStarted:
             "Drop confirmed: Lv{level} | {map}. Timer started ({minutes} min).",
+          logStartedWithClear:
+            "Drop confirmed: Lv{level} | {map}. Rotation timer started ({minutes} min, -{seconds}s clear).",
           logExpired: "Timer Lv{level} expired.",
           logDurationUpdated: "Default duration updated to {minutes} min.",
           logLoaded: 'Site loaded. Click "Chest dropped" to start a timer.',
@@ -884,7 +908,7 @@
               heading: "Map selection",
               items: [
                 "Add the chest levels you want to farm with <strong>Add chest</strong>.",
-                "In the map selector, the drop % appears before the stage number, separated by a dash (e.g. <strong>15% - 2-5</strong> Map name).",
+                "In the map selector, each option shows drop, stage, and difficulty (e.g. <strong>★ 20% - 3-8 · Normal</strong>).",
                 "The map marked with <strong>★</strong> is the recommended stage: highest drop % for that level.",
                 "If several stages share the same %, the site picks the one with <strong>fewer waves</strong> and <strong>lower monster HP</strong> (shorter stage, weaker enemies).",
                 "You can change the map manually if you prefer another stage.",
@@ -933,6 +957,8 @@
           clearLogsButton: "Limpiar",
           rowLevel: "Cofre Nv",
           rowMap: "Mapa",
+          rowClearTime: "Conclusion (s)",
+          rowClearTimePlaceholder: "opcional",
           rowTimer: "Timer",
           rowDrop: "Cofre caido",
           rowReset: "Reiniciar",
@@ -942,6 +968,8 @@
           mapNotAvailable: "No hay mapas para este cofre",
           invalidDuration:
             "Duracion invalida. Usa un valor entre 1 y 999 minutos.",
+          invalidClearTime:
+            "Tiempo de conclusion invalido. Usa un valor entre 0 y 9999 segundos.",
           logAdded: "Nuevo cofre Nv{level} agregado.",
           logRemoved: "Cofre Nv{level} eliminado.",
           logLevelUpdated: "Cofre actualizado a Nv{level}.",
@@ -954,6 +982,8 @@
             "Nv{level} ignorado: el cronometro ya esta en marcha.",
           logStarted:
             "Drop confirmado: Nv{level} | {map}. Timer iniciado ({minutes} min).",
+          logStartedWithClear:
+            "Drop confirmado: Nv{level} | {map}. Timer de rotacion iniciado ({minutes} min, -{seconds}s conclusion).",
           logExpired: "Timer Nv{level} expirado.",
           logDurationUpdated:
             "Duracion predeterminada actualizada a {minutes} min.",
@@ -1019,7 +1049,7 @@
               heading: "Seleccion de mapa",
               items: [
                 "Agrega los niveles de cofre que quieres farmear con <strong>Agregar cofre</strong>.",
-                "En el selector de mapa, el % de drop aparece antes del numero de fase, separado por guion (ej.: <strong>15% - 2-5</strong> Nombre del mapa).",
+                "En el selector de mapa, cada opcion muestra drop, fase y dificultad (ej.: <strong>★ 20% - 3-8 · Normal</strong>).",
                 "El mapa marcado con <strong>★</strong> es la fase recomendada: mayor % de drop para ese nivel.",
                 "Si varias fases tienen el mismo %, el sitio prioriza la que tiene <strong>menos oleadas</strong> y <strong>menos vida en los monstruos</strong> (fase mas corta y enemigos mas debiles).",
                 "Puedes cambiar el mapa manualmente si prefieres otra fase.",
@@ -1068,6 +1098,8 @@
           clearLogsButton: "Effacer",
           rowLevel: "Coffre Nv",
           rowMap: "Carte",
+          rowClearTime: "Clear (s)",
+          rowClearTimePlaceholder: "optionnel",
           rowTimer: "Chrono",
           rowDrop: "Coffre obtenu",
           rowReset: "Reinitialiser",
@@ -1077,6 +1109,8 @@
           mapNotAvailable: "Aucune carte pour ce coffre",
           invalidDuration:
             "Duree invalide. Utilisez une valeur entre 1 et 999 minutes.",
+          invalidClearTime:
+            "Temps de clear invalide. Utilisez une valeur entre 0 et 9999 secondes.",
           logAdded: "Nouveau coffre Nv{level} ajoute.",
           logRemoved: "Coffre Nv{level} supprime.",
           logLevelUpdated: "Coffre mis a jour vers Nv{level}.",
@@ -1090,6 +1124,8 @@
             "Nv{level} ignore : le chrono est deja en cours.",
           logStarted:
             "Drop confirme : Nv{level} | {map}. Chrono demarre ({minutes} min).",
+          logStartedWithClear:
+            "Drop confirme : Nv{level} | {map}. Chrono de rotation demarre ({minutes} min, -{seconds}s clear).",
           logExpired: "Chrono Nv{level} expire.",
           logDurationUpdated:
             "Duree par defaut mise a jour a {minutes} min.",
@@ -1155,7 +1191,7 @@
               heading: "Choix de la carte",
               items: [
                 "Ajoutez les niveaux de coffre a farmer avec <strong>Ajouter un coffre</strong>.",
-                "Dans le selecteur de carte, le % de drop apparait avant le numero de phase, separe par un tiret (ex. : <strong>15% - 2-5</strong> Nom de la carte).",
+                "Dans le selecteur de carte, chaque option affiche drop, phase et difficulte (ex. : <strong>★ 20% - 3-8 · Normal</strong>).",
                 "La carte marquee <strong>★</strong> est la phase recommandee : plus haut % de drop pour ce niveau.",
                 "Si plusieurs phases ont le meme %, le site priorise celle avec <strong>moins de vagues</strong> et <strong>moins de PV sur les monstres</strong> (phase plus courte, ennemis plus faibles).",
                 "Vous pouvez changer de carte manuellement si vous preferez une autre phase.",
@@ -1204,6 +1240,8 @@
           clearLogsButton: "清除",
           rowLevel: "宝箱 Lv",
           rowMap: "地图",
+          rowClearTime: "通关 (秒)",
+          rowClearTimePlaceholder: "可选",
           rowTimer: "计时器",
           rowDrop: "宝箱掉落",
           rowReset: "重置",
@@ -1211,6 +1249,7 @@
           emptyTimers: "未配置宝箱。请点击「添加宝箱」。",
           mapNotAvailable: "该宝箱等级没有可用地图",
           invalidDuration: "无效时长。请输入 1 至 999 分钟之间的数值。",
+          invalidClearTime: "无效通关时间。请输入 0 至 9999 秒之间的数值。",
           logAdded: "已添加宝箱 Lv{level}。",
           logRemoved: "已移除宝箱 Lv{level}。",
           logLevelUpdated: "宝箱已更新为 Lv{level}。",
@@ -1221,6 +1260,8 @@
           logAlreadyCounting: "Lv{level} 已忽略：计时器已在运行。",
           logStarted:
             "掉落确认：Lv{level} | {map}。计时开始 ({minutes} 分钟)。",
+          logStartedWithClear:
+            "掉落确认：Lv{level} | {map}。轮换计时开始 ({minutes} 分钟，-{seconds}秒通关)。",
           logExpired: "Lv{level} 计时器已结束。",
           logDurationUpdated: "默认时长已更新为 {minutes} 分钟。",
           logLoaded: "网站已加载。点击「宝箱掉落」开始计时。",
@@ -1275,7 +1316,7 @@
               heading: "地图选择",
               items: [
                 "通过 <strong>添加宝箱</strong> 添加要刷的宝箱等级。",
-                "地图选择器中，掉落率显示在阶段编号前，以短横线分隔（例：<strong>15% - 2-5</strong> 地图名称）。",
+                "地图选择器中，每项显示掉落率、阶段和难度（例：<strong>★ 20% - 3-8 · Normal</strong>）。",
                 "带 <strong>★</strong> 的地图为推荐阶段：该等级掉落率最高。",
                 "若多个阶段掉落率相同，网站优先选择 <strong>波次更少</strong>、<strong>怪物血量更低</strong> 的阶段（更短、敌人更弱）。",
                 "也可手动切换其他阶段地图。",
@@ -1324,6 +1365,8 @@
           clearLogsButton: "クリア",
           rowLevel: "宝箱 Lv",
           rowMap: "マップ",
+          rowClearTime: "クリア (秒)",
+          rowClearTimePlaceholder: "任意",
           rowTimer: "タイマー",
           rowDrop: "宝箱ドロップ",
           rowReset: "リセット",
@@ -1332,6 +1375,7 @@
             "設定された宝箱がありません。「宝箱を追加」を押してください。",
           mapNotAvailable: "この宝箱レベルに対応するマップがありません",
           invalidDuration: "無効な時間です。1〜999分で入力してください。",
+          invalidClearTime: "無効なクリア時間です。0〜9999秒で入力してください。",
           logAdded: "宝箱 Lv{level} を追加しました。",
           logRemoved: "宝箱 Lv{level} を削除しました。",
           logLevelUpdated: "宝箱レベルを Lv{level} に変更しました。",
@@ -1344,6 +1388,8 @@
             "Lv{level} は無視されました: 既にカウント中です。",
           logStarted:
             "ドロップ確認: Lv{level} | {map}。タイマー開始 ({minutes} 分)。",
+          logStartedWithClear:
+            "ドロップ確認: Lv{level} | {map}。ローテーションタイマー開始 ({minutes} 分、-{seconds}秒クリア)。",
           logExpired: "Lv{level} のタイマーが終了しました。",
           logDurationUpdated: "標準時間を {minutes} 分に更新しました。",
           logLoaded:
@@ -1407,7 +1453,7 @@
               heading: "マップの選び方",
               items: [
                 "<strong>宝箱を追加</strong>で、狙いたい宝箱レベルを登録します。",
-                "マップ選択では、ドロップ率がステージ番号の前に表示されます（例: <strong>15% - 2-5</strong> マップ名）。",
+                "マップ選択では、各項目にドロップ率・ステージ・難易度が表示されます（例: <strong>★ 20% - 3-8 · Normal</strong>）。",
                 "<strong>★</strong>付きのマップが推奨ステージで、そのレベルで最も高いドロップ率です。",
                 "同じドロップ率のステージが複数ある場合は、<strong>ウェーブ数が少なく</strong>、<strong>モンスターのHPが低い</strong>（短いステージ・弱い敵）方を優先します。",
                 "別のステージを選びたい場合は、手動でマップを変更できます。",
@@ -1838,19 +1884,35 @@
 
       function formatBossDropPercent(percent) {
         if (percent == null || !Number.isFinite(percent)) return "";
-        const formatted = Number.isInteger(percent)
-          ? `${percent}%`
-          : `${percent}%`;
-        return `${formatted} - `;
+        return `${percent}%`;
       }
 
       function stageLabel(entry, includeStar = true) {
-        const dropPrefix = formatBossDropPercent(entry.bossChestDropPercent);
-        const base = `${dropPrefix}${entry.act}-${entry.stage} ${localizeMapName(entry.name)} · ${localizeDifficulty(entry.difficulty)}`;
+        const dropPart = formatBossDropPercent(entry.bossChestDropPercent);
+        const stagePart = `${entry.act}-${entry.stage}`;
+        const diffPart = localizeDifficulty(entry.difficulty);
+        const core = dropPart
+          ? `${dropPart} - ${stagePart} · ${diffPart}`
+          : `${stagePart} · ${diffPart}`;
         if (includeStar && isBestStageForChest(entry)) {
-          return `★ ${base}`;
+          return `★ ${core}`;
         }
-        return base;
+        return core;
+      }
+
+      function normalizeClearTimeSeconds(value) {
+        if (value === null || value === undefined || value === "") {
+          return null;
+        }
+        const parsed = Number(value);
+        if (!Number.isFinite(parsed) || parsed < 0 || parsed > 9999) {
+          return null;
+        }
+        return Math.floor(parsed);
+      }
+
+      function effectiveClearSeconds(timer) {
+        return normalizeClearTimeSeconds(timer.clearTimeSeconds) ?? 0;
       }
 
       function mapLabelForTimer(timer) {
@@ -1929,6 +1991,7 @@
             id: typeof timer.id === "string" ? timer.id : crypto.randomUUID(),
             level,
             stageKey,
+            clearTimeSeconds: normalizeClearTimeSeconds(timer.clearTimeSeconds),
             expiresAt: Number.isFinite(Number(timer.expiresAt))
               ? Number(timer.expiresAt)
               : null,
@@ -2096,6 +2159,7 @@
           id: crypto.randomUUID(),
           level,
           stageKey,
+          clearTimeSeconds: null,
           expiresAt: null,
           expired: false,
         };
@@ -2213,6 +2277,10 @@
           const timerLabel = node.querySelector("[data-role='timer']");
           const labelLevel = node.querySelector("[data-role='label-level']");
           const labelMap = node.querySelector("[data-role='label-map']");
+          const labelClearTime = node.querySelector(
+            "[data-role='label-clear-time']",
+          );
+          const clearTimeInput = node.querySelector("[data-role='clear-time']");
           const labelTimer = node.querySelector("[data-role='label-timer']");
           const dropButton = node.querySelector("[data-role='drop']");
           const resetButton = node.querySelector("[data-role='reset']");
@@ -2220,6 +2288,13 @@
 
           labelLevel.textContent = t("rowLevel");
           labelMap.textContent = t("rowMap");
+          labelClearTime.textContent = t("rowClearTime");
+          clearTimeInput.placeholder = t("rowClearTimePlaceholder");
+          clearTimeInput.value =
+            timer.clearTimeSeconds === null ||
+            timer.clearTimeSeconds === undefined
+              ? ""
+              : String(timer.clearTimeSeconds);
           labelTimer.textContent = t("rowTimer");
           dropButton.textContent = t("rowDrop");
           resetButton.textContent = t("rowReset");
@@ -2256,6 +2331,35 @@
             saveState();
           });
 
+          clearTimeInput.addEventListener("change", () => {
+            const raw = clearTimeInput.value.trim();
+            if (!raw) {
+              timer.clearTimeSeconds = null;
+              clearTimeInput.value = "";
+              saveState();
+              refreshTimerLabel(timer, timerLabel);
+              return;
+            }
+            const parsed = Number(raw);
+            if (
+              !Number.isFinite(parsed) ||
+              parsed < 0 ||
+              parsed > 9999
+            ) {
+              clearTimeInput.value =
+                timer.clearTimeSeconds === null ||
+                timer.clearTimeSeconds === undefined
+                  ? ""
+                  : String(timer.clearTimeSeconds);
+              appendLog(t("invalidClearTime"));
+              return;
+            }
+            timer.clearTimeSeconds = Math.floor(parsed);
+            clearTimeInput.value = String(timer.clearTimeSeconds);
+            saveState();
+            refreshTimerLabel(timer, timerLabel);
+          });
+
           dropButton.addEventListener("click", () => {
             if (timer.expiresAt && timer.expiresAt > Date.now()) {
               appendLog(t("logAlreadyCounting", { level: timer.level }));
@@ -2266,13 +2370,25 @@
             saveState();
             refreshTimerLabel(timer, timerLabel);
             playDropSound();
-            appendLog(
-              t("logStarted", {
-                level: timer.level,
-                map: mapLabelForTimer(timer),
-                minutes: state.durationMinutes,
-              }),
-            );
+            const clearSeconds = effectiveClearSeconds(timer);
+            if (clearSeconds > 0) {
+              appendLog(
+                t("logStartedWithClear", {
+                  level: timer.level,
+                  map: mapLabelForTimer(timer),
+                  minutes: state.durationMinutes,
+                  seconds: clearSeconds,
+                }),
+              );
+            } else {
+              appendLog(
+                t("logStarted", {
+                  level: timer.level,
+                  map: mapLabelForTimer(timer),
+                  minutes: state.durationMinutes,
+                }),
+              );
+            }
           });
 
           resetButton.addEventListener("click", () => {
@@ -2296,6 +2412,13 @@
         refreshAddButton();
       }
 
+      function formatCountdown(totalSeconds) {
+        const safeSeconds = Math.max(0, totalSeconds);
+        const minutes = Math.floor(safeSeconds / 60);
+        const seconds = safeSeconds % 60;
+        return `${minutes}:${String(seconds).padStart(2, "0")}`;
+      }
+
       function refreshTimerLabel(timer, labelElement) {
         if (timer.expired) {
           labelElement.textContent = "0:00";
@@ -2311,8 +2434,8 @@
           return;
         }
 
-        const remainingMs = timer.expiresAt - Date.now();
-        if (remainingMs <= 0) {
+        const realRemainingMs = timer.expiresAt - Date.now();
+        if (realRemainingMs <= 0) {
           timer.expiresAt = null;
           timer.expired = true;
           labelElement.textContent = "0:00";
@@ -2324,10 +2447,19 @@
           return;
         }
 
-        const totalSeconds = Math.floor(remainingMs / 1000);
-        const minutes = Math.floor(totalSeconds / 60);
-        const seconds = totalSeconds % 60;
-        labelElement.textContent = `${minutes}:${String(seconds).padStart(2, "0")}`;
+        const clearMs = effectiveClearSeconds(timer) * 1000;
+        const displayRemainingMs = realRemainingMs - clearMs;
+
+        if (displayRemainingMs <= 0) {
+          labelElement.textContent = "0:00";
+          labelElement.className =
+            "mt-1 font-mono text-xl font-semibold text-amber-400";
+          return;
+        }
+
+        labelElement.textContent = formatCountdown(
+          Math.floor(displayRemainingMs / 1000),
+        );
         labelElement.className =
           "mt-1 font-mono text-xl font-semibold text-emerald-400";
       }
@@ -2490,6 +2622,7 @@
             id: crypto.randomUUID(),
             level: nextLevel,
             stageKey: suggestedStageKey(nextLevel),
+            clearTimeSeconds: null,
             expiresAt: null,
             expired: false,
           });
