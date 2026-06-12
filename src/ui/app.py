@@ -101,7 +101,7 @@ class MonitorApp(ctk.CTk):
         self._refresh_status_labels()
         self.after(200, self._poll_queues)
         self.after(250, self._tick_timers)
-        self.after(1000, self._poll_current_stage)
+        self.after(350, self._poll_current_stage)
         self.after(0, self._start_monitor)
         self.after(150, self._mark_ui_ready)
 
@@ -447,7 +447,7 @@ class MonitorApp(ctk.CTk):
         if stage_key is not None and stage_key != self._current_stage_key:
             self._current_stage_key = stage_key
             self._refresh_status_labels()
-        self.after(1000, self._poll_current_stage)
+        self.after(350, self._poll_current_stage)
 
     def _refresh_status_labels(self) -> None:
         stage_key = self._current_stage_key

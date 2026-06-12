@@ -195,7 +195,7 @@ def load_config(config_path: Path) -> AppConfig:
         window_width=int(ui_raw.get("window_width", DEFAULT_WINDOW_WIDTH)),
         window_height=int(ui_raw.get("window_height", DEFAULT_WINDOW_HEIGHT)),
         monitor=MonitorSettings(
-            poll_interval_seconds=float(monitor_raw.get("poll_interval_seconds", 0.5)),
+            poll_interval_seconds=float(monitor_raw.get("poll_interval_seconds", 0.35)),
             debounce_seconds=float(monitor_raw.get("debounce_seconds", 4.0)),
             average_drop_minutes=float(monitor_raw.get("average_drop_minutes", 12)),
             window_title=str(monitor_raw.get("window_title", "TaskBarHero")),

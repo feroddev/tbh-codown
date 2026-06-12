@@ -11,7 +11,11 @@ from pathlib import Path
 from es3_modifier.main import ES3
 
 from src.domain.chest_event import ChestEvent, ChestType
-from src.infrastructure.game_paths import discover_es3_password, list_active_save_candidates
+from src.infrastructure.game_paths import (
+    SAVE_FILE_NAME,
+    discover_es3_password,
+    list_active_save_candidates,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -64,19 +68,21 @@ class SaveChestDetection:
     stage_key: int
 
 
+def _save_source_priority(path: Path) -> int:
+    if path.name == SAVE_FILE_NAME:
+        return 2
+    return 1
+
+
 def pick_preferred_snapshot(
     snapshots: list[tuple[Path, SaveSnapshot]],
 ) -> tuple[Path, SaveSnapshot]:
     if not snapshots:
         raise FileNotFoundError("No readable save snapshots found")
 
-    def ranking(item: tuple[Path, SaveSnapshot]) -> tuple[int, int, float]:
-        path, snapshot = item
-        return (
-            snapshot.boss_box_count,
-            snapshot.box_data.normal_box_count(),
-            path.stat().st_mtime,
-        )
+    def ranking(item: tuple[Path, SaveSnapshot]) -> tuple[float, int]:
+        path, _snapshot = item
+        return (path.stat().st_mtime, _save_source_priority(path))
 
     return max(snapshots, key=ranking)
 
@@ -204,7 +210,12 @@ class SaveChestDetector:
 
         accepted: list[SaveChestDetection] = []
         for event in events:
-            debounce_key = f"{event.chest_type.value}:{stage_key}"
+            if event.chest_type == ChestType.BOSS:
+                debounce_key = f"boss:{stage_key}:{event.count}"
+            elif event.chest_type == ChestType.NORMAL_BROWN:
+                debounce_key = f"normal:{stage_key}:{event.count}"
+            else:
+                debounce_key = f"{event.chest_type.value}:{stage_key}:{event.count}"
             if self._is_debounced(debounce_key):
                 continue
             self._mark_detected(debounce_key)

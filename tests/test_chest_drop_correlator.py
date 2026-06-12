@@ -7,73 +7,46 @@ from src.domain.chest_drop_correlator import ChestDropCorrelator
 from src.domain.chest_event import ChestEvent, ChestType
 
 
-def _boss_log_event(item_key: str = "920651") -> ChestEvent:
-    return ChestEvent(
-        item_key=item_key,
-        chest_type=ChestType.BOSS,
-        count=1,
-        raw_line=f"GetBoxCount Success Count : 1 // ItemKey : {item_key}",
-    )
-
-
-def _save_boss_event() -> ChestEvent:
-    return ChestEvent(
-        item_key="boss_box_data",
-        chest_type=ChestType.BOSS,
-        count=2,
-        raw_line="save boss increase",
-    )
-
-
 class ChestDropCorrelatorTests(unittest.TestCase):
-    def test_save_then_log_emits_once_with_log_item_key(self) -> None:
-        correlator = ChestDropCorrelator(confirmation_window_seconds=15.0)
+    def test_log_drop_confirms_immediately_for_boss(self) -> None:
+        correlator = ChestDropCorrelator(log_save_suppress_seconds=12.0)
+        event = ChestEvent("920401", ChestType.BOSS, 2, "log")
 
-        save_results = correlator.register_save_drop(_save_boss_event(), stage_key=3205)
-        self.assertEqual(save_results, [])
+        confirmed = correlator.register_log_drop(event, stage_key=2201)
 
-        log_results = correlator.register_log_drop(_boss_log_event(), stage_key=3205)
-        self.assertEqual(len(log_results), 1)
-        self.assertEqual(log_results[0].event.item_key, "920651")
-        self.assertEqual(log_results[0].stage_key, 3205)
+        self.assertEqual(len(confirmed), 1)
+        self.assertEqual(confirmed[0].stage_key, 2201)
+        self.assertEqual(confirmed[0].event.item_key, "920401")
 
-    def test_log_then_save_emits_once(self) -> None:
-        correlator = ChestDropCorrelator(confirmation_window_seconds=15.0)
+    def test_save_drop_suppressed_after_recent_log_confirm(self) -> None:
+        correlator = ChestDropCorrelator(log_save_suppress_seconds=12.0)
+        log_event = ChestEvent("920401", ChestType.BOSS, 2, "log")
+        save_event = ChestEvent("boss_box_data", ChestType.BOSS, 2, "save")
 
-        log_results = correlator.register_log_drop(_boss_log_event(), stage_key=3205)
-        self.assertEqual(log_results, [])
+        correlator.register_log_drop(log_event, stage_key=2201)
+        suppressed = correlator.register_save_drop(save_event, stage_key=2201)
 
-        save_results = correlator.register_save_drop(_save_boss_event(), stage_key=3205)
-        self.assertEqual(len(save_results), 1)
-        self.assertEqual(save_results[0].event.item_key, "920651")
+        self.assertEqual(suppressed, [])
 
-    def test_mismatched_stage_does_not_confirm(self) -> None:
-        correlator = ChestDropCorrelator(confirmation_window_seconds=15.0)
+    def test_save_drop_confirms_when_log_did_not(self) -> None:
+        correlator = ChestDropCorrelator(log_save_suppress_seconds=12.0)
+        save_event = ChestEvent("boss_box_data", ChestType.BOSS, 3, "save")
 
-        correlator.register_save_drop(_save_boss_event(), stage_key=3205)
-        log_results = correlator.register_log_drop(_boss_log_event("920301"), stage_key=1308)
+        confirmed = correlator.register_save_drop(save_event, stage_key=2201)
 
-        self.assertEqual(log_results, [])
-        self.assertEqual(len(correlator.collect_save_fallbacks()), 0)
+        self.assertEqual(len(confirmed), 1)
+        self.assertEqual(confirmed[0].event.item_key, "boss_box_data")
 
-    def test_save_fallback_after_confirmation_window(self) -> None:
-        correlator = ChestDropCorrelator(confirmation_window_seconds=0.05)
+    def test_save_drop_allowed_after_suppress_window(self) -> None:
+        correlator = ChestDropCorrelator(log_save_suppress_seconds=0.01)
+        log_event = ChestEvent("920401", ChestType.BOSS, 2, "log")
+        save_event = ChestEvent("boss_box_data", ChestType.BOSS, 2, "save")
 
-        correlator.register_save_drop(_save_boss_event(), stage_key=3205)
-        time.sleep(0.06)
+        correlator.register_log_drop(log_event, stage_key=2201)
+        time.sleep(0.02)
+        confirmed = correlator.register_save_drop(save_event, stage_key=2201)
 
-        fallbacks = correlator.collect_save_fallbacks()
-        self.assertEqual(len(fallbacks), 1)
-        self.assertEqual(fallbacks[0].event.item_key, "boss_box_data")
-        self.assertEqual(correlator.collect_save_fallbacks(), [])
-
-    def test_unmatched_log_is_not_emitted(self) -> None:
-        correlator = ChestDropCorrelator(confirmation_window_seconds=0.05)
-
-        correlator.register_log_drop(_boss_log_event(), stage_key=3205)
-        time.sleep(0.06)
-
-        self.assertEqual(correlator.collect_save_fallbacks(), [])
+        self.assertEqual(len(confirmed), 1)
 
 
 if __name__ == "__main__":

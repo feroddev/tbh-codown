@@ -17,11 +17,12 @@ from src.domain.chest_event_validator import is_chest_event_consistent_with_stag
 from src.domain.drop_filter import should_rotate_on_drop
 from src.domain.rotation_engine import MapConfig, RotationEngine, RotationResult
 from src.infrastructure.log_watcher import PlayerLogPoller
-from src.infrastructure.save_reader import SaveChestDetector, SaveReader
+from src.infrastructure.save_reader import SaveChestDetector, SaveReader, SaveSnapshot
 from src.ui.i18n import (
     Language,
     chest_kind_label,
     format_chest_drop_log,
+    format_current_stage_label,
     format_map_drop_label,
     localized_map_label,
     localized_map_label_for_stage_key,
@@ -30,6 +31,8 @@ from src.ui.i18n import (
 from src.ui.map_display import map_game_instruction
 
 logger = logging.getLogger(__name__)
+
+STAGE_TRANSITION_WINDOW_SECONDS = 20.0
 
 
 @dataclass
@@ -109,12 +112,13 @@ class MonitorService:
             config.player_log_path,
             consider_common_chest=config.strategy.consider_common_chest,
             debounce_seconds=config.monitor.debounce_seconds,
+            watch_boss_keys=self._rotation_boss_keys(),
         )
         self._drop_deduplicator = DropDeduplicator(
             window_seconds=config.monitor.debounce_seconds + 2.0,
         )
         self._drop_correlator = ChestDropCorrelator(
-            confirmation_window_seconds=config.monitor.debounce_seconds + 11.0,
+            log_save_suppress_seconds=config.monitor.debounce_seconds + 8.0,
         )
         self._pending_event: ChestEvent | None = None
         self._pending_stage_key: int | None = None
@@ -123,6 +127,10 @@ class MonitorService:
         self._last_reported_stage_key: int | None = None
         self._unknown_stage_logged = False
         self._active_stage_key: int | None = None
+        self._previous_stage_key: int | None = None
+        self._cached_stage_key: int | None = None
+        self._cached_log_stage_key: int | None = None
+        self._last_stage_change_at: float | None = None
 
     @property
     def current_map_label(self) -> str:
@@ -142,6 +150,30 @@ class MonitorService:
         )
         self._save_detector.set_consider_common_chest(enabled)
         self._log_poller.set_consider_common_chest(enabled)
+
+    def _rotation_boss_keys(self) -> frozenset[str]:
+        keys: set[str] = set()
+        for map_config in self._rotation.maps:
+            keys.update(map_config.boss_chest_keys)
+        return frozenset(keys)
+
+    def _stage_boss_item_keys(self, stage_key: int) -> frozenset[str]:
+        entry = find_catalog_entry(stage_key)
+        if entry is None:
+            return frozenset()
+        return frozenset({entry.boss_chest_key})
+
+    def _log_preserve_item_keys(self) -> frozenset[str]:
+        keys: set[str] = set()
+        stage_key = self._cached_log_stage_key or self._cached_stage_key
+        if stage_key is not None:
+            keys.update(self._stage_boss_item_keys(stage_key))
+        if (
+            self._previous_stage_key is not None
+            and self._is_recent_stage_transition()
+        ):
+            keys.update(self._stage_boss_item_keys(self._previous_stage_key))
+        return frozenset(keys)
 
     def _emit_status(self, message: str) -> None:
         logger.info(message)
@@ -166,15 +198,34 @@ class MonitorService:
     def _chest_level_for_event(self, event: ChestEvent, stage_key: int) -> int | None:
         return drop_chest_level_for_event(event, stage_key)
 
+    def _is_recent_stage_transition(self) -> bool:
+        if self._last_stage_change_at is None:
+            return False
+        return time.time() - self._last_stage_change_at <= STAGE_TRANSITION_WINDOW_SECONDS
+
+    def _resolve_stage_key_for_log_event(
+        self,
+        event: ChestEvent,
+        current_stage_key: int,
+    ) -> int | None:
+        if is_chest_event_consistent_with_stage(event, current_stage_key):
+            return current_stage_key
+
+        if (
+            self._previous_stage_key is not None
+            and self._previous_stage_key != current_stage_key
+            and self._is_recent_stage_transition()
+            and is_chest_event_consistent_with_stage(event, self._previous_stage_key)
+        ):
+            return self._previous_stage_key
+
+        return None
+
     def _dedup_key_for_event(self, event: ChestEvent, stage_key: int) -> str:
-        chest_level = self._chest_level_for_event(event, stage_key)
-        if event.chest_type == ChestType.NORMAL_BROWN:
-            if chest_level is not None:
-                return f"common:{chest_level}"
-            return f"common:{event.item_key}"
-        if event.chest_type == ChestType.BOSS and chest_level is not None:
-            return f"boss:{chest_level}"
-        return f"{event.chest_type.value}:{event.item_key}"
+        if event.item_key in {"boss_box_data", "normal_box_data"}:
+            chest_level = self._chest_level_for_event(event, stage_key)
+            return f"save:{event.chest_type.value}:{stage_key}:{event.count}:{chest_level}"
+        return f"log:{event.item_key}:{time.time_ns()}"
 
     def _map_name_for_stage_key(self, stage_key: int) -> str:
         entry = find_catalog_entry(stage_key)
@@ -186,33 +237,25 @@ class MonitorService:
         active_map = self._resolve_active_map(stage_key)
         stage = decode_stage_key(stage_key)
 
-        if active_map is not None:
-            if self._last_reported_stage_key != stage_key:
-                self._emit_status(
-                    t(
-                        "map_in_game",
-                        language=self._language,
-                        label=localized_map_label(active_map, language=self._language),
-                        stage_key=stage_key,
-                        stage_label=stage.label,
-                    )
-                )
-                self._last_reported_stage_key = stage_key
-                self._unknown_stage_logged = False
-            return active_map
-
-        if not self._unknown_stage_logged or self._last_reported_stage_key != stage_key:
+        if self._last_reported_stage_key != stage_key:
+            map_label = (
+                localized_map_label(active_map, language=self._language)
+                if active_map is not None
+                else format_current_stage_label(stage_key, language=self._language)
+            )
             self._emit_status(
                 t(
-                    "stage_not_in_rotation",
+                    "map_in_game",
                     language=self._language,
-                    stage_label=stage.label,
+                    label=map_label,
                     stage_key=stage_key,
+                    stage_label=stage.label,
                 )
             )
-            self._unknown_stage_logged = True
             self._last_reported_stage_key = stage_key
-        return None
+            self._unknown_stage_logged = False
+
+        return active_map
 
     def _sync_current_stage_from_save(self) -> None:
         try:
@@ -247,8 +290,18 @@ class MonitorService:
         if event.chest_type == ChestType.NORMAL_BROWN and not self.consider_common_chest:
             return
 
+        resolved_stage_key = self._resolve_stage_key_for_log_event(event, stage_key)
+        if resolved_stage_key is None:
+            logger.info(
+                "Chest event ignored: item_key=%s does not match current stage_key=%s",
+                event.item_key,
+                stage_key,
+            )
+            return
+        stage_key = resolved_stage_key
+
         if not is_chest_event_consistent_with_stage(event, stage_key):
-            logger.debug(
+            logger.info(
                 "Chest event ignored: item_key=%s does not match stage_key=%s",
                 event.item_key,
                 stage_key,
@@ -352,6 +405,88 @@ class MonitorService:
         rotation = self._rotation.advance_on_chest_drop()
         self._record_drop_advance(rotation, event, active_map)
 
+    def _refresh_stage_from_save(self) -> SaveSnapshot | None:
+        try:
+            snapshot = self._save_reader.read_snapshot()
+        except FileNotFoundError as error:
+            self._emit_status(
+                t("file_not_found", language=self._language, error=error)
+            )
+            return None
+        except Exception as error:
+            logger.exception("Save polling failed")
+            self._emit_status(
+                t("error_read_save", language=self._language, error=error)
+            )
+            return None
+
+        stage_key = snapshot.current_stage_key
+        self._notify_stage_changed(stage_key)
+        self._sync_stage_from_save(stage_key)
+        if self._cached_stage_key is not None and self._cached_stage_key != stage_key:
+            self._previous_stage_key = self._cached_stage_key
+            self._last_stage_change_at = time.time()
+        self._cached_stage_key = stage_key
+        if self._cached_log_stage_key is None:
+            self._cached_log_stage_key = stage_key
+        return snapshot
+
+    def _poll_save_boxes(self, snapshot: SaveSnapshot) -> list[ConfirmedChestDrop]:
+        confirmed_drops: list[ConfirmedChestDrop] = []
+        log_stage_key = snapshot.current_stage_key
+
+        for detection in self._save_detector.inspect_all(snapshot):
+            log_stage_key = detection.stage_key
+            confirmed_drops.extend(
+                self._drop_correlator.register_save_drop(
+                    detection.event,
+                    detection.stage_key,
+                )
+            )
+
+        self._cached_log_stage_key = log_stage_key
+        return confirmed_drops
+
+    def _poll_player_log(self) -> list[ConfirmedChestDrop]:
+        confirmed_drops: list[ConfirmedChestDrop] = []
+        log_stage_key = self._cached_log_stage_key or self._cached_stage_key
+        if log_stage_key is None:
+            return confirmed_drops
+
+        try:
+            for log_event in self._log_poller.poll(
+                preserve_item_keys=self._log_preserve_item_keys(),
+            ):
+                resolved_stage_key = self._resolve_stage_key_for_log_event(
+                    log_event,
+                    log_stage_key,
+                )
+                if resolved_stage_key is None:
+                    logger.info(
+                        "Log chest ignored: item_key=%s stage_key=%s",
+                        log_event.item_key,
+                        log_stage_key,
+                    )
+                    continue
+                confirmed_drops.extend(
+                    self._drop_correlator.register_log_drop(
+                        log_event,
+                        resolved_stage_key,
+                    )
+                )
+        except Exception as error:
+            logger.exception("Player log polling failed")
+            self._emit_status(
+                t("error_read_player_log", language=self._language, error=error)
+            )
+
+        return confirmed_drops
+
+    def _finalize_drop_cycle(self, confirmed_drops: list[ConfirmedChestDrop]) -> None:
+        confirmed_drops.extend(self._drop_correlator.collect_save_fallbacks())
+        self._process_confirmed_drops(confirmed_drops)
+        self._process_pending_event()
+
     def _record_drop_advance(
         self,
         rotation: RotationResult,
@@ -413,55 +548,26 @@ class MonitorService:
                 labels=enabled_labels,
             )
         )
+        self._log_poller.seed_from_log_tail()
         self._sync_current_stage_from_save()
+        initial_snapshot = self._refresh_stage_from_save()
+        initial_drops: list[ConfirmedChestDrop] = []
+        if initial_snapshot is not None:
+            initial_drops.extend(self._poll_save_boxes(initial_snapshot))
+        self._finalize_drop_cycle(initial_drops)
 
         self._running = True
         try:
             while self._running:
-                stage_key: int | None = None
                 confirmed_drops: list[ConfirmedChestDrop] = []
 
-                try:
-                    snapshot = self._save_reader.read_snapshot()
-                    stage_key = snapshot.current_stage_key
-                    self._notify_stage_changed(stage_key)
-                    self._sync_stage_from_save(stage_key)
-                    for detection in self._save_detector.inspect_all(snapshot):
-                        confirmed_drops.extend(
-                            self._drop_correlator.register_save_drop(
-                                detection.event,
-                                detection.stage_key,
-                            )
-                        )
-                except FileNotFoundError as error:
-                    self._emit_status(
-                        t("file_not_found", language=self._language, error=error)
-                    )
-                except Exception as error:
-                    logger.exception("Save polling failed")
-                    self._emit_status(
-                        t("error_read_save", language=self._language, error=error)
-                    )
+                snapshot = self._refresh_stage_from_save()
+                if snapshot is not None:
+                    confirmed_drops.extend(self._poll_save_boxes(snapshot))
 
-                try:
-                    if stage_key is not None:
-                        for log_event in self._log_poller.poll():
-                            confirmed_drops.extend(
-                                self._drop_correlator.register_log_drop(
-                                    log_event,
-                                    stage_key,
-                                )
-                            )
-                except Exception as error:
-                    logger.exception("Player log polling failed")
-                    self._emit_status(
-                        t("error_read_player_log", language=self._language, error=error)
-                    )
-
-                confirmed_drops.extend(self._drop_correlator.collect_save_fallbacks())
-                self._process_confirmed_drops(confirmed_drops)
-                self._process_pending_event()
-                time.sleep(self._config.monitor.save_poll_interval_seconds)
+                confirmed_drops.extend(self._poll_player_log())
+                self._finalize_drop_cycle(confirmed_drops)
+                time.sleep(self._config.monitor.poll_interval_seconds)
         finally:
             self._running = False
             self._log_poller.close()

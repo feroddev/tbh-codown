@@ -102,10 +102,16 @@ def list_active_save_candidates(base_path: Path) -> list[Path]:
     candidates = [
         entry
         for entry in directory.iterdir()
-        if entry.is_file() and is_active_save_file_name(entry.name)
+        if entry.is_file()
+        and is_active_save_file_name(entry.name)
+        and entry.name != SAVE_FILE_TEST_BACKUP_NAME
     ]
     if candidates:
         return sorted(candidates, key=lambda path: path.stat().st_mtime, reverse=True)
+
+    test_backup = directory / SAVE_FILE_TEST_BACKUP_NAME
+    if test_backup.is_file():
+        return [test_backup]
     return [base_path] if base_path.exists() else []
 
 
