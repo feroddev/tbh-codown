@@ -50,22 +50,38 @@ class AppConfig:
     maps: list[MapConfig]
 
 
+def _parse_clear_time_seconds(raw: Any) -> int | None:
+    if raw is None or raw == "":
+        return None
+    try:
+        value = int(raw)
+    except (TypeError, ValueError):
+        return None
+    if value < 0 or value > 9999:
+        return None
+    return value
+
+
 def _parse_chest_farm_entry(entry: dict[str, Any]) -> ChestFarmSlot:
     return ChestFarmSlot(
         chest_level=int(entry["chest_level"]),
         stage_key=int(entry["stage_key"]),
         enabled=bool(entry.get("enabled", False)),
         priority=int(entry.get("priority", 99)),
+        clear_time_seconds=_parse_clear_time_seconds(entry.get("clear_time_seconds")),
     )
 
 
 def _chest_farm_to_dict(slot: ChestFarmSlot) -> dict[str, Any]:
-    return {
+    payload: dict[str, Any] = {
         "chest_level": slot.chest_level,
         "stage_key": slot.stage_key,
         "enabled": slot.enabled,
         "priority": slot.priority,
     }
+    if slot.clear_time_seconds is not None:
+        payload["clear_time_seconds"] = slot.clear_time_seconds
+    return payload
 
 
 def _default_chest_farms() -> list[ChestFarmSlot]:
@@ -104,6 +120,7 @@ def _load_chest_farms(raw: dict[str, Any]) -> list[ChestFarmSlot]:
                 stage_key=suggested.stage_key if suggested else 0,
                 enabled=True,
                 priority=slot.priority,
+                clear_time_seconds=slot.clear_time_seconds,
             )
         loaded.append(
             ChestFarmSlot(
@@ -111,6 +128,7 @@ def _load_chest_farms(raw: dict[str, Any]) -> list[ChestFarmSlot]:
                 stage_key=slot.stage_key,
                 enabled=True,
                 priority=slot.priority,
+                clear_time_seconds=slot.clear_time_seconds,
             )
         )
 
@@ -147,6 +165,7 @@ def _load_chest_farms(raw: dict[str, Any]) -> list[ChestFarmSlot]:
                 stage_key=slot.stage_key,
                 enabled=True,
                 priority=len(unique) + 1,
+                clear_time_seconds=slot.clear_time_seconds,
             )
         )
     return unique

@@ -12,6 +12,7 @@ class ChestFarmSlot:
     stage_key: int
     enabled: bool = False
     priority: int = 99
+    clear_time_seconds: int | None = None
 
 
 def chest_farm_slot_to_map_config(slot: ChestFarmSlot) -> MapConfig:

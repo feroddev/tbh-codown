@@ -20,6 +20,7 @@ from src.ui.theme import (
     DANGER,
     DANGER_HOVER,
     HOVER,
+    LEFT_PANEL_MIN_WIDTH,
     PAD_INNER,
     PAD_TIGHT,
     RADIUS_CARD,
@@ -32,13 +33,14 @@ from src.ui.theme import (
     section_label,
 )
 
+LEFT_PANEL_HINT_WIDTH = LEFT_PANEL_MIN_WIDTH - 56
+
 
 def _map_option_label(entry: StageCatalogEntry, language: Language, suggested: bool) -> str:
     base = format_watch_map_label(
         act=entry.act,
         stage=entry.stage,
         difficulty=entry.difficulty,
-        map_name=entry.name,
         boss_drop_percent=entry.boss_chest_drop_percent,
         language=language,
     )
@@ -80,6 +82,7 @@ class ChestWatchRow(ctk.CTkFrame):
         self._on_drag_start = on_drag_start
         self._on_drag_motion = on_drag_motion
         self._on_drag_end = on_drag_end
+        self._last_clear_time_seconds = slot.clear_time_seconds
 
         self._chest_level = slot.chest_level
         self._valid_stages = stages_for_chest_level(self._chest_level)
@@ -121,9 +124,26 @@ class ChestWatchRow(ctk.CTkFrame):
             self,
             values=["—"],
             command=self._on_map_changed,
-            width=220,
+            width=168,
         )
         self._map_menu.grid(row=0, column=3, sticky="ew", padx=(0, 6), pady=PAD_TIGHT)
+
+        self._clear_time_entry = ctk.CTkEntry(
+            self,
+            width=52,
+            height=30,
+            justify="center",
+            corner_radius=RADIUS_SMALL,
+            border_width=1,
+            border_color=BORDER,
+            fg_color=BG_ELEVATED,
+            placeholder_text=t("watch_clear_time_placeholder", language=language),
+            font=ctk.CTkFont(family="Consolas", size=12),
+        )
+        self._clear_time_entry.grid(row=0, column=4, padx=(0, 6), pady=PAD_TIGHT)
+        self._clear_time_entry.bind("<Return>", self._on_clear_time_commit)
+        self._clear_time_entry.bind("<FocusOut>", self._on_clear_time_commit)
+        self._set_clear_time_value(slot.clear_time_seconds)
 
         self._remove_btn = ctk.CTkButton(
             self,
@@ -138,7 +158,7 @@ class ChestWatchRow(ctk.CTkFrame):
             command=self._on_remove_clicked,
             state="normal" if can_remove else "disabled",
         )
-        self._remove_btn.grid(row=0, column=4, padx=(0, PAD_TIGHT), pady=PAD_TIGHT)
+        self._remove_btn.grid(row=0, column=5, padx=(0, PAD_TIGHT), pady=PAD_TIGHT)
 
         self._grip_label.bind("<ButtonPress-1>", self._handle_drag_start, add="+")
         self._grip_label.bind("<B1-Motion>", self._handle_drag_motion, add="+")
@@ -167,8 +187,39 @@ class ChestWatchRow(ctk.CTkFrame):
         self._chest_menu.set(
             chest_display_label(self._chest_level, language=language, short=True)
         )
+        self._clear_time_entry.configure(
+            placeholder_text=t("watch_clear_time_placeholder", language=language)
+        )
         self._rebuild_map_options()
         self._select_stage_key(current_key)
+
+    def _set_clear_time_value(self, seconds: int | None) -> None:
+        self._clear_time_entry.delete(0, "end")
+        if seconds is not None:
+            self._clear_time_entry.insert(0, str(seconds))
+
+    def _parse_clear_time_seconds(self) -> int | None:
+        raw = self._clear_time_entry.get().strip()
+        if not raw:
+            return None
+        try:
+            value = int(raw)
+        except ValueError:
+            return None
+        if value < 0 or value > 9999:
+            return None
+        return value
+
+    def _on_clear_time_commit(self, _event=None) -> None:
+        parsed = self._parse_clear_time_seconds()
+        raw = self._clear_time_entry.get().strip()
+        if raw and parsed is None:
+            self._set_clear_time_value(self._last_clear_time_seconds)
+            return
+        self._last_clear_time_seconds = parsed
+        if parsed is not None:
+            self._set_clear_time_value(parsed)
+        self._on_change()
 
     @property
     def chest_level(self) -> int:
@@ -263,6 +314,7 @@ class ChestWatchRow(ctk.CTkFrame):
             stage_key=stage_key,
             enabled=True,
             priority=self._index,
+            clear_time_seconds=self._parse_clear_time_seconds(),
         )
 
 
@@ -275,7 +327,7 @@ class ChestWatchPanel(ctk.CTkFrame):
         self._dragging_row: ChestWatchRow | None = None
 
         self.grid_columnconfigure(0, weight=1)
-        self.grid_rowconfigure(1, weight=1)
+        self.grid_rowconfigure(2, weight=1)
 
         header = ctk.CTkFrame(self, fg_color="transparent")
         header.grid(row=0, column=0, sticky="ew", pady=(0, PAD_TIGHT))
@@ -290,6 +342,14 @@ class ChestWatchPanel(ctk.CTkFrame):
         )
         self.hint_label.grid(row=0, column=1, sticky="e")
 
+        self.clear_time_hint_label = hint_label(
+            self,
+            text=t("watch_clear_time_hint", language=language),
+            wraplength=LEFT_PANEL_HINT_WIDTH,
+            justify="left",
+        )
+        self.clear_time_hint_label.grid(row=1, column=0, sticky="ew", pady=(0, PAD_TIGHT))
+
         self.rows_scroll = ctk.CTkScrollableFrame(
             self,
             fg_color=BG_INSET,
@@ -299,21 +359,63 @@ class ChestWatchPanel(ctk.CTkFrame):
             scrollbar_button_color=BG_ELEVATED,
             scrollbar_button_hover_color=HOVER,
         )
-        self.rows_scroll.grid(row=1, column=0, sticky="nsew", pady=(0, PAD_INNER))
+        self.rows_scroll.grid(row=2, column=0, sticky="nsew", pady=(0, PAD_INNER))
         self.rows_scroll.grid_columnconfigure(0, weight=1)
+        self._build_columns_header()
 
         self.add_button = secondary_button(
             self,
             text=t("add_chest", language=language),
             command=self._add_chest,
         )
-        self.add_button.grid(row=2, column=0, sticky="ew")
+        self.add_button.grid(row=3, column=0, sticky="ew")
+
+    def _build_columns_header(self) -> None:
+        if hasattr(self, "_columns_header"):
+            self._columns_header.destroy()
+
+        self._columns_header = ctk.CTkFrame(self.rows_scroll, fg_color="transparent")
+        self._columns_header.grid(row=0, column=0, sticky="ew", padx=(PAD_TIGHT, PAD_TIGHT), pady=(4, 0))
+        self._columns_header.grid_columnconfigure(3, weight=1)
+
+        header_font = ctk.CTkFont(family="Segoe UI", size=10, weight="bold")
+
+        ctk.CTkLabel(self._columns_header, text="#", width=28, font=header_font, text_color=TEXT_MUTED).grid(
+            row=0, column=1, padx=(0, 6)
+        )
+        ctk.CTkLabel(
+            self._columns_header,
+            text=t("watch_header_chest", language=self._language),
+            width=84,
+            font=header_font,
+            text_color=TEXT_MUTED,
+            anchor="w",
+        ).grid(row=0, column=2, padx=(0, 6), sticky="w")
+        ctk.CTkLabel(
+            self._columns_header,
+            text=t("watch_header_map", language=self._language),
+            font=header_font,
+            text_color=TEXT_MUTED,
+            anchor="w",
+        ).grid(row=0, column=3, padx=(0, 6), sticky="w")
+        ctk.CTkLabel(
+            self._columns_header,
+            text=t("watch_clear_time", language=self._language),
+            width=52,
+            font=header_font,
+            text_color=TEXT_MUTED,
+            anchor="center",
+        ).grid(row=0, column=4, padx=(0, 6))
 
     def set_language(self, language: Language) -> None:
         self._language = language
         self.title_label.configure(text=t("watch_title", language=language))
         self.hint_label.configure(text=t("watch_drag_hint", language=language))
+        self.clear_time_hint_label.configure(
+            text=t("watch_clear_time_hint", language=language)
+        )
         self.add_button.configure(text=t("add_chest", language=language))
+        self._build_columns_header()
         self._refresh_rows()
 
     def load_slots(self, slots: list[ChestFarmSlot]) -> None:
@@ -376,7 +478,7 @@ class ChestWatchPanel(ctk.CTkFrame):
             on_drag_motion=self._on_row_drag_motion,
             on_drag_end=self._on_row_drag_end,
         )
-        row.grid(row=len(self._rows), column=0, sticky="ew", pady=4)
+        row.grid(row=len(self._rows) + 1, column=0, sticky="ew", pady=4)
         self._rows.append(row)
 
     def _refresh_rows(self) -> None:
@@ -432,7 +534,7 @@ class ChestWatchPanel(ctk.CTkFrame):
 
     def _layout_rows(self) -> None:
         for index, row in enumerate(self._rows):
-            row.grid(row=index, column=0, sticky="ew", pady=4)
+            row.grid(row=index + 1, column=0, sticky="ew", pady=4)
 
     def _row_at_position(self, x_root: int, y_root: int) -> ChestWatchRow | None:
         for row in self._rows:

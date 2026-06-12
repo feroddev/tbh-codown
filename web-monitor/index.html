@@ -25,54 +25,6 @@
         </p>
       </section>
 
-      <div
-        class="flex flex-col gap-2 rounded-lg border border-amber-500/40 bg-amber-950/30 px-4 py-2.5 text-sm shadow-sm shadow-amber-950/25"
-      >
-        <p
-          class="flex flex-wrap items-center justify-center gap-x-3 gap-y-1.5"
-        >
-          <span id="footerDevelopedBy" class="font-medium text-amber-100"
-            >Developed by -Neath</span
-          >
-          <span aria-hidden="true" class="hidden text-amber-600/80 sm:inline"
-            >·</span
-          >
-          <a
-            id="footerLinkedInLink"
-            href="https://www.linkedin.com/in/feroddev/"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="font-medium text-amber-400 transition hover:text-amber-300"
-            >LinkedIn</a
-          >
-          <span aria-hidden="true" class="text-amber-600/80">·</span>
-          <a
-            id="footerGitHubLink"
-            href="https://github.com/feroddev"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="font-medium text-amber-400 transition hover:text-amber-300"
-            >GitHub</a
-          >
-          <span aria-hidden="true" class="text-amber-600/80">·</span>
-          <a
-            id="footerDiscordLink"
-            href="https://discord.com"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="font-medium text-amber-400 transition hover:text-amber-300"
-            >Discord</a
-          >
-          <span class="font-mono text-amber-200">(@.neath)</span>
-        </p>
-        <p
-          id="footerRecommendations"
-          class="text-center text-xs text-amber-200/85"
-        >
-          Send recommendations via Discord (@.neath).
-        </p>
-      </div>
-
       <section class="grid gap-6 lg:grid-cols-3">
         <div
           class="rounded-xl border border-slate-800 bg-slate-900/80 p-5 lg:col-span-2"
@@ -340,6 +292,7 @@
               e marca o cronometro quando um bau dropa, sem precisar clicar em
               "Bau dropou" manualmente.
             </p>
+            <p id="downloadReleaseNotesHint" class="mt-2 text-sm text-slate-400"></p>
             <a
               id="desktopDownloadLink"
               href="./TBH-Monitor.zip"
@@ -370,6 +323,102 @@
           </section>
         </div>
       </section>
+
+      <footer
+        id="siteFooter"
+        class="flex flex-col gap-6 border-t border-slate-800/80 pt-6"
+      >
+        <section
+          id="releaseNotesSection"
+          class="rounded-xl border border-sky-500/35 bg-sky-950/20 p-5 shadow-lg shadow-sky-950/20"
+        >
+          <details id="releaseNotesDetails" class="group/notes">
+            <summary
+              id="releaseNotesSummary"
+              class="cursor-pointer select-none list-none marker:content-none [&::-webkit-details-marker]:hidden"
+            >
+              <span class="flex items-center justify-between gap-3">
+                <span class="flex min-w-0 items-center gap-3">
+                  <span
+                    aria-hidden="true"
+                    class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-sky-500 text-sm font-extrabold text-sky-950 shadow-md shadow-sky-500/40 ring-2 ring-sky-300/60"
+                    >✦</span
+                  >
+                  <span class="min-w-0">
+                    <span
+                      id="releaseNotesTitle"
+                      class="block text-base font-semibold text-sky-100"
+                      >Notas de atualizacao do software</span
+                    >
+                    <span
+                      id="releaseNotesSubtitle"
+                      class="mt-0.5 block text-xs text-sky-300/80"
+                      >Historico de melhorias do site e do TBH Monitor</span
+                    >
+                  </span>
+                </span>
+                <span
+                  aria-hidden="true"
+                  class="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md border border-sky-400/30 bg-sky-500/10 text-xs text-sky-200 transition group-open/notes:rotate-180"
+                  >▼</span
+                >
+              </span>
+            </summary>
+            <div
+              id="releaseNotesContent"
+              class="mt-4 space-y-3 border-t border-sky-500/20 pt-4 text-sm leading-relaxed text-slate-300"
+            ></div>
+          </details>
+        </section>
+
+        <div
+          class="flex flex-col gap-2 rounded-lg border border-amber-500/40 bg-amber-950/30 px-4 py-2.5 text-sm shadow-sm shadow-amber-950/25"
+        >
+          <p
+            class="flex flex-wrap items-center justify-center gap-x-3 gap-y-1.5"
+          >
+            <span id="footerDevelopedBy" class="font-medium text-amber-100"
+              >Developed by -Neath</span
+            >
+            <span aria-hidden="true" class="hidden text-amber-600/80 sm:inline"
+              >·</span
+            >
+            <a
+              id="footerLinkedInLink"
+              href="https://www.linkedin.com/in/feroddev/"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="font-medium text-amber-400 transition hover:text-amber-300"
+              >LinkedIn</a
+            >
+            <span aria-hidden="true" class="text-amber-600/80">·</span>
+            <a
+              id="footerGitHubLink"
+              href="https://github.com/feroddev"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="font-medium text-amber-400 transition hover:text-amber-300"
+              >GitHub</a
+            >
+            <span aria-hidden="true" class="text-amber-600/80">·</span>
+            <a
+              id="footerDiscordLink"
+              href="https://discord.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="font-medium text-amber-400 transition hover:text-amber-300"
+              >Discord</a
+            >
+            <span class="font-mono text-amber-200">(@.neath)</span>
+          </p>
+          <p
+            id="footerRecommendations"
+            class="text-center text-xs text-amber-200/85"
+          >
+            Send recommendations via Discord (@.neath).
+          </p>
+        </div>
+      </footer>
     </main>
 
     <template id="timerRowTemplate">
@@ -677,11 +726,36 @@
           downloadDetails:
             'A diferenca e que o programa le os logs do jogo automaticamente e marca o cronometro quando um bau dropa, sem precisar clicar em "Bau dropou" manualmente.',
           downloadButton: "Baixar TBH Monitor (.zip)",
+          downloadReleaseNotesHint:
+            'Novidades do software estao nas <a href="#releaseNotesSection" class="font-medium text-sky-400 underline decoration-sky-500/40 underline-offset-2 transition hover:text-sky-300">notas de atualizacao</a> no rodape da pagina.',
+          releaseNotesTitle: "Notas de atualizacao do software",
+          releaseNotesSubtitle:
+            "Historico de melhorias do site e do TBH Monitor",
+          releaseNotesReleases: [
+            {
+              isoDate: "2026-06-12",
+              publishedAtIso: "2026-06-12T18:00:00-03:00",
+              publishedAt:
+                "12 de junho de 2026 · 18:00 · GMT-3 (Horario de Brasilia)",
+              title: "Rotacao e Volta (s)",
+              scope: "Site e TBH Monitor (desktop)",
+              items: [
+                "Campo <strong>Volta (s)</strong> opcional em cada bau: informe quanto tempo voce leva para limpar a fase. O cronometro desconta esse valor para indicar quando trocar de mapa.",
+                "Timer de rotacao: quando chega em <strong>0:00</strong>, e hora de voltar aquele mapa (antes do cooldown real acabar, se voce informou a Volta).",
+                "Mapas no formato compacto no seletor: ex. <strong>★ 20% - 3-8 · Normal</strong> (drop, fase e dificuldade).",
+                "Ordenacao dos cronometros por prioridade: baús em <strong>0:00</strong> primeiro; depois os sem timer (<strong>--:--</strong>); depois os em cooldown pelo menor tempo restante.",
+                "Exibicao da prioridade nos cronometros do desktop: <strong>1#</strong>, <strong>2#</strong>, etc.",
+                "Logs de drop simplificados no desktop: ex. <strong>12:34:56 · Chefe Lv65</strong> (sem nome da fase).",
+                "<strong>Volta (s) salva</strong> por bau no site (localStorage) e no desktop (<code>config.yaml</code>).",
+                "Lv40 padrao no desktop: <strong>1-9 Pesadelo</strong> (Cursed Land).",
+              ],
+            },
+          ],
           eventsTitle: "Eventos",
           clearLogsButton: "Limpar",
           rowLevel: "Bau Lv",
           rowMap: "Mapa",
-          rowClearTime: "Conclusao (s)",
+          rowClearTime: "Volta (s)",
           rowClearTimePlaceholder: "opcional",
           rowTimer: "Timer",
           rowDrop: "Bau dropou",
@@ -815,6 +889,29 @@
           downloadDetails:
             'The difference is that it reads the game logs automatically and starts the timer when a chest drops, with no need to click "Chest dropped" manually.',
           downloadButton: "Download TBH Monitor (.zip)",
+          downloadReleaseNotesHint:
+            'See what is new in the <a href="#releaseNotesSection" class="font-medium text-sky-400 underline decoration-sky-500/40 underline-offset-2 transition hover:text-sky-300">update notes</a> at the bottom of the page.',
+          releaseNotesTitle: "Software update notes",
+          releaseNotesSubtitle: "History of site and TBH Monitor improvements",
+          releaseNotesReleases: [
+            {
+              isoDate: "2026-06-12",
+              publishedAtIso: "2026-06-12T18:00:00-03:00",
+              publishedAt: "June 12, 2026 · 6:00 PM · GMT-3 (Brasilia time)",
+              title: "Rotation & Return (s)",
+              scope: "Website & TBH Monitor (desktop)",
+              items: [
+                "Optional <strong>Return (s)</strong> field per chest: enter how long you take to clear the stage. The timer subtracts it so you know when to switch maps.",
+                "Rotation timer: when it hits <strong>0:00</strong>, go back to that map (before the real cooldown ends if Return time is set).",
+                "Compact map labels in the selector, e.g. <strong>★ 20% - 3-8 · Normal</strong> (drop, stage, difficulty).",
+                "Timer sort by priority: <strong>0:00</strong> first; then <strong>--:--</strong>; then active countdowns by shortest remaining time.",
+                "Priority badge on desktop timers: <strong>1#</strong>, <strong>2#</strong>, etc.",
+                "Simplified drop logs on desktop, e.g. <strong>12:34:56 · Boss Lv65</strong> (no map name).",
+                "<strong>Return (s) saved</strong> per chest on the site (localStorage) and on desktop (<code>config.yaml</code>).",
+                "Default Lv40 on desktop: <strong>1-9 Nightmare</strong> (Cursed Land).",
+              ],
+            },
+          ],
           eventsTitle: "Events",
           clearLogsButton: "Clear",
           rowLevel: "Chest Lv",
@@ -951,6 +1048,31 @@
           downloadDetails:
             'La diferencia es que lee los logs del juego automaticamente y marca el cronometro cuando cae un cofre, sin necesidad de hacer clic en "Cofre caido" manualmente.',
           downloadButton: "Descargar TBH Monitor (.zip)",
+          downloadReleaseNotesHint:
+            'Novedades del software en las <a href="#releaseNotesSection" class="font-medium text-sky-400 underline decoration-sky-500/40 underline-offset-2 transition hover:text-sky-300">notas de actualizacion</a> al pie de la pagina.',
+          releaseNotesTitle: "Notas de actualizacion del software",
+          releaseNotesSubtitle:
+            "Historial de mejoras del sitio y del TBH Monitor",
+          releaseNotesReleases: [
+            {
+              isoDate: "2026-06-12",
+              publishedAtIso: "2026-06-12T18:00:00-03:00",
+              publishedAt:
+                "12 de junio de 2026 · 18:00 · GMT-3 (hora de Brasilia)",
+              title: "Rotacion y Vuelta (s)",
+              scope: "Sitio y TBH Monitor (escritorio)",
+              items: [
+                "Campo opcional <strong>Vuelta (s)</strong> por cofre: indica cuanto tardas en limpiar la fase. El cronometro resta ese valor para saber cuando cambiar de mapa.",
+                "Timer de rotacion: al llegar a <strong>0:00</strong>, vuelve a ese mapa (antes de que acabe el cooldown real si informaste la Vuelta).",
+                "Mapas en formato compacto: ej. <strong>★ 20% - 3-8 · Normal</strong>.",
+                "Orden de cronometros por prioridad: <strong>0:00</strong> primero; luego <strong>--:--</strong>; luego los activos por menor tiempo restante.",
+                "Prioridad visible en el desktop: <strong>1#</strong>, <strong>2#</strong>, etc.",
+                "Logs de drop simplificados en desktop: ej. <strong>12:34:56 · Jefe Lv65</strong>.",
+                "<strong>Vuelta (s) guardada</strong> por cofre en el sitio (localStorage) y en desktop (<code>config.yaml</code>).",
+                "Lv40 predeterminado en desktop: <strong>1-9 Pesadilla</strong> (Cursed Land).",
+              ],
+            },
+          ],
           eventsTitle: "Eventos",
           clearLogsButton: "Limpiar",
           rowLevel: "Cofre Nv",
@@ -1092,6 +1214,31 @@
           downloadDetails:
             'La difference est qu\'elle lit automatiquement les logs du jeu et demarre le chrono quand un coffre tombe, sans avoir a cliquer sur "Coffre obtenu" manuellement.',
           downloadButton: "Telecharger TBH Monitor (.zip)",
+          downloadReleaseNotesHint:
+            'Nouveautes du logiciel dans les <a href="#releaseNotesSection" class="font-medium text-sky-400 underline decoration-sky-500/40 underline-offset-2 transition hover:text-sky-300">notes de mise a jour</a> en bas de page.',
+          releaseNotesTitle: "Notes de mise a jour du logiciel",
+          releaseNotesSubtitle:
+            "Historique des ameliorations du site et du TBH Monitor",
+          releaseNotesReleases: [
+            {
+              isoDate: "2026-06-12",
+              publishedAtIso: "2026-06-12T18:00:00-03:00",
+              publishedAt:
+                "12 juin 2026 · 18:00 · GMT-3 (heure de Brasilia)",
+              title: "Rotation et Retour (s)",
+              scope: "Site et TBH Monitor (bureau)",
+              items: [
+                "Champ optionnel <strong>Retour (s)</strong> par coffre : temps pour clear la phase. Le chrono soustrait cette valeur pour savoir quand changer de carte.",
+                "Chrono de rotation : a <strong>0:00</strong>, retournez sur cette carte (avant la fin du cooldown reel si Retour renseigne).",
+                "Cartes au format compact : ex. <strong>★ 20% - 3-8 · Normal</strong>.",
+                "Tri des chronos par priorite : <strong>0:00</strong> d'abord ; puis <strong>--:--</strong> ; puis les actifs par temps restant.",
+                "Priorite affichee sur le desktop : <strong>1#</strong>, <strong>2#</strong>, etc.",
+                "Logs de drop simplifies sur desktop : ex. <strong>12:34:56 · Boss Lv65</strong>.",
+                "<strong>Retour (s) enregistre</strong> par coffre sur le site (localStorage) et sur desktop (<code>config.yaml</code>).",
+                "Lv40 par defaut sur desktop : <strong>1-9 Cauchemar</strong> (Cursed Land).",
+              ],
+            },
+          ],
           eventsTitle: "Evenements",
           clearLogsButton: "Effacer",
           rowLevel: "Coffre Nv",
@@ -1234,6 +1381,29 @@
           downloadDetails:
             "区别在于它会自动读取游戏日志，在宝箱掉落时自动启动计时器，无需手动点击「宝箱掉落」。",
           downloadButton: "下载 TBH Monitor (.zip)",
+          downloadReleaseNotesHint:
+            '软件更新内容见页面底部的<a href="#releaseNotesSection" class="font-medium text-sky-400 underline decoration-sky-500/40 underline-offset-2 transition hover:text-sky-300">更新说明</a>。',
+          releaseNotesTitle: "软件更新说明",
+          releaseNotesSubtitle: "网站与 TBH Monitor 的更新历史",
+          releaseNotesReleases: [
+            {
+              isoDate: "2026-06-12",
+              publishedAtIso: "2026-06-12T18:00:00-03:00",
+              publishedAt: "2026年6月12日 · 18:00 · GMT-3（巴西利亚时间）",
+              title: "轮换与返回时间",
+              scope: "网站与 TBH Monitor（桌面版）",
+              items: [
+                "每个宝箱可选 <strong>返回 (秒)</strong>：填写通关阶段所需时间，计时器会扣除该值以提示何时换图。",
+                "轮换计时：显示 <strong>0:00</strong> 时应返回该地图（若设置了返回时间，会早于实际冷却结束）。",
+                "地图紧凑格式：例 <strong>★ 20% - 3-8 · Normal</strong>。",
+                "按优先级排序：<strong>0:00</strong> 优先；其次 <strong>--:--</strong>；再按剩余时间最短。",
+                "桌面版显示优先级：<strong>1#</strong>、<strong>2#</strong> 等。",
+                "桌面版简化掉落日志：例 <strong>12:34:56 · 首领 Lv65</strong>。",
+                "<strong>返回 (秒) 会保存</strong>：网站 localStorage，桌面 <code>config.yaml</code>。",
+                "桌面版 Lv40 默认：<strong>1-9 噩梦</strong>（Cursed Land）。",
+              ],
+            },
+          ],
           eventsTitle: "事件",
           clearLogsButton: "清除",
           rowLevel: "宝箱 Lv",
@@ -1359,6 +1529,29 @@
           downloadDetails:
             "違いは、ゲームログを自動で読み取り、宝箱ドロップ時にタイマーを自動開始することです。「宝箱ドロップ」を手動で押す必要はありません。",
           downloadButton: "TBH Monitor (.zip) をダウンロード",
+          downloadReleaseNotesHint:
+            'ソフトの更新内容はページ下部の<a href="#releaseNotesSection" class="font-medium text-sky-400 underline decoration-sky-500/40 underline-offset-2 transition hover:text-sky-300">更新履歴</a>をご覧ください。',
+          releaseNotesTitle: "ソフトウェア更新履歴",
+          releaseNotesSubtitle: "サイトと TBH Monitor の更新履歴",
+          releaseNotesReleases: [
+            {
+              isoDate: "2026-06-12",
+              publishedAtIso: "2026-06-12T18:00:00-03:00",
+              publishedAt: "2026年6月12日 · 18:00 · GMT-3（ブラジリア時間）",
+              title: "ローテーションと戻り (秒)",
+              scope: "サイトと TBH Monitor（デスクトップ版）",
+              items: [
+                "各宝箱に任意の <strong>戻り (秒)</strong>：ステージクリア時間を入力すると、タイマーから差し引き、マップ切替の目安になります。",
+                "ローテーションタイマーが <strong>0:00</strong> になったらそのマップへ（戻り時間設定時は実クールダウン前）。",
+                "マップ表示をコンパクト化：例 <strong>★ 20% - 3-8 · Normal</strong>。",
+                "優先度でソート：<strong>0:00</strong> → <strong>--:--</strong> → 残り時間が短い順。",
+                "デスクトップ版に優先度表示：<strong>1#</strong>、<strong>2#</strong> など。",
+                "デスクトップ版のドロップログ簡略化：例 <strong>12:34:56 · ボス Lv65</strong>。",
+                "<strong>戻り (秒) を保存</strong>：サイトは localStorage、デスクトップは <code>config.yaml</code>。",
+                "デスクトップ版 Lv40 デフォルト：<strong>1-9 ナイトメア</strong>（Cursed Land）。",
+              ],
+            },
+          ],
           eventsTitle: "イベント",
           clearLogsButton: "クリア",
           rowLevel: "宝箱 Lv",
@@ -1514,6 +1707,16 @@
       const clearLogsButton = document.querySelector("#clearLogsButton");
       const tutorialTitle = document.querySelector("#tutorialTitle");
       const tutorialContent = document.querySelector("#tutorialContent");
+      const releaseNotesTitle = document.querySelector("#releaseNotesTitle");
+      const releaseNotesSubtitle = document.querySelector(
+        "#releaseNotesSubtitle",
+      );
+      const releaseNotesContent = document.querySelector(
+        "#releaseNotesContent",
+      );
+      const downloadReleaseNotesHint = document.querySelector(
+        "#downloadReleaseNotesHint",
+      );
       const footerDevelopedBy = document.querySelector("#footerDevelopedBy");
       const footerRecommendations = document.querySelector(
         "#footerRecommendations",
@@ -2080,6 +2283,51 @@
           .join("");
       }
 
+      function renderReleaseNotes() {
+        const bucket = I18N[state.language] ?? I18N.en;
+        const releases =
+          bucket.releaseNotesReleases ?? I18N.en.releaseNotesReleases ?? [];
+        releaseNotesTitle.textContent =
+          bucket.releaseNotesTitle ?? I18N.en.releaseNotesTitle;
+        releaseNotesSubtitle.textContent =
+          bucket.releaseNotesSubtitle ?? I18N.en.releaseNotesSubtitle;
+        releaseNotesContent.innerHTML = [...releases]
+          .sort((a, b) => (b.isoDate ?? "").localeCompare(a.isoDate ?? ""))
+          .map(
+            (release, index) => `
+              <details
+                class="group/release rounded-lg border border-sky-500/25 bg-slate-900/40"
+                ${index === 0 ? "open" : ""}
+              >
+                <summary
+                  class="cursor-pointer select-none list-none px-4 py-3 marker:content-none [&::-webkit-details-marker]:hidden"
+                >
+                  <span class="flex items-center justify-between gap-3">
+                    <span class="min-w-0">
+                      <time
+                        datetime="${release.publishedAtIso ?? release.isoDate ?? ""}"
+                        class="block text-xs font-medium uppercase tracking-wide text-sky-300/90"
+                        >${release.publishedAt}</time
+                      >
+                      <span class="mt-0.5 block font-medium text-sky-100">${release.title}</span>
+                      <span class="mt-0.5 block text-xs text-slate-400">${release.scope}</span>
+                    </span>
+                    <span
+                      aria-hidden="true"
+                      class="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded border border-sky-400/25 bg-sky-500/10 text-[10px] text-sky-200 transition group-open/release:rotate-180"
+                      >▼</span
+                    >
+                  </span>
+                </summary>
+                <ul class="list-disc space-y-1.5 border-t border-sky-500/15 px-4 py-3 pl-9 text-slate-400">
+                  ${release.items.map((item) => `<li>${item}</li>`).join("")}
+                </ul>
+              </details>
+            `,
+          )
+          .join("");
+      }
+
       function applyLanguage() {
         document.documentElement.lang = state.language;
         document.title = t("pageTitle");
@@ -2095,6 +2343,7 @@
         downloadDescription.textContent = t("downloadDescription");
         downloadDetails.textContent = t("downloadDetails");
         desktopDownloadLink.textContent = t("downloadButton");
+        downloadReleaseNotesHint.innerHTML = t("downloadReleaseNotesHint");
         eventsTitle.textContent = t("eventsTitle");
         clearLogsButton.textContent = t("clearLogsButton");
         languageSelect.value = state.language;
@@ -2117,6 +2366,7 @@
         farmRuneBonusImage.alt = t("farmRuneBonusImageAlt");
         farmRuneBonusImageCaption.textContent = t("farmRuneBonusImageCaption");
         renderTutorial();
+        renderReleaseNotes();
         updateFarmModeUi();
         renderFarmRecommendations();
       }

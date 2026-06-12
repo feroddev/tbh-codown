@@ -34,6 +34,15 @@ MESSAGES: dict[str, dict[str, str]] = {
         "timers_none_enabled": "Configure baús à esquerda para ver cronômetros.",
         "watch_title": "Baús monitorados",
         "watch_drag_hint": "Arraste para definir prioridade",
+        "watch_clear_time_hint": (
+            "Volta (s): tempo para limpar a fase. O cronômetro desconta esse valor "
+            "para indicar quando trocar de mapa."
+        ),
+        "watch_clear_time": "Volta (s)",
+        "watch_clear_time_placeholder": "90",
+        "watch_header_chest": "Baú",
+        "watch_header_map": "Mapa",
+        "watch_header_return": "Volta (s)",
         "add_chest": "+ Adicionar baú",
         "common_chest_short": "Comum",
         "common_chest_lv_short": "Comum Lv{level}",
@@ -83,11 +92,11 @@ MESSAGES: dict[str, dict[str, str]] = {
         "header_chest_map": "Baú · Mapa",
         "chest_lv": "Baú Lv {level}",
         "chest_lv_short": "Baú Lv {level}",
-        "log_chest_drop": "{time} · Baú Lv{level} · {map_name} — {difficulty}",
-        "log_chest_drop_detail": "{time} · Baú {kind} Lv{level} · {map_name} — {difficulty}",
-        "log_chest_ignored": "{time} · Baú Lv{level} · {map_name} — ignorado: {reason}",
+        "log_chest_drop": "{time} · Lv{level}",
+        "log_chest_drop_detail": "{time} · {kind} Lv{level}",
+        "log_chest_ignored": "{time} · Lv{level} — ignorado: {reason}",
         "log_timer_skipped": "{time} · {label} — cronômetro já ativo, não reiniciado",
-        "log_timer_not_watched": "{time} · Lv{level} · {map_name} — fora dos baús monitorados",
+        "log_timer_not_watched": "{time} · Lv{level} — fora dos baús monitorados",
         "no_maps_for_chest": "Sem mapas",
         "rotation_empty": "Nenhum baú ativo.",
         "you_are_here": " · aqui",
@@ -158,6 +167,15 @@ MESSAGES: dict[str, dict[str, str]] = {
         "timers_none_enabled": "Configure chests on the left to see timers.",
         "watch_title": "Watched chests",
         "watch_drag_hint": "Drag to set priority",
+        "watch_clear_time_hint": (
+            "Return (s): time to clear the stage. The timer subtracts this so you know "
+            "when to switch maps."
+        ),
+        "watch_clear_time": "Return (s)",
+        "watch_clear_time_placeholder": "90",
+        "watch_header_chest": "Chest",
+        "watch_header_map": "Map",
+        "watch_header_return": "Return (s)",
         "add_chest": "+ Add chest",
         "common_chest_short": "Common",
         "common_chest_lv_short": "Common Lv{level}",
@@ -207,11 +225,11 @@ MESSAGES: dict[str, dict[str, str]] = {
         "header_chest_map": "Chest · Map",
         "chest_lv": "Chest Lv {level}",
         "chest_lv_short": "Chest Lv {level}",
-        "log_chest_drop": "{time} · Chest Lv{level} · {map_name} — {difficulty}",
-        "log_chest_drop_detail": "{time} · {kind} Lv{level} chest · {map_name} — {difficulty}",
-        "log_chest_ignored": "{time} · Chest Lv{level} · {map_name} — ignored: {reason}",
+        "log_chest_drop": "{time} · Lv{level}",
+        "log_chest_drop_detail": "{time} · {kind} Lv{level}",
+        "log_chest_ignored": "{time} · Lv{level} — ignored: {reason}",
         "log_timer_skipped": "{time} · {label} — timer already active, not restarted",
-        "log_timer_not_watched": "{time} · Lv{level} · {map_name} — not in watched chests",
+        "log_timer_not_watched": "{time} · Lv{level} — not in watched chests",
         "no_maps_for_chest": "No maps",
         "rotation_empty": "No active chests.",
         "you_are_here": " · here",
@@ -368,17 +386,13 @@ def format_watch_map_label(
     boss_drop_percent: float | None = None,
     language: Language | None = None,
 ) -> str:
+    from src.data.boss_chest_drop_rate import format_boss_drop_percent
+
+    _ = map_name
     difficulty_part = difficulty_display_name(difficulty, language)
-    if map_name:
-        map_part = format_map_drop_label(
-            act=act,
-            stage=stage,
-            map_name=map_name,
-            boss_drop_percent=boss_drop_percent,
-            language=language,
-        )
-        return f"{map_part} · {difficulty_part}"
-    stage_part = format_stage_short(act, stage, language=language)
+    stage_part = f"{act}-{stage}"
+    if boss_drop_percent is not None:
+        return f"{format_boss_drop_percent(boss_drop_percent)} - {stage_part} · {difficulty_part}"
     return f"{stage_part} · {difficulty_part}"
 
 
@@ -420,7 +434,6 @@ def format_watch_map_label_for_stage_key(
             act=entry.act,
             stage=entry.stage,
             difficulty=entry.difficulty,
-            map_name=entry.name,
             boss_drop_percent=entry.boss_chest_drop_percent,
             language=language,
         )
@@ -447,7 +460,6 @@ def format_current_stage_label(
             act=entry.act,
             stage=entry.stage,
             difficulty=entry.difficulty,
-            map_name=entry.name,
             boss_drop_percent=entry.boss_chest_drop_percent,
             language=language,
         )
@@ -523,14 +535,15 @@ def localized_map_label(
 def format_chest_drop_log(
     *,
     chest_level: int,
-    map_name: str,
-    act: int,
-    stage: int,
-    difficulty: str,
+    map_name: str | None = None,
+    act: int | None = None,
+    stage: int | None = None,
+    difficulty: str | None = None,
     chest_kind: str,
     language: Language | None = None,
     dropped_at: datetime | None = None,
 ) -> str:
+    _ = (map_name, act, stage, difficulty)
     timestamp = dropped_at or datetime.now()
     return t(
         "log_chest_drop_detail",
@@ -538,11 +551,4 @@ def format_chest_drop_log(
         time=timestamp.strftime("%H:%M:%S"),
         kind=chest_kind,
         level=chest_level,
-        map_name=format_map_drop_label(
-            act=act,
-            stage=stage,
-            map_name=map_name,
-            language=language,
-        ),
-        difficulty=difficulty_display_name(difficulty, language),
     )

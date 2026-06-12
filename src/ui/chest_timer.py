@@ -36,6 +36,7 @@ from src.ui.theme import (
     NEXT_TARGET_BORDER,
     TIMER_ACTIVE,
     TIMER_WAITING,
+    WARNING,
     hint_label,
     section_label,
 )
@@ -46,11 +47,24 @@ WAITING_DISPLAY = "--:--"
 ROW_HEIGHT = 34
 
 
+def _display_remaining_seconds(
+    expires_at: float | None,
+    expired: bool,
+    clear_time_seconds: int,
+) -> float | None:
+    if expired:
+        return 0.0
+    if expires_at is None:
+        return None
+    return max(0.0, (expires_at - time.time()) - clear_time_seconds)
+
+
 @dataclass(frozen=True)
 class TimerWatchTarget:
     chest_level: int
     stage_key: int
     priority: int
+    clear_time_seconds: int = 0
 
 
 def _format_countdown(total_seconds: int) -> str:
@@ -67,6 +81,8 @@ class ChestTimerRow(ctk.CTkFrame):
         duration_minutes: float,
         *,
         map_label: str | None = None,
+        clear_time_seconds: int = 0,
+        priority: int = 1,
         language: Language = Language.PT_BR,
         **kwargs,
     ) -> None:
@@ -83,12 +99,24 @@ class ChestTimerRow(ctk.CTkFrame):
         self._timer_key = timer_key
         self._map_label = map_label
         self._duration_seconds = max(1.0, duration_minutes * 60.0)
+        self._clear_time_seconds = max(0, clear_time_seconds)
         self._expires_at: float | None = None
         self._expired = False
         self._language = language
         self._is_next_target = False
+        self._priority = priority
 
-        self.grid_columnconfigure(2, weight=1)
+        self.grid_columnconfigure(3, weight=1)
+
+        self._priority_label = ctk.CTkLabel(
+            self,
+            text=f"{priority}#",
+            width=24,
+            font=ctk.CTkFont(family="Segoe UI", size=11, weight="bold"),
+            text_color=TEXT_MUTED,
+            anchor="w",
+        )
+        self._priority_label.grid(row=0, column=0, padx=(10, 4), pady=6, sticky="w")
 
         self.timer_label = ctk.CTkLabel(
             self,
@@ -98,7 +126,7 @@ class ChestTimerRow(ctk.CTkFrame):
             text_color=TEXT_MUTED,
             anchor="w",
         )
-        self.timer_label.grid(row=0, column=0, padx=(10, 8), pady=6, sticky="w")
+        self.timer_label.grid(row=0, column=1, padx=(0, 8), pady=6, sticky="w")
 
         self._name_label = ctk.CTkLabel(
             self,
@@ -108,7 +136,7 @@ class ChestTimerRow(ctk.CTkFrame):
             text_color=TEXT_PRIMARY,
             anchor="w",
         )
-        self._name_label.grid(row=0, column=1, padx=(0, 8), pady=6, sticky="w")
+        self._name_label.grid(row=0, column=2, padx=(0, 8), pady=6, sticky="w")
 
         self._map_label_widget = ctk.CTkLabel(
             self,
@@ -117,7 +145,7 @@ class ChestTimerRow(ctk.CTkFrame):
             text_color=TEXT_SECONDARY,
             anchor="w",
         )
-        self._map_label_widget.grid(row=0, column=2, padx=(0, 10), pady=6, sticky="ew")
+        self._map_label_widget.grid(row=0, column=3, padx=(0, 10), pady=6, sticky="ew")
 
     def _chest_label(self, language: Language) -> str:
         return chest_display_label(self._timer_key, language=language, short=True)
@@ -128,6 +156,14 @@ class ChestTimerRow(ctk.CTkFrame):
 
     def set_duration_minutes(self, duration_minutes: float) -> None:
         self._duration_seconds = max(1.0, duration_minutes * 60.0)
+
+    def set_clear_time_seconds(self, clear_time_seconds: int) -> None:
+        self._clear_time_seconds = max(0, clear_time_seconds)
+        self._refresh()
+
+    def set_priority(self, priority: int) -> None:
+        self._priority = priority
+        self._priority_label.configure(text=f"{priority}#")
 
     def set_map_label(self, map_label: str | None) -> None:
         self._map_label = map_label
@@ -196,8 +232,17 @@ class ChestTimerRow(ctk.CTkFrame):
             play_timer_expired_sound()
             return
 
+        display_remaining = _display_remaining_seconds(
+            self._expires_at,
+            False,
+            self._clear_time_seconds,
+        )
+        if display_remaining is not None and display_remaining <= 0:
+            self.timer_label.configure(text=EXPIRED_DISPLAY, text_color=WARNING)
+            return
+
         self.timer_label.configure(
-            text=_format_countdown(int(remaining)),
+            text=_format_countdown(int(display_remaining or 0)),
             text_color=TIMER_ACTIVE,
         )
 
@@ -274,27 +319,14 @@ class ChestTimerBoard(ctk.CTkFrame):
                 chest_level=slot.chest_level,
                 stage_key=slot.stage_key,
                 priority=slot.priority,
+                clear_time_seconds=slot.clear_time_seconds or 0,
             )
             for slot in sorted(slots, key=lambda item: item.priority)
         ]
-        self._merge_order_from_slots(slots)
-        self._rebuild_rows()
-
-    def _merge_order_from_slots(self, slots: list[ChestFarmSlot]) -> None:
-        slot_levels = [
+        self._order = [
             slot.chest_level for slot in sorted(slots, key=lambda item: item.priority)
         ]
-        slot_level_set = set(slot_levels)
-
-        if not self._order:
-            merged: list[TimerKey] = list(slot_levels)
-        else:
-            merged = [key for key in self._order if key in slot_level_set]
-            for level in slot_levels:
-                if level not in merged:
-                    merged.append(level)
-
-        self._order = merged
+        self._rebuild_rows()
 
     def _target_for_key(self, timer_key: TimerKey) -> TimerWatchTarget | None:
         for target in self._watch_targets:
@@ -336,11 +368,16 @@ class ChestTimerBoard(ctk.CTkFrame):
 
         self.rows_frame.pack(fill="both", expand=True, padx=PAD_INNER, pady=(0, PAD_INNER))
         for timer_key in self._order:
+            target = self._target_for_key(timer_key)
+            clear_time = target.clear_time_seconds if target is not None else 0
+            priority = target.priority if target is not None else 99
             row = ChestTimerRow(
                 self.rows_frame,
                 timer_key=timer_key,
                 duration_minutes=self._duration_minutes,
                 map_label=self._map_label_for_key(timer_key),
+                clear_time_seconds=clear_time,
+                priority=priority,
                 language=self._language,
             )
             self._rows[timer_key] = row
@@ -359,12 +396,14 @@ class ChestTimerBoard(ctk.CTkFrame):
             if row is None or target is None:
                 continue
             expires_at, expired = row.capture_state()
+            clear_time = target.clear_time_seconds if target is not None else 0
             states.append(
                 TimerSortState(
                     timer_key=timer_key,
                     priority=target.priority,
                     expires_at=expires_at,
                     expired=expired,
+                    clear_time_seconds=clear_time,
                 )
             )
         return states

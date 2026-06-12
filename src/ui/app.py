@@ -12,8 +12,6 @@ import customtkinter as ctk
 from src.application.monitor_service import MonitorService
 from src.config_loader import AppConfig, load_config, save_config
 from src.data.chest_catalog import chest_display_label
-from src.data.stage_codec import decode_stage_key
-from src.data.stage_catalog import find_catalog_entry
 from src.domain.chest_level_resolver import drop_chest_level_for_event
 from src.domain.chest_event import ChestType
 from src.domain.chest_farm import enabled_farm_maps
@@ -25,7 +23,6 @@ from src.ui.i18n import (
     chest_kind_label,
     difficulty_display_name,
     format_current_stage_label,
-    format_map_drop_label,
     set_language,
     t,
 )
@@ -39,6 +36,7 @@ from src.ui.theme import (
     DANGER_HOVER,
     DEFAULT_WINDOW_HEIGHT,
     DEFAULT_WINDOW_WIDTH,
+    DROPS_PANEL_WIDTH,
     GAP_PANEL,
     LEFT_PANEL_MIN_WIDTH,
     PAD_INNER,
@@ -154,8 +152,8 @@ class MonitorApp(ctk.CTk):
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(0, weight=1)
 
-        root.grid_columnconfigure(0, weight=0, minsize=LEFT_PANEL_MIN_WIDTH)
-        root.grid_columnconfigure(1, weight=1, minsize=300)
+        root.grid_columnconfigure(0, weight=1, minsize=LEFT_PANEL_MIN_WIDTH)
+        root.grid_columnconfigure(1, weight=0, minsize=DROPS_PANEL_WIDTH)
         root.grid_rowconfigure(1, weight=1)
         root.grid_rowconfigure(2, weight=0, minsize=TIMERS_SECTION_MIN_HEIGHT)
 
@@ -262,20 +260,21 @@ class MonitorApp(ctk.CTk):
 
         logs_header = ctk.CTkFrame(logs_card, fg_color="transparent")
         logs_header.grid(row=0, column=0, sticky="ew", padx=PAD_INNER, pady=(PAD_INNER, PAD_SECTION))
+        logs_header.grid_columnconfigure(0, weight=1)
 
         self.events_title_label = section_label(logs_header, text=t("events"))
-        self.events_title_label.pack(side="left")
+        self.events_title_label.grid(row=0, column=0, sticky="w")
 
         self.current_map_label = ctk.CTkLabel(
             logs_header,
             text=t("current_map", label="—"),
             text_color=TEXT_SECONDARY,
-            wraplength=300,
-            justify="right",
-            font=ctk.CTkFont(family="Segoe UI", size=12),
-            anchor="e",
+            wraplength=DROPS_PANEL_WIDTH - 48,
+            justify="left",
+            font=ctk.CTkFont(family="Segoe UI", size=11),
+            anchor="w",
         )
-        self.current_map_label.pack(side="right")
+        self.current_map_label.grid(row=1, column=0, sticky="ew", pady=(PAD_TIGHT, 0))
 
         log_body = ctk.CTkFrame(logs_card, fg_color="transparent")
         log_body.grid(row=1, column=0, sticky="nsew", padx=PAD_INNER, pady=(0, PAD_INNER))
@@ -471,19 +470,6 @@ class MonitorApp(ctk.CTk):
         self.log_text.see("end")
         self.log_text.configure(state="disabled")
 
-    def _map_label_for_stage_key(self, stage_key: int) -> str:
-        entry = find_catalog_entry(stage_key)
-        stage = decode_stage_key(stage_key)
-        map_name = entry.name if entry is not None else stage.label
-        boss_drop_percent = entry.boss_chest_drop_percent if entry is not None else None
-        return format_map_drop_label(
-            act=stage.act,
-            stage=stage.stage,
-            map_name=map_name,
-            boss_drop_percent=boss_drop_percent,
-            language=self._language,
-        )
-
     def _handle_chest_drop(self, event, stage_key: int) -> None:
         self._chest_drop_queue.put((event, stage_key))
 
@@ -497,7 +483,6 @@ class MonitorApp(ctk.CTk):
             return
 
         timestamp = datetime.now().strftime("%H:%M:%S")
-        map_label = self._map_label_for_stage_key(stage_key)
         level = drop_chest_level_for_event(event, stage_key)
         if level is None:
             return
@@ -510,7 +495,6 @@ class MonitorApp(ctk.CTk):
                     language=self._language,
                     time=timestamp,
                     level=level,
-                    map_name=map_label,
                 )
             )
             return

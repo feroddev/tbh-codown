@@ -10,7 +10,7 @@ from pathlib import Path
 from src.config_loader import AppConfig
 from src.domain.chest_level_resolver import drop_chest_level_for_event
 from src.data.stage_codec import decode_stage_key
-from src.data.stage_catalog import boss_chest_drop_percent_for_stage_key, find_catalog_entry
+from src.data.stage_catalog import find_catalog_entry
 from src.domain.chest_drop_correlator import ChestDropCorrelator, ConfirmedChestDrop
 from src.domain.chest_event import ChestEvent, ChestType
 from src.domain.chest_event_validator import is_chest_event_consistent_with_stage
@@ -24,7 +24,6 @@ from src.ui.i18n import (
     chest_kind_label,
     format_chest_drop_log,
     format_current_stage_label,
-    format_map_drop_label,
     localized_map_label,
     localized_map_label_for_stage_key,
     t,
@@ -378,15 +377,7 @@ class MonitorService:
             return
 
         active_map = self._resolve_active_map(stage_key)
-        stage = decode_stage_key(stage_key)
         chest_level = self._chest_level_for_event(event, stage_key) or 0
-        map_label = format_map_drop_label(
-            act=stage.act,
-            stage=stage.stage,
-            map_name=self._map_name_for_stage_key(stage_key),
-            boss_drop_percent=boss_chest_drop_percent_for_stage_key(stage_key),
-            language=self._language,
-        )
 
         if active_map is None:
             self._emit_drop_log(
@@ -395,7 +386,6 @@ class MonitorService:
                     language=self._language,
                     time=time.strftime("%H:%M:%S"),
                     level=chest_level,
-                    map_name=map_label,
                     reason=t("drop_ignored_not_in_rotation", language=self._language),
                 )
             )
@@ -414,7 +404,6 @@ class MonitorService:
                     language=self._language,
                     time=time.strftime("%H:%M:%S"),
                     level=chest_level,
-                    map_name=map_label,
                     reason=reason,
                 )
             )
