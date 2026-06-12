@@ -97,11 +97,34 @@ class LogWatcherTests(unittest.TestCase):
         self.assertEqual(len(filtered), 1)
         self.assertEqual(filtered[0].item_key, "920401")
 
+    def test_flat_count_drop_accepted_without_previous_drop_history(self) -> None:
+        registry = DropCooldownRegistry(
+            cooldown_minutes_provider=lambda: 13.0,
+            is_timer_counting=lambda _level: False,
+            last_drop_by_level={},
+            monitor_started_at=1_000.0 - 60.0,
+        )
+        detector = ChestDetector(
+            consider_common_chest=True,
+            debounce_seconds=4.0,
+            watch_boss_keys=frozenset({"920501"}),
+            flat_count_drop_gate=registry.should_accept_flat_count_for_key,
+        )
+        detector.enable_count_tracking(True)
+        line = "GetBoxCount Success Count : 1 // ItemKey : 920501"
+
+        detector.seed_line(line)
+        event = detector.process_line(line)
+
+        self.assertIsNotNone(event)
+        self.assertEqual(event.item_key, "920501")
+
     def test_flat_count_drop_accepted_after_cooldown(self) -> None:
         registry = DropCooldownRegistry(
             cooldown_minutes_provider=lambda: 13.0,
             is_timer_counting=lambda _level: False,
             last_drop_by_level={50: 1_000.0},
+            monitor_started_at=500.0,
         )
         detector = ChestDetector(
             consider_common_chest=True,
@@ -125,6 +148,7 @@ class LogWatcherTests(unittest.TestCase):
             cooldown_minutes_provider=lambda: 13.0,
             is_timer_counting=lambda _level: False,
             last_drop_by_level={50: time.time()},
+            monitor_started_at=time.time() - 120.0,
         )
         detector = ChestDetector(
             consider_common_chest=True,
@@ -145,6 +169,7 @@ class LogWatcherTests(unittest.TestCase):
             cooldown_minutes_provider=lambda: 13.0,
             is_timer_counting=lambda level: level == 50,
             last_drop_by_level={50: 1_000.0},
+            monitor_started_at=500.0,
         )
         detector = ChestDetector(
             consider_common_chest=True,

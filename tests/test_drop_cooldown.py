@@ -3,7 +3,11 @@ from __future__ import annotations
 import time
 import unittest
 
-from src.domain.drop_cooldown import DropCooldownRegistry, should_accept_flat_count_drop
+from src.domain.drop_cooldown import (
+    MONITOR_STARTUP_GRACE_SECONDS,
+    DropCooldownRegistry,
+    should_accept_flat_count_drop,
+)
 
 
 class DropCooldownTests(unittest.TestCase):
@@ -40,14 +44,27 @@ class DropCooldownTests(unittest.TestCase):
             )
         )
 
-    def test_should_reject_flat_count_drop_without_previous_drop(self) -> None:
+    def test_should_accept_flat_count_drop_without_previous_drop_after_grace(self) -> None:
+        self.assertTrue(
+            should_accept_flat_count_drop(
+                chest_level=50,
+                last_drop_at=None,
+                cooldown_seconds=13 * 60,
+                timer_is_counting=False,
+                now=1000.0 + MONITOR_STARTUP_GRACE_SECONDS,
+                monitor_started_at=1000.0,
+            )
+        )
+
+    def test_should_reject_flat_count_drop_without_previous_drop_during_grace(self) -> None:
         self.assertFalse(
             should_accept_flat_count_drop(
                 chest_level=50,
                 last_drop_at=None,
                 cooldown_seconds=13 * 60,
                 timer_is_counting=False,
-                now=5000.0,
+                now=1000.0 + 5.0,
+                monitor_started_at=1000.0,
             )
         )
 
