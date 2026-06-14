@@ -147,7 +147,14 @@
             </button>
           </div>
 
-          <div id="timersContainer" class="mt-5 flex flex-col gap-3"></div>
+          <p
+            id="timersDragHint"
+            class="mt-4 text-right text-xs text-slate-500"
+          >
+            Arraste para definir prioridade
+          </p>
+
+          <div id="timersContainer" class="mt-2 flex flex-col gap-3"></div>
         </div>
 
         <div class="flex min-w-0 flex-col gap-6">
@@ -431,11 +438,26 @@
 
     <template id="timerRowTemplate">
       <article
-        class="min-w-0 overflow-hidden rounded-lg border border-slate-800 bg-slate-950/70 p-3"
+        class="flex min-w-0 items-stretch overflow-hidden rounded-lg border border-slate-800 bg-slate-950/70 transition-shadow"
       >
         <div
-          class="grid gap-3 sm:grid-cols-[minmax(6rem,auto)_minmax(0,1fr)_minmax(5rem,auto)_minmax(6rem,auto)_minmax(0,1fr)] sm:items-end"
+          data-role="drag-handle"
+          class="flex w-8 shrink-0 cursor-grab select-none items-center justify-center self-stretch text-lg leading-none text-slate-500/70 transition-colors hover:text-slate-300 active:cursor-grabbing"
+          aria-label="Arrastar para reordenar"
         >
+          ⠿
+        </div>
+
+        <div
+          class="grid min-w-0 flex-1 gap-3 p-3 pl-0 sm:grid-cols-[auto_minmax(6rem,auto)_minmax(0,1fr)_minmax(5rem,auto)_minmax(6rem,auto)_minmax(0,1fr)] sm:items-end"
+        >
+          <p
+            data-role="priority"
+            class="self-center text-center font-mono text-xs font-bold text-slate-500"
+          >
+            #1
+          </p>
+
           <label class="text-xs text-slate-400">
             <span data-role="label-level">Bau Lv</span>
             <select
@@ -785,6 +807,8 @@
           rowDrop: "Bau dropou",
           rowReset: "Reset",
           rowRemove: "Remover",
+          timersDragHint: "Arraste para definir prioridade",
+          rowDragHandle: "Arrastar para reordenar",
           emptyTimers: 'Nenhum bau configurado. Clique em "Adicionar bau".',
           mapNotAvailable: "Sem mapas para este bau",
           invalidDuration:
@@ -959,6 +983,8 @@
           rowDrop: "Chest dropped",
           rowReset: "Reset",
           rowRemove: "Remove",
+          timersDragHint: "Drag to set priority",
+          rowDragHandle: "Drag to reorder",
           emptyTimers: 'No chests configured. Click "Add chest".',
           mapNotAvailable: "No maps for this chest",
           invalidDuration:
@@ -1134,6 +1160,8 @@
           rowDrop: "Cofre caido",
           rowReset: "Reiniciar",
           rowRemove: "Eliminar",
+          timersDragHint: "Arrastra para definir prioridad",
+          rowDragHandle: "Arrastrar para reordenar",
           emptyTimers:
             'No hay cofres configurados. Haz clic en "Agregar cofre".',
           mapNotAvailable: "No hay mapas para este cofre",
@@ -1314,6 +1342,8 @@
           rowDrop: "Coffre obtenu",
           rowReset: "Reinitialiser",
           rowRemove: "Supprimer",
+          timersDragHint: "Glissez pour definir la priorite",
+          rowDragHandle: "Glisser pour reordonner",
           emptyTimers:
             'Aucun coffre configure. Cliquez sur "Ajouter un coffre".',
           mapNotAvailable: "Aucune carte pour ce coffre",
@@ -1492,6 +1522,8 @@
           rowDrop: "宝箱掉落",
           rowReset: "重置",
           rowRemove: "删除",
+          timersDragHint: "拖动以设置优先级",
+          rowDragHandle: "拖动以重新排序",
           emptyTimers: "未配置宝箱。请点击「添加宝箱」。",
           mapNotAvailable: "该宝箱等级没有可用地图",
           invalidDuration: "无效时长。请输入 1 至 999 分钟之间的数值。",
@@ -1653,6 +1685,8 @@
           rowDrop: "宝箱ドロップ",
           rowReset: "リセット",
           rowRemove: "削除",
+          timersDragHint: "ドラッグして優先順位を設定",
+          rowDragHandle: "ドラッグして並べ替え",
           emptyTimers:
             "設定された宝箱がありません。「宝箱を追加」を押してください。",
           mapNotAvailable: "この宝箱レベルに対応するマップがありません",
@@ -1777,6 +1811,7 @@
       const testAlertButton = document.querySelector("#testAlertButton");
       const languageSelect = document.querySelector("#languageSelect");
       const timersContainer = document.querySelector("#timersContainer");
+      const timersDragHint = document.querySelector("#timersDragHint");
       const logsContainer = document.querySelector("#logsContainer");
       const timerRowTemplate = document.querySelector("#timerRowTemplate");
       const pageTitle = document.querySelector("#pageTitle");
@@ -1850,6 +1885,7 @@
       let lastSavedStateSnapshot = "";
 
       let state = createDefaultState();
+      let draggedTimerId = null;
 
       async function loadStages() {
         const candidates = ["./data/stages.json", "../src/data/stages.json"];
@@ -2444,6 +2480,7 @@
         testAlertButton.textContent = t("testAlertButton");
         addTimerButton.textContent = t("addTimerButton");
         resetAllButton.textContent = t("resetAllButton");
+        timersDragHint.textContent = t("timersDragHint");
         downloadTitle.textContent = t("downloadTitle");
         downloadDescription.textContent = t("downloadDescription");
         downloadDetails.textContent = t("downloadDetails");
@@ -2619,6 +2656,85 @@
         }
       }
 
+      function updateTimerPriorityLabels() {
+        timersContainer.querySelectorAll("article").forEach((article, index) => {
+          const label = article.querySelector("[data-role='priority']");
+          if (label) label.textContent = `#${index + 1}`;
+        });
+      }
+
+      function syncTimerDomOrder() {
+        for (const timer of state.timers) {
+          const element = timersContainer.querySelector(
+            `[data-timer-id="${timer.id}"]`,
+          );
+          if (element) timersContainer.appendChild(element);
+        }
+        updateTimerPriorityLabels();
+      }
+
+      function targetIndexAtPointer(clientY) {
+        const articles = [...timersContainer.querySelectorAll("article")];
+        for (let index = 0; index < articles.length; index += 1) {
+          const rect = articles[index].getBoundingClientRect();
+          if (clientY < rect.top + rect.height / 2) {
+            return index;
+          }
+        }
+        return Math.max(0, articles.length - 1);
+      }
+
+      function reorderTimersToIndex(draggedId, targetIndex) {
+        const fromIndex = state.timers.findIndex((item) => item.id === draggedId);
+        if (fromIndex < 0 || fromIndex === targetIndex) return;
+        const [item] = state.timers.splice(fromIndex, 1);
+        state.timers.splice(targetIndex, 0, item);
+        syncTimerDomOrder();
+      }
+
+      function clearTimerDragHighlights() {
+        timersContainer.querySelectorAll("article").forEach((element) => {
+          element.classList.remove("ring-2", "ring-indigo-400/70");
+        });
+      }
+
+      function setupTimerDrag(node, timer) {
+        const handle = node.querySelector("[data-role='drag-handle']");
+        if (!handle) return;
+
+        handle.title = t("rowDragHandle");
+        handle.setAttribute("aria-label", t("rowDragHandle"));
+
+        handle.addEventListener("mousedown", (event) => {
+          if (event.button !== 0) return;
+          event.preventDefault();
+
+          draggedTimerId = timer.id;
+          node.classList.add("ring-2", "ring-indigo-500/60", "opacity-80");
+          document.body.style.userSelect = "none";
+
+          const onMouseMove = (moveEvent) => {
+            if (!draggedTimerId) return;
+            const targetIndex = targetIndexAtPointer(moveEvent.clientY);
+            reorderTimersToIndex(draggedTimerId, targetIndex);
+          };
+
+          const onMouseUp = () => {
+            document.removeEventListener("mousemove", onMouseMove);
+            document.removeEventListener("mouseup", onMouseUp);
+            document.body.style.userSelect = "";
+
+            draggedTimerId = null;
+            clearTimerDragHighlights();
+            node.classList.remove("ring-2", "ring-indigo-500/60", "opacity-80");
+            saveState();
+          };
+
+          document.addEventListener("mousemove", onMouseMove);
+          document.addEventListener("mouseup", onMouseUp);
+        });
+      }
+
       function renderTimers() {
         timersContainer.innerHTML = "";
 
@@ -2628,12 +2744,16 @@
             "rounded-md border border-slate-800 bg-slate-950 p-3 text-sm text-slate-400";
           empty.textContent = t("emptyTimers");
           timersContainer.appendChild(empty);
+          timersDragHint.classList.add("hidden");
           return;
         }
 
-        for (const timer of state.timers) {
+        timersDragHint.classList.remove("hidden");
+
+        state.timers.forEach((timer, index) => {
           const node =
             timerRowTemplate.content.firstElementChild.cloneNode(true);
+          node.dataset.timerId = timer.id;
           const levelSelect = node.querySelector("[data-role='level']");
           const mapSelect = node.querySelector("[data-role='map']");
           const timerLabel = node.querySelector("[data-role='timer']");
@@ -2647,6 +2767,9 @@
           const dropButton = node.querySelector("[data-role='drop']");
           const resetButton = node.querySelector("[data-role='reset']");
           const removeButton = node.querySelector("[data-role='remove']");
+          const priorityLabel = node.querySelector("[data-role='priority']");
+
+          priorityLabel.textContent = `#${index + 1}`;
 
           labelLevel.textContent = t("rowLevel");
           labelMap.textContent = t("rowMap");
@@ -2767,8 +2890,9 @@
             appendLog(t("logRemoved", { level: timer.level }));
           });
 
+          setupTimerDrag(node, timer);
           timersContainer.appendChild(node);
-        }
+        });
 
         refreshAddButton();
       }

@@ -92,15 +92,28 @@ class ChestWatchRow(ctk.CTkFrame):
 
         self.grid_columnconfigure(3, weight=1)
 
-        self._grip_label = ctk.CTkLabel(
+        self._drag_column = ctk.CTkFrame(
             self,
+            fg_color="transparent",
+            width=22,
+            corner_radius=0,
+            border_width=0,
+            cursor="hand2",
+        )
+        self._drag_column.grid(row=0, column=0, sticky="ns", padx=(PAD_TIGHT, 0), pady=0)
+        self._drag_column.grid_rowconfigure(0, weight=1)
+        self._drag_column.grid_rowconfigure(2, weight=1)
+        self._drag_column.grid_propagate(False)
+
+        self._grip_label = ctk.CTkLabel(
+            self._drag_column,
             text="⠿",
-            width=20,
-            font=ctk.CTkFont(size=14),
+            width=22,
+            font=ctk.CTkFont(size=15),
             text_color=TEXT_MUTED,
             cursor="hand2",
         )
-        self._grip_label.grid(row=0, column=0, padx=(PAD_TIGHT, 2), pady=PAD_TIGHT)
+        self._grip_label.grid(row=1, column=0)
 
         self._order_label = ctk.CTkLabel(
             self,
@@ -108,8 +121,9 @@ class ChestWatchRow(ctk.CTkFrame):
             width=28,
             font=ctk.CTkFont(family="Segoe UI", size=12, weight="bold"),
             text_color=TEXT_MUTED,
+            cursor="hand2",
         )
-        self._order_label.grid(row=0, column=1, padx=(0, 6), pady=PAD_TIGHT)
+        self._order_label.grid(row=0, column=1, padx=(0, 6), pady=PAD_TIGHT, sticky="w")
 
         self._chest_menu = option_menu(
             self,
@@ -160,9 +174,10 @@ class ChestWatchRow(ctk.CTkFrame):
         )
         self._remove_btn.grid(row=0, column=5, padx=(0, PAD_TIGHT), pady=PAD_TIGHT)
 
-        self._grip_label.bind("<ButtonPress-1>", self._handle_drag_start, add="+")
-        self._grip_label.bind("<B1-Motion>", self._handle_drag_motion, add="+")
-        self._grip_label.bind("<ButtonRelease-1>", self._handle_drag_end, add="+")
+        for drag_handle in (self._drag_column, self._grip_label, self._order_label):
+            drag_handle.bind("<ButtonPress-1>", self._handle_drag_start, add="+")
+            drag_handle.bind("<B1-Motion>", self._handle_drag_motion, add="+")
+            drag_handle.bind("<ButtonRelease-1>", self._handle_drag_end, add="+")
 
         self._rebuild_map_options()
         self._select_stage_key(slot.stage_key)
@@ -536,18 +551,25 @@ class ChestWatchPanel(ctk.CTkFrame):
         for index, row in enumerate(self._rows):
             row.grid(row=index + 1, column=0, sticky="ew", pady=4)
 
-    def _row_at_position(self, x_root: int, y_root: int) -> ChestWatchRow | None:
-        for row in self._rows:
+    def _target_index_at_y(self, y_root: int) -> int:
+        for index, row in enumerate(self._rows):
             try:
-                left = row.winfo_rootx()
                 top = row.winfo_rooty()
-                right = left + row.winfo_width()
-                bottom = top + row.winfo_height()
+                midpoint = top + row.winfo_height() / 2
             except Exception:
                 continue
-            if left <= x_root <= right and top <= y_root <= bottom:
-                return row
-        return None
+            if y_root < midpoint:
+                return index
+        return max(0, len(self._rows) - 1)
+
+    def _reorder_dragging_to_index(self, dragging_row: ChestWatchRow, target_index: int) -> None:
+        from_index = self._rows.index(dragging_row)
+        if from_index == target_index:
+            return
+        self._rows.pop(from_index)
+        self._rows.insert(target_index, dragging_row)
+        self._layout_rows()
+        self._sync_row_context()
 
     def _on_row_drag_start(self, row: ChestWatchRow) -> None:
         self._dragging_row = row
@@ -557,32 +579,19 @@ class ChestWatchPanel(ctk.CTkFrame):
         if self._dragging_row is None:
             return
 
-        drop_row = self._row_at_position(event.x_root, event.y_root)
-        for candidate in self._rows:
-            candidate.set_drop_highlight(
-                drop_row is candidate and candidate is not self._dragging_row
-            )
+        target_index = self._target_index_at_y(event.y_root)
+        self._reorder_dragging_to_index(self._dragging_row, target_index)
 
     def _on_row_drag_end(self, _row: ChestWatchRow) -> None:
         if self._dragging_row is None:
             return
 
-        dragging_row = self._dragging_row
         self._dragging_row = None
 
         for candidate in self._rows:
             candidate.set_drop_highlight(False)
             candidate.set_dragging(False)
 
-        drop_row = self._row_at_position(self.winfo_pointerx(), self.winfo_pointery())
-        if drop_row is None or drop_row is dragging_row:
-            return
-
-        from_index = self._rows.index(dragging_row)
-        to_index = self._rows.index(drop_row)
-        self._rows.pop(from_index)
-        self._rows.insert(to_index, dragging_row)
-        self._layout_rows()
         self._sync_row_context()
         self._notify_change()
 
