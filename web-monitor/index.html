@@ -25,6 +25,54 @@
         </p>
       </section>
 
+      <div
+        class="flex flex-col gap-2 rounded-lg border border-amber-500/40 bg-amber-950/30 px-4 py-2.5 text-sm shadow-sm shadow-amber-950/25"
+      >
+        <p
+          class="flex flex-wrap items-center justify-center gap-x-3 gap-y-1.5"
+        >
+          <span id="footerDevelopedBy" class="font-medium text-amber-100"
+            >Developed by -Neath</span
+          >
+          <span aria-hidden="true" class="hidden text-amber-600/80 sm:inline"
+            >·</span
+          >
+          <a
+            id="footerLinkedInLink"
+            href="https://www.linkedin.com/in/feroddev/"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="font-medium text-amber-400 transition hover:text-amber-300"
+            >LinkedIn</a
+          >
+          <span aria-hidden="true" class="text-amber-600/80">·</span>
+          <a
+            id="footerGitHubLink"
+            href="https://github.com/feroddev"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="font-medium text-amber-400 transition hover:text-amber-300"
+            >GitHub</a
+          >
+          <span aria-hidden="true" class="text-amber-600/80">·</span>
+          <a
+            id="footerDiscordLink"
+            href="https://discord.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="font-medium text-amber-400 transition hover:text-amber-300"
+            >Discord</a
+          >
+          <span class="font-mono text-amber-200">(@.neath)</span>
+        </p>
+        <p
+          id="footerRecommendations"
+          class="text-center text-xs text-amber-200/85"
+        >
+          Send recommendations via Discord (@.neath).
+        </p>
+      </div>
+
       <section class="grid min-w-0 gap-6 lg:grid-cols-3">
         <div
           class="min-w-0 overflow-hidden rounded-xl border border-slate-800 bg-slate-900/80 p-5 lg:col-span-2"
@@ -378,54 +426,6 @@
             ></div>
           </details>
         </section>
-
-        <div
-          class="flex flex-col gap-2 rounded-lg border border-amber-500/40 bg-amber-950/30 px-4 py-2.5 text-sm shadow-sm shadow-amber-950/25"
-        >
-          <p
-            class="flex flex-wrap items-center justify-center gap-x-3 gap-y-1.5"
-          >
-            <span id="footerDevelopedBy" class="font-medium text-amber-100"
-              >Developed by -Neath</span
-            >
-            <span aria-hidden="true" class="hidden text-amber-600/80 sm:inline"
-              >·</span
-            >
-            <a
-              id="footerLinkedInLink"
-              href="https://www.linkedin.com/in/feroddev/"
-              target="_blank"
-              rel="noopener noreferrer"
-              class="font-medium text-amber-400 transition hover:text-amber-300"
-              >LinkedIn</a
-            >
-            <span aria-hidden="true" class="text-amber-600/80">·</span>
-            <a
-              id="footerGitHubLink"
-              href="https://github.com/feroddev"
-              target="_blank"
-              rel="noopener noreferrer"
-              class="font-medium text-amber-400 transition hover:text-amber-300"
-              >GitHub</a
-            >
-            <span aria-hidden="true" class="text-amber-600/80">·</span>
-            <a
-              id="footerDiscordLink"
-              href="https://discord.com"
-              target="_blank"
-              rel="noopener noreferrer"
-              class="font-medium text-amber-400 transition hover:text-amber-300"
-              >Discord</a
-            >
-            <span class="font-mono text-amber-200">(@.neath)</span>
-          </p>
-          <p
-            id="footerRecommendations"
-            class="text-center text-xs text-amber-200/85"
-          >
-            Send recommendations via Discord (@.neath).
-          </p>
-        </div>
       </footer>
     </main>
 
@@ -1931,10 +1931,24 @@
         );
       }
 
+      function compareMapSelectEntries(a, b) {
+        if (a.difficultyScore !== b.difficultyScore) {
+          return a.difficultyScore - b.difficultyScore;
+        }
+        if (a.act !== b.act) return a.act - b.act;
+        return a.stage - b.stage;
+      }
+
       function stagesForLevel(level) {
         return stageCache
           .filter((item) => item.bossChestLevel === level && !item.isActBoss)
           .sort(compareFarmEntries);
+      }
+
+      function mapSelectStagesForLevel(level) {
+        return stageCache
+          .filter((item) => item.bossChestLevel === level && !item.isActBoss)
+          .sort(compareMapSelectEntries);
       }
 
       function recommendedStageForLevel(level, candidates = null) {
@@ -2498,7 +2512,7 @@
       }
 
       function populateMapSelect(selectElement, timer) {
-        const options = stagesForLevel(timer.level);
+        const options = mapSelectStagesForLevel(timer.level);
         selectElement.innerHTML = "";
 
         if (!options.length) {
