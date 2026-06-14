@@ -13,6 +13,7 @@ from src.data.stage_codec import decode_stage_key
 from src.data.stage_catalog import find_catalog_entry
 from src.domain.chest_drop_correlator import ChestDropCorrelator, ConfirmedChestDrop
 from src.domain.chest_event import ChestEvent, ChestType
+from src.domain.confirmed_drop_notification import ConfirmedDropNotification
 from src.domain.chest_event_validator import is_chest_event_consistent_with_stage
 from src.domain.drop_cooldown import DropCooldownRegistry
 from src.domain.drop_filter import should_rotate_on_drop
@@ -97,7 +98,7 @@ class MonitorService:
         config: AppConfig,
         dry_run: bool | None = None,
         on_status: Callable[[str], None] | None = None,
-        on_chest_drop: Callable[[ChestEvent, int], None] | None = None,
+        on_confirmed_drop: Callable[[ConfirmedDropNotification], None] | None = None,
         on_drop_log: Callable[[str], None] | None = None,
         on_stage_changed: Callable[[int], None] | None = None,
         is_timer_counting: Callable[[int], bool] | None = None,
@@ -106,7 +107,7 @@ class MonitorService:
         self._language = config.language
         self._dry_run = config.monitor.dry_run if dry_run is None else dry_run
         self._on_status = on_status
-        self._on_chest_drop = on_chest_drop
+        self._on_confirmed_drop = on_confirmed_drop
         self._on_drop_log = on_drop_log
         self._on_stage_changed = on_stage_changed
         self._state_store = StateStore(config.state_file_path)
@@ -333,22 +334,28 @@ class MonitorService:
         map_name = self._map_name_for_stage_key(stage_key)
 
         if chest_level is not None:
-            self._emit_drop_log(
-                format_chest_drop_log(
-                    chest_level=chest_level,
-                    map_name=map_name,
-                    act=stage.act,
-                    stage=stage.stage,
-                    difficulty=stage.difficulty.value,
-                    chest_kind=chest_kind_label(event.chest_type, language=self._language),
-                    language=self._language,
-                )
+            log_message = format_chest_drop_log(
+                chest_level=chest_level,
+                map_name=map_name,
+                act=stage.act,
+                stage=stage.stage,
+                difficulty=stage.difficulty.value,
+                chest_kind=chest_kind_label(event.chest_type, language=self._language),
+                language=self._language,
             )
             self._drop_cooldown.record_drop(chest_level)
             self._persist_state()
-
-        if self._on_chest_drop is not None:
-            self._on_chest_drop(event, stage_key)
+            if self._on_confirmed_drop is not None:
+                self._on_confirmed_drop(
+                    ConfirmedDropNotification(
+                        event=event,
+                        stage_key=stage_key,
+                        chest_level=chest_level,
+                        log_message=log_message,
+                    )
+                )
+            else:
+                self._emit_drop_log(log_message)
 
         if event.chest_type == ChestType.NORMAL_BROWN:
             return

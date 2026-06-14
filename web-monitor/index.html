@@ -2650,7 +2650,6 @@
             timer.expired = false;
             saveState();
             refreshTimerLabel(timer, timerLabel);
-            playDropSound();
             const clearSeconds = effectiveClearSeconds(timer);
             if (clearSeconds > 0) {
               appendLog(
@@ -2705,6 +2704,10 @@
           labelElement.textContent = "0:00";
           labelElement.className =
             "mt-1 font-mono text-xl font-semibold text-rose-400";
+          if (timer.expiresAt && timer.expiresAt <= Date.now()) {
+            timer.expiresAt = null;
+            saveState();
+          }
           return;
         }
 
@@ -2716,25 +2719,23 @@
         }
 
         const realRemainingMs = timer.expiresAt - Date.now();
-        if (realRemainingMs <= 0) {
-          timer.expiresAt = null;
-          timer.expired = true;
-          labelElement.textContent = "0:00";
-          labelElement.className =
-            "mt-1 font-mono text-xl font-semibold text-rose-400";
-          playExpiredSound();
-          appendLog(t("logExpired", { level: timer.level }));
-          saveState();
-          return;
-        }
-
         const clearMs = effectiveClearSeconds(timer) * 1000;
         const displayRemainingMs = realRemainingMs - clearMs;
 
         if (displayRemainingMs <= 0) {
+          const justExpired = !timer.expired;
+          timer.expired = true;
           labelElement.textContent = "0:00";
           labelElement.className =
-            "mt-1 font-mono text-xl font-semibold text-amber-400";
+            "mt-1 font-mono text-xl font-semibold text-rose-400";
+          if (justExpired) {
+            playExpiredSound();
+            appendLog(t("logExpired", { level: timer.level }));
+          }
+          if (realRemainingMs <= 0) {
+            timer.expiresAt = null;
+          }
+          saveState();
           return;
         }
 
@@ -2800,13 +2801,6 @@
         }
 
         setTimeout(() => ctx.close(), 1500);
-      }
-
-      function playDropSound() {
-        playToneSequence([
-          [523, 70],
-          [659, 90],
-        ]);
       }
 
       function playExpiredSound() {

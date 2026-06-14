@@ -36,7 +36,6 @@ from src.ui.theme import (
     NEXT_TARGET_BORDER,
     TIMER_ACTIVE,
     TIMER_WAITING,
-    WARNING,
     hint_label,
     section_label,
 )
@@ -180,7 +179,7 @@ class ChestTimerRow(ctk.CTkFrame):
 
     @property
     def is_counting(self) -> bool:
-        return self._expires_at is not None
+        return self._expires_at is not None and not self._expired
 
     @property
     def is_expired(self) -> bool:
@@ -218,6 +217,8 @@ class ChestTimerRow(ctk.CTkFrame):
     def _refresh(self) -> None:
         if self._expired:
             self.timer_label.configure(text=EXPIRED_DISPLAY, text_color=DANGER)
+            if self._expires_at is not None and self._expires_at <= time.time():
+                self._expires_at = None
             return
 
         if self._expires_at is None:
@@ -225,20 +226,19 @@ class ChestTimerRow(ctk.CTkFrame):
             return
 
         remaining = self._expires_at - time.time()
-        if remaining <= 0:
-            self._expires_at = None
-            self._expired = True
-            self.timer_label.configure(text=EXPIRED_DISPLAY, text_color=DANGER)
-            play_timer_expired_sound()
-            return
-
         display_remaining = _display_remaining_seconds(
             self._expires_at,
             False,
             self._clear_time_seconds,
         )
+
         if display_remaining is not None and display_remaining <= 0:
-            self.timer_label.configure(text=EXPIRED_DISPLAY, text_color=WARNING)
+            if not self._expired:
+                play_timer_expired_sound()
+            self._expired = True
+            self.timer_label.configure(text=EXPIRED_DISPLAY, text_color=DANGER)
+            if remaining <= 0:
+                self._expires_at = None
             return
 
         self.timer_label.configure(
@@ -268,6 +268,7 @@ class ChestTimerBoard(ctk.CTkFrame):
         self._watch_targets: list[TimerWatchTarget] = []
         self._order: list[TimerKey] = []
         self._rows: dict[TimerKey, ChestTimerRow] = {}
+        self._counting_snapshot: dict[TimerKey, bool] = {}
 
         header = ctk.CTkFrame(self, fg_color="transparent")
         header.pack(fill="x", padx=PAD_INNER, pady=(PAD_INNER, PAD_TIGHT))
@@ -387,6 +388,12 @@ class ChestTimerBoard(ctk.CTkFrame):
 
         self._layout_rows()
         self._auto_sort_by_urgency()
+        self._publish_counting_snapshot()
+
+    def _publish_counting_snapshot(self) -> None:
+        self._counting_snapshot = {
+            timer_key: row.is_counting for timer_key, row in self._rows.items()
+        }
 
     def _collect_sort_states(self) -> list[TimerSortState]:
         states: list[TimerSortState] = []
@@ -457,11 +464,14 @@ class ChestTimerBoard(ctk.CTkFrame):
             )
         )
 
-    def start_timer(self, timer_key: TimerKey) -> None:
+    def start_timer(self, timer_key: TimerKey) -> bool:
         row = self._rows.get(timer_key)
-        if row is not None:
-            row.start_countdown()
-            self._auto_sort_by_urgency()
+        if row is None:
+            return False
+        row.start_countdown()
+        self._auto_sort_by_urgency()
+        self._publish_counting_snapshot()
+        return True
 
     def start_timer_on_drop(self, timer_key: TimerKey) -> bool:
         row = self._rows.get(timer_key)
@@ -470,18 +480,23 @@ class ChestTimerBoard(ctk.CTkFrame):
         started = row.start_countdown_on_drop()
         if started:
             self._auto_sort_by_urgency()
+            self._publish_counting_snapshot()
         return started
 
+    def has_timer_row(self, timer_key: TimerKey) -> bool:
+        return timer_key in self._rows
+
     def is_timer_counting(self, timer_key: TimerKey) -> bool:
-        row = self._rows.get(timer_key)
-        return row.is_counting if row is not None else False
+        return self._counting_snapshot.get(timer_key, False)
 
     def reset_all(self) -> None:
         for row in self._rows.values():
             row.reset()
         self._auto_sort_by_urgency()
+        self._publish_counting_snapshot()
 
     def tick(self) -> None:
         for row in self._rows.values():
             row.tick()
         self._auto_sort_by_urgency()
+        self._publish_counting_snapshot()

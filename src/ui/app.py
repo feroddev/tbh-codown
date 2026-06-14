@@ -11,16 +11,14 @@ import customtkinter as ctk
 
 from src.application.monitor_service import MonitorService
 from src.config_loader import AppConfig, load_config, save_config
-from src.data.chest_catalog import chest_display_label
-from src.domain.chest_level_resolver import drop_chest_level_for_event
 from src.domain.chest_event import ChestType
+from src.domain.confirmed_drop_notification import ConfirmedDropNotification
 from src.domain.chest_farm import enabled_farm_maps
 from src.runtime_paths import app_icon_path
 from src.ui.chest_farm_panel import ChestWatchPanel
 from src.ui.chest_timer import ChestTimerBoard
 from src.ui.i18n import (
     Language,
-    chest_kind_label,
     difficulty_display_name,
     format_current_stage_label,
     set_language,
@@ -78,7 +76,7 @@ class MonitorApp(ctk.CTk):
         self._monitor_thread: threading.Thread | None = None
         self._monitor_service: MonitorService | None = None
         self._drop_log_queue: queue.Queue[str] = queue.Queue()
-        self._chest_drop_queue: queue.Queue[tuple[object, int]] = queue.Queue()
+        self._confirmed_drop_queue: queue.Queue[ConfirmedDropNotification] = queue.Queue()
         self._stage_key_queue: queue.Queue[int] = queue.Queue()
         self._current_stage_key: int | None = None
         self._window_size_job: str | None = None
@@ -470,81 +468,79 @@ class MonitorApp(ctk.CTk):
         self.log_text.see("end")
         self.log_text.configure(state="disabled")
 
-    def _handle_chest_drop(self, event, stage_key: int) -> None:
-        self._chest_drop_queue.put((event, stage_key))
+    def _handle_confirmed_drop(self, notification: ConfirmedDropNotification) -> None:
+        self._confirmed_drop_queue.put(notification)
 
     def _handle_stage_changed(self, stage_key: int) -> None:
         self._stage_key_queue.put(stage_key)
 
-    def _process_chest_drop_ui(self, event, stage_key: int) -> None:
+    def _process_confirmed_drop(self, notification: ConfirmedDropNotification) -> None:
         from datetime import datetime
+
+        event = notification.event
+        chest_level = notification.chest_level
+
+        self._append_log(notification.log_message)
 
         if event.chest_type == ChestType.NORMAL_BROWN and not self.consider_common_var.get():
             return
 
         timestamp = datetime.now().strftime("%H:%M:%S")
-        level = drop_chest_level_for_event(event, stage_key)
-        if level is None:
-            return
-
         watched = self.chest_watch_panel.watched_levels()
-        if level not in watched:
+        if chest_level not in watched:
             self._append_log(
                 t(
                     "log_timer_not_watched",
                     language=self._language,
                     time=timestamp,
-                    level=level,
+                    level=chest_level,
                 )
             )
             return
 
-        if self.chest_timer_board.start_timer_on_drop(level):
+        if not self.chest_timer_board.has_timer_row(chest_level):
+            self._append_log(
+                t(
+                    "log_timer_not_watched",
+                    language=self._language,
+                    time=timestamp,
+                    level=chest_level,
+                )
+            )
             return
 
-        timer_label = chest_display_label(level, language=self._language, short=True)
-        if event.chest_type == ChestType.NORMAL_BROWN:
-            timer_label = (
-                f"{chest_kind_label(ChestType.NORMAL_BROWN, language=self._language)} · "
-                f"{timer_label}"
-            )
-
-        self._append_log(
-            t(
-                "log_timer_skipped",
-                language=self._language,
-                time=timestamp,
-                label=timer_label,
-            )
-        )
+        self.chest_timer_board.start_timer(chest_level)
 
     def _poll_queues(self) -> None:
-        while True:
-            try:
-                event, stage_key = self._chest_drop_queue.get_nowait()
-            except queue.Empty:
-                break
-            else:
-                self._process_chest_drop_ui(event, stage_key)
+        try:
+            while True:
+                try:
+                    notification = self._confirmed_drop_queue.get_nowait()
+                except queue.Empty:
+                    break
+                else:
+                    self._process_confirmed_drop(notification)
 
-        while True:
-            try:
-                message = self._drop_log_queue.get_nowait()
-            except queue.Empty:
-                break
-            self._append_log(message)
+            while True:
+                try:
+                    message = self._drop_log_queue.get_nowait()
+                except queue.Empty:
+                    break
+                self._append_log(message)
 
-        while True:
-            try:
-                stage_key = self._stage_key_queue.get_nowait()
-            except queue.Empty:
-                break
-            else:
-                if stage_key != self._current_stage_key:
-                    self._current_stage_key = stage_key
-                    self._refresh_status_labels()
-
-        self.after(200, self._poll_queues)
+            while True:
+                try:
+                    stage_key = self._stage_key_queue.get_nowait()
+                except queue.Empty:
+                    break
+                else:
+                    if stage_key != self._current_stage_key:
+                        self._current_stage_key = stage_key
+                        self._refresh_status_labels()
+        except Exception:
+            logger.exception("Queue polling failed")
+        finally:
+            self.after(200, self._poll_queues)
 
     def _tick_timers(self) -> None:
         self.chest_timer_board.tick()
@@ -571,7 +567,7 @@ class MonitorApp(ctk.CTk):
         self._monitor_service = MonitorService(
             self.config,
             dry_run=self.config.monitor.dry_run,
-            on_chest_drop=self._handle_chest_drop,
+            on_confirmed_drop=self._handle_confirmed_drop,
             on_drop_log=lambda message: self._drop_log_queue.put(message),
             on_stage_changed=self._handle_stage_changed,
             is_timer_counting=self.chest_timer_board.is_timer_counting,
