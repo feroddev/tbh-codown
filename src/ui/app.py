@@ -228,22 +228,26 @@ class MonitorApp(ctk.CTk):
             pady=(0, gap),
         )
         left_card.grid_columnconfigure(0, weight=1)
-        left_card.grid_rowconfigure(0, weight=1)
-        left_card.grid_rowconfigure(1, weight=0)
+        left_card.grid_rowconfigure(0, weight=0)
+        left_card.grid_rowconfigure(1, weight=1)
+        left_card.grid_rowconfigure(2, weight=0)
+
+        left_card_spacer = ctk.CTkFrame(left_card, fg_color="transparent")
+        left_card_spacer.grid(row=1, column=0, sticky="nsew")
 
         self.chest_watch_panel = ChestWatchPanel(
             left_card,
             language=self._language,
             on_change=self._on_watch_changed,
         )
-        self.chest_watch_panel.grid(row=0, column=0, sticky="nsew", padx=PAD_INNER, pady=PAD_INNER)
+        self.chest_watch_panel.grid(row=0, column=0, sticky="new", padx=PAD_INNER, pady=PAD_INNER)
 
         self.start_button = primary_button(
             left_card,
             text=t("start_monitor"),
             command=self._toggle_monitor,
         )
-        self.start_button.grid(row=1, column=0, sticky="ew", padx=PAD_INNER, pady=(0, PAD_INNER))
+        self.start_button.grid(row=2, column=0, sticky="ew", padx=PAD_INNER, pady=(0, PAD_INNER))
 
         logs_card = panel_frame(root)
         logs_card.grid(

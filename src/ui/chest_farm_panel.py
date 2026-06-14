@@ -34,6 +34,13 @@ from src.ui.theme import (
 )
 
 LEFT_PANEL_HINT_WIDTH = LEFT_PANEL_MIN_WIDTH - 56
+ROW_PAD_Y = 2
+ROW_GAP_Y = 1
+ROW_CONTROL_HEIGHT = 24
+ROW_REMOVE_SIZE = 24
+SCROLL_HEADER_HEIGHT = 18
+SCROLL_FRAME_PADDING = 4
+SCROLL_MAX_VISIBLE_ROWS = 6
 
 
 def _map_option_label(entry: StageCatalogEntry, language: Language, suggested: bool) -> str:
@@ -68,7 +75,7 @@ class ChestWatchRow(ctk.CTkFrame):
         super().__init__(
             master,
             fg_color=BG_INSET,
-            corner_radius=RADIUS_CARD,
+            corner_radius=RADIUS_SMALL,
             border_width=1,
             border_color=BORDER,
             **kwargs,
@@ -95,66 +102,70 @@ class ChestWatchRow(ctk.CTkFrame):
         self._drag_column = ctk.CTkFrame(
             self,
             fg_color="transparent",
-            width=22,
+            width=18,
+            height=ROW_CONTROL_HEIGHT,
             corner_radius=0,
             border_width=0,
             cursor="hand2",
         )
-        self._drag_column.grid(row=0, column=0, sticky="ns", padx=(PAD_TIGHT, 0), pady=0)
-        self._drag_column.grid_rowconfigure(0, weight=1)
-        self._drag_column.grid_rowconfigure(2, weight=1)
-        self._drag_column.grid_propagate(False)
+        self._drag_column.grid(row=0, column=0, padx=(ROW_PAD_Y, 0), pady=ROW_PAD_Y, sticky="w")
+        self._drag_column.grid_propagate(True)
 
         self._grip_label = ctk.CTkLabel(
             self._drag_column,
             text="⠿",
-            width=22,
-            font=ctk.CTkFont(size=15),
+            width=18,
+            height=ROW_CONTROL_HEIGHT,
+            font=ctk.CTkFont(size=12),
             text_color=TEXT_MUTED,
             cursor="hand2",
         )
-        self._grip_label.grid(row=1, column=0)
+        self._grip_label.place(relx=0.5, rely=0.5, anchor="center")
 
         self._order_label = ctk.CTkLabel(
             self,
             text=f"#{index}",
-            width=28,
-            font=ctk.CTkFont(family="Segoe UI", size=12, weight="bold"),
+            width=24,
+            font=ctk.CTkFont(family="Segoe UI", size=11, weight="bold"),
             text_color=TEXT_MUTED,
             cursor="hand2",
         )
-        self._order_label.grid(row=0, column=1, padx=(0, 6), pady=PAD_TIGHT, sticky="w")
+        self._order_label.grid(row=0, column=1, padx=(0, 4), pady=ROW_PAD_Y, sticky="w")
 
         self._chest_menu = option_menu(
             self,
             values=self._chest_level_options(),
             command=self._on_chest_changed,
             width=84,
+            height=ROW_CONTROL_HEIGHT,
+            font=ctk.CTkFont(family="Segoe UI", size=11),
         )
         self._chest_menu.set(chest_display_label(self._chest_level, language=language, short=True))
-        self._chest_menu.grid(row=0, column=2, padx=(0, 6), pady=PAD_TIGHT)
+        self._chest_menu.grid(row=0, column=2, padx=(0, 4), pady=ROW_PAD_Y)
 
         self._map_menu = option_menu(
             self,
             values=["—"],
             command=self._on_map_changed,
             width=168,
+            height=ROW_CONTROL_HEIGHT,
+            font=ctk.CTkFont(family="Segoe UI", size=11),
         )
-        self._map_menu.grid(row=0, column=3, sticky="ew", padx=(0, 6), pady=PAD_TIGHT)
+        self._map_menu.grid(row=0, column=3, sticky="ew", padx=(0, 4), pady=ROW_PAD_Y)
 
         self._clear_time_entry = ctk.CTkEntry(
             self,
             width=52,
-            height=30,
+            height=ROW_CONTROL_HEIGHT,
             justify="center",
             corner_radius=RADIUS_SMALL,
             border_width=1,
             border_color=BORDER,
             fg_color=BG_ELEVATED,
             placeholder_text=t("watch_clear_time_placeholder", language=language),
-            font=ctk.CTkFont(family="Consolas", size=12),
+            font=ctk.CTkFont(family="Consolas", size=11),
         )
-        self._clear_time_entry.grid(row=0, column=4, padx=(0, 6), pady=PAD_TIGHT)
+        self._clear_time_entry.grid(row=0, column=4, padx=(0, 4), pady=ROW_PAD_Y)
         self._clear_time_entry.bind("<Return>", self._on_clear_time_commit)
         self._clear_time_entry.bind("<FocusOut>", self._on_clear_time_commit)
         self._set_clear_time_value(slot.clear_time_seconds)
@@ -162,17 +173,17 @@ class ChestWatchRow(ctk.CTkFrame):
         self._remove_btn = ctk.CTkButton(
             self,
             text="×",
-            width=30,
-            height=30,
+            width=ROW_REMOVE_SIZE,
+            height=ROW_REMOVE_SIZE,
             corner_radius=RADIUS_SMALL,
             fg_color=DANGER,
             hover_color=DANGER_HOVER,
             border_width=0,
-            font=ctk.CTkFont(size=16, weight="bold"),
+            font=ctk.CTkFont(size=14, weight="bold"),
             command=self._on_remove_clicked,
             state="normal" if can_remove else "disabled",
         )
-        self._remove_btn.grid(row=0, column=5, padx=(0, PAD_TIGHT), pady=PAD_TIGHT)
+        self._remove_btn.grid(row=0, column=5, padx=(0, ROW_PAD_Y), pady=ROW_PAD_Y)
 
         for drag_handle in (self._drag_column, self._grip_label, self._order_label):
             drag_handle.bind("<ButtonPress-1>", self._handle_drag_start, add="+")
@@ -342,10 +353,10 @@ class ChestWatchPanel(ctk.CTkFrame):
         self._dragging_row: ChestWatchRow | None = None
 
         self.grid_columnconfigure(0, weight=1)
-        self.grid_rowconfigure(2, weight=1)
+        self.grid_rowconfigure(2, weight=0)
 
         header = ctk.CTkFrame(self, fg_color="transparent")
-        header.grid(row=0, column=0, sticky="ew", pady=(0, PAD_TIGHT))
+        header.grid(row=0, column=0, sticky="ew", pady=(0, 4))
         header.grid_columnconfigure(0, weight=1)
 
         self.title_label = section_label(header, text=t("watch_title", language=language))
@@ -363,18 +374,19 @@ class ChestWatchPanel(ctk.CTkFrame):
             wraplength=LEFT_PANEL_HINT_WIDTH,
             justify="left",
         )
-        self.clear_time_hint_label.grid(row=1, column=0, sticky="ew", pady=(0, PAD_TIGHT))
+        self.clear_time_hint_label.grid(row=1, column=0, sticky="ew", pady=(0, 4))
 
         self.rows_scroll = ctk.CTkScrollableFrame(
             self,
             fg_color=BG_INSET,
             border_width=1,
             border_color=BORDER_SUBTLE,
-            corner_radius=RADIUS_CARD,
+            corner_radius=RADIUS_SMALL,
             scrollbar_button_color=BG_ELEVATED,
             scrollbar_button_hover_color=HOVER,
+            height=self._scroll_frame_height(),
         )
-        self.rows_scroll.grid(row=2, column=0, sticky="nsew", pady=(0, PAD_INNER))
+        self.rows_scroll.grid(row=2, column=0, sticky="ew", pady=(0, 8))
         self.rows_scroll.grid_columnconfigure(0, weight=1)
         self._build_columns_header()
 
@@ -382,15 +394,30 @@ class ChestWatchPanel(ctk.CTkFrame):
             self,
             text=t("add_chest", language=language),
             command=self._add_chest,
+            height=30,
         )
         self.add_button.grid(row=3, column=0, sticky="ew")
+
+    def _row_block_height(self) -> int:
+        return ROW_CONTROL_HEIGHT + ROW_PAD_Y * 2 + ROW_GAP_Y * 2
+
+    def _scroll_frame_height(self) -> int:
+        visible_rows = max(1, min(len(self._rows), SCROLL_MAX_VISIBLE_ROWS))
+        return (
+            SCROLL_HEADER_HEIGHT
+            + visible_rows * self._row_block_height()
+            + SCROLL_FRAME_PADDING
+        )
+
+    def _update_scroll_height(self) -> None:
+        self.rows_scroll.configure(height=self._scroll_frame_height())
 
     def _build_columns_header(self) -> None:
         if hasattr(self, "_columns_header"):
             self._columns_header.destroy()
 
         self._columns_header = ctk.CTkFrame(self.rows_scroll, fg_color="transparent")
-        self._columns_header.grid(row=0, column=0, sticky="ew", padx=(PAD_TIGHT, PAD_TIGHT), pady=(4, 0))
+        self._columns_header.grid(row=0, column=0, sticky="ew", padx=(ROW_PAD_Y, ROW_PAD_Y), pady=(2, 0))
         self._columns_header.grid_columnconfigure(3, weight=1)
 
         header_font = ctk.CTkFont(family="Segoe UI", size=10, weight="bold")
@@ -456,6 +483,7 @@ class ChestWatchPanel(ctk.CTkFrame):
 
         self._sync_row_context()
         self._refresh_add_button()
+        self._update_scroll_height()
 
     def _default_slots(self) -> list[ChestFarmSlot]:
         defaults: list[ChestFarmSlot] = []
@@ -493,8 +521,9 @@ class ChestWatchPanel(ctk.CTkFrame):
             on_drag_motion=self._on_row_drag_motion,
             on_drag_end=self._on_row_drag_end,
         )
-        row.grid(row=len(self._rows) + 1, column=0, sticky="ew", pady=4)
+        row.grid(row=len(self._rows) + 1, column=0, sticky="ew", pady=ROW_GAP_Y)
         self._rows.append(row)
+        self._update_scroll_height()
 
     def _refresh_rows(self) -> None:
         slots = self.collect_slots()
@@ -545,11 +574,12 @@ class ChestWatchPanel(ctk.CTkFrame):
         self._rows.remove(row)
         self._sync_row_context()
         self._refresh_add_button()
+        self._update_scroll_height()
         self._on_change()
 
     def _layout_rows(self) -> None:
         for index, row in enumerate(self._rows):
-            row.grid(row=index + 1, column=0, sticky="ew", pady=4)
+            row.grid(row=index + 1, column=0, sticky="ew", pady=ROW_GAP_Y)
 
     def _target_index_at_y(self, y_root: int) -> int:
         for index, row in enumerate(self._rows):
