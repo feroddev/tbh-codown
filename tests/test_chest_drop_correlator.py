@@ -48,6 +48,25 @@ class ChestDropCorrelatorTests(unittest.TestCase):
 
         self.assertEqual(len(confirmed), 1)
 
+    def test_log_drop_suppressed_after_recent_save_confirm(self) -> None:
+        correlator = ChestDropCorrelator(log_save_suppress_seconds=12.0)
+        save_event = ChestEvent("normal_box_data", ChestType.NORMAL_BROWN, 2, "save")
+        log_event = ChestEvent("910501", ChestType.NORMAL_BROWN, 2, "log")
+
+        correlator.register_save_drop(save_event, stage_key=2201)
+        suppressed = correlator.register_log_drop(log_event, stage_key=2201)
+
+        self.assertEqual(suppressed, [])
+
+    def test_duplicate_log_drop_suppressed(self) -> None:
+        correlator = ChestDropCorrelator(log_save_suppress_seconds=12.0)
+        log_event = ChestEvent("910501", ChestType.NORMAL_BROWN, 2, "log")
+
+        correlator.register_log_drop(log_event, stage_key=2201)
+        suppressed = correlator.register_log_drop(log_event, stage_key=2201)
+
+        self.assertEqual(suppressed, [])
+
 
 if __name__ == "__main__":
     unittest.main()

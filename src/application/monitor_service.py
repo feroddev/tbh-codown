@@ -18,6 +18,7 @@ from src.domain.confirmed_drop_notification import ConfirmedDropNotification
 from src.domain.chest_event_validator import is_chest_event_consistent_with_stage
 from src.domain.chest_timer_keys import common_chest_timer_key
 from src.domain.drop_cooldown import DropCooldownRegistry
+from src.domain.drop_deduplicator import DropDeduplicator
 from src.domain.drop_filter import should_rotate_on_drop
 from src.domain.rotation_engine import MapConfig, RotationEngine, RotationResult
 from src.infrastructure.log_watcher import PlayerLogPoller
@@ -44,25 +45,6 @@ class PersistedState:
     last_drop_at: float | None = None
     last_map_label: str | None = None
     last_drop_by_level: dict[int, float] | None = None
-
-
-class DropDeduplicator:
-    def __init__(self, window_seconds: float = 6.0) -> None:
-        self._window_seconds = window_seconds
-        self._recent: list[tuple[float, str]] = []
-
-    def is_duplicate(self, dedup_key: str) -> bool:
-        now = time.time()
-        self._recent = [
-            entry
-            for entry in self._recent
-            if now - entry[0] < self._window_seconds
-        ]
-        for _, recent_key in self._recent:
-            if recent_key == dedup_key:
-                return True
-        self._recent.append((now, dedup_key))
-        return False
 
 
 class StateStore:
@@ -267,10 +249,10 @@ class MonitorService:
         return None
 
     def _dedup_key_for_event(self, event: ChestEvent, stage_key: int) -> str:
-        if event.item_key in {"boss_box_data", "normal_box_data"}:
-            chest_level = self._chest_level_for_event(event, stage_key)
-            return f"save:{event.chest_type.value}:{stage_key}:{event.count}:{chest_level}"
-        return f"log:{event.item_key}:{time.time_ns()}"
+        chest_level = self._chest_level_for_event(event, stage_key)
+        if chest_level is not None:
+            return f"{event.chest_type.value}:{stage_key}:{chest_level}"
+        return f"{event.chest_type.value}:{stage_key}:{event.item_key}:{event.count}"
 
     def _sync_stage_from_save(self, stage_key: int) -> MapConfig | None:
         active_map = self._resolve_active_map(stage_key)
