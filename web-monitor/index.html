@@ -613,6 +613,12 @@
     <script>
       const STORAGE_KEY = "tbh-web-monitor-state-v2";
       const LANGUAGE_STORAGE_KEY = "tbh-web-monitor-language-v1";
+      const MIGRATION_SPLIT_DURATIONS_KEY =
+        "tbh-web-monitor-migration-split-durations-v1";
+      const CURRENT_STATE_VERSION = 3;
+      const DEFAULT_BOSS_DURATION_MINUTES = 7;
+      const DEFAULT_COMMON_DURATION_MINUTES = 5;
+      const LEGACY_DEFAULT_DURATION_MINUTES = 12;
       const CHEST_LEVELS = [7, 15, 20, 30, 40, 50, 65, 80];
       const DIFFICULTY_CODE = { Normal: 1, Nightmare: 2, Hell: 3, Torment: 4 };
       const DIFFICULTY_ORDER = { Normal: 0, Nightmare: 1, Hell: 2, Torment: 3 };
@@ -2203,9 +2209,10 @@
 
       function createDefaultState() {
         return {
+          stateVersion: CURRENT_STATE_VERSION,
           language: loadLanguagePreference(),
-          bossDurationMinutes: 7,
-          commonDurationMinutes: 5,
+          bossDurationMinutes: DEFAULT_BOSS_DURATION_MINUTES,
+          commonDurationMinutes: DEFAULT_COMMON_DURATION_MINUTES,
           alertVolume: 100,
           farmMode: "player",
           playerLevel: 50,
@@ -2486,6 +2493,46 @@
         return parsed;
       }
 
+      function shouldResetDurationsToSplitDefaults(parsed) {
+        const legacyDuration = Number(parsed.durationMinutes);
+        const bossDuration = Number(parsed.bossDurationMinutes);
+        const commonDuration = Number(parsed.commonDurationMinutes);
+        const bossValid = Number.isFinite(bossDuration);
+        const commonValid = Number.isFinite(commonDuration);
+
+        if (Number.isFinite(legacyDuration)) {
+          return true;
+        }
+        if (!bossValid || !commonValid) {
+          return true;
+        }
+        if (bossDuration === LEGACY_DEFAULT_DURATION_MINUTES) {
+          return true;
+        }
+        if (
+          bossDuration === commonDuration &&
+          bossDuration !== DEFAULT_BOSS_DURATION_MINUTES
+        ) {
+          return true;
+        }
+        return false;
+      }
+
+      function applyStoredStateMigrations(parsed, loaded) {
+        if (localStorage.getItem(MIGRATION_SPLIT_DURATIONS_KEY)) {
+          return loaded;
+        }
+
+        if (shouldResetDurationsToSplitDefaults(parsed)) {
+          loaded.bossDurationMinutes = DEFAULT_BOSS_DURATION_MINUTES;
+          loaded.commonDurationMinutes = DEFAULT_COMMON_DURATION_MINUTES;
+        }
+
+        loaded.stateVersion = CURRENT_STATE_VERSION;
+        localStorage.setItem(MIGRATION_SPLIT_DURATIONS_KEY, "1");
+        return loaded;
+      }
+
       function normalizeState() {
         if (!isSupportedLanguage(state.language)) {
           state.language = loadLanguagePreference();
@@ -2495,12 +2542,13 @@
         state.bossDurationMinutes = normalizeDurationMinutes(
           state.bossDurationMinutes ??
             (Number.isFinite(legacyDuration) ? legacyDuration : undefined),
-          7,
+          DEFAULT_BOSS_DURATION_MINUTES,
         );
         state.commonDurationMinutes = normalizeDurationMinutes(
           state.commonDurationMinutes,
-          5,
+          DEFAULT_COMMON_DURATION_MINUTES,
         );
+        state.stateVersion = CURRENT_STATE_VERSION;
         delete state.durationMinutes;
         delete state.commonTimer;
 
@@ -2611,13 +2659,13 @@
           const raw = localStorage.getItem(STORAGE_KEY);
           if (!raw) return createDefaultState();
           const parsed = JSON.parse(raw);
-          return {
+          const loaded = applyStoredStateMigrations(parsed, {
+            stateVersion: Number(parsed.stateVersion),
             language: isSupportedLanguage(parsed.language)
               ? parsed.language
               : loadLanguagePreference(),
             bossDurationMinutes: Number(parsed.bossDurationMinutes),
             commonDurationMinutes: Number(parsed.commonDurationMinutes),
-            durationMinutes: Number(parsed.durationMinutes),
             durationMinutes: Number(parsed.durationMinutes),
             commonTimer: parsed.commonTimer,
             alertVolume: Number(parsed.alertVolume),
@@ -2626,7 +2674,8 @@
             cubeLevel: Number(parsed.cubeLevel),
             runeBonusPercent: Number(parsed.runeBonusPercent),
             timers: Array.isArray(parsed.timers) ? parsed.timers : [],
-          };
+          });
+          return loaded;
         } catch {
           return createDefaultState();
         }
