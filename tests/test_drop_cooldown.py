@@ -16,9 +16,9 @@ class DropCooldownTests(unittest.TestCase):
             should_accept_flat_count_drop(
                 chest_level=50,
                 last_drop_at=1000.0,
-                cooldown_seconds=13 * 60,
+                cooldown_seconds=7 * 60,
                 timer_is_counting=False,
-                now=1000.0 + 13 * 60,
+                now=1000.0 + 7 * 60,
             )
         )
 
@@ -27,9 +27,9 @@ class DropCooldownTests(unittest.TestCase):
             should_accept_flat_count_drop(
                 chest_level=50,
                 last_drop_at=1000.0,
-                cooldown_seconds=13 * 60,
+                cooldown_seconds=7 * 60,
                 timer_is_counting=False,
-                now=1000.0 + 12 * 60,
+                now=1000.0 + 6 * 60,
             )
         )
 
@@ -38,7 +38,7 @@ class DropCooldownTests(unittest.TestCase):
             should_accept_flat_count_drop(
                 chest_level=50,
                 last_drop_at=1000.0,
-                cooldown_seconds=13 * 60,
+                cooldown_seconds=7 * 60,
                 timer_is_counting=True,
                 now=1000.0 + 20 * 60,
             )
@@ -49,7 +49,7 @@ class DropCooldownTests(unittest.TestCase):
             should_accept_flat_count_drop(
                 chest_level=50,
                 last_drop_at=None,
-                cooldown_seconds=13 * 60,
+                cooldown_seconds=7 * 60,
                 timer_is_counting=False,
                 now=1000.0 + MONITOR_STARTUP_GRACE_SECONDS,
                 monitor_started_at=1000.0,
@@ -61,7 +61,7 @@ class DropCooldownTests(unittest.TestCase):
             should_accept_flat_count_drop(
                 chest_level=50,
                 last_drop_at=None,
-                cooldown_seconds=13 * 60,
+                cooldown_seconds=7 * 60,
                 timer_is_counting=False,
                 now=1000.0 + 5.0,
                 monitor_started_at=1000.0,
@@ -70,17 +70,29 @@ class DropCooldownTests(unittest.TestCase):
 
     def test_registry_accepts_flat_count_for_boss_key_after_cooldown(self) -> None:
         registry = DropCooldownRegistry(
-            cooldown_minutes_provider=lambda: 13.0,
-            is_timer_counting=lambda _level: False,
+            boss_cooldown_minutes_provider=lambda: 7.0,
+            common_cooldown_minutes_provider=lambda: 5.0,
+            is_boss_timer_counting=lambda _level: False,
             last_drop_by_level={50: 1000.0},
         )
 
         self.assertTrue(registry.should_accept_flat_count_for_key("920501"))
 
+    def test_registry_accepts_flat_count_for_common_key_after_cooldown(self) -> None:
+        registry = DropCooldownRegistry(
+            boss_cooldown_minutes_provider=lambda: 7.0,
+            common_cooldown_minutes_provider=lambda: 5.0,
+            is_common_timer_counting=lambda _level: False,
+            last_drop_by_level={-50: 1000.0},
+        )
+
+        self.assertTrue(registry.should_accept_flat_count_for_key("910501"))
+
     def test_registry_rejects_flat_count_for_boss_key_within_cooldown(self) -> None:
         registry = DropCooldownRegistry(
-            cooldown_minutes_provider=lambda: 13.0,
-            is_timer_counting=lambda _level: False,
+            boss_cooldown_minutes_provider=lambda: 7.0,
+            common_cooldown_minutes_provider=lambda: 5.0,
+            is_boss_timer_counting=lambda _level: False,
             last_drop_by_level={50: time.time()},
         )
 

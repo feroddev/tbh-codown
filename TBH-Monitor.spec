@@ -6,7 +6,7 @@ from PyInstaller.utils.hooks import collect_all
 project_root = Path(SPECPATH)
 
 datas = [
-    (str(project_root / "config.yaml"), "."),
+    (str(project_root / "packaging" / "config.yaml"), "."),
     (str(project_root / "assets" / "tbh_monitor.ico"), "assets"),
     (str(project_root / "assets" / "tbh_monitor.png"), "assets"),
     (str(project_root / "src" / "data" / "boss_chests.json"), "src/data"),
@@ -36,7 +36,7 @@ a = Analysis(
     hiddenimports=hiddenimports,
     hookspath=[],
     hooksconfig={},
-    runtime_hooks=[],
+    runtime_hooks=[str(project_root / "packaging" / "pyi_rth_hide_gui_console.py")],
     excludes=["plyer"],
     noarchive=False,
     optimize=0,
@@ -53,7 +53,7 @@ exe = EXE(
     bootloader_ignore_signals=False,
     strip=False,
     upx=True,
-    console=False,
+    console=True,
     disable_windowed_traceback=False,
     argv_emulation=False,
     target_arch=None,

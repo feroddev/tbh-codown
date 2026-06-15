@@ -157,12 +157,31 @@ def normal_brown_item_keys() -> frozenset[str]:
     )
 
 
+def common_chest_key_for_boss_key(boss_key: str) -> str | None:
+    if not boss_key.startswith("92") or len(boss_key) < 6:
+        return None
+    return f"91{boss_key[2:]}"
+
+
+def common_chest_key_for_level(level: int) -> str | None:
+    boss_key = boss_key_for_level(level)
+    if boss_key is None:
+        return None
+    return common_chest_key_for_boss_key(boss_key)
+
+
 def common_chest_level_for_key(item_key: str) -> int | None:
     if item_key == "normal_box_data":
         return None
     for item in NORMAL_CHEST_CATALOG:
         if item.key == item_key:
             return item.level
+    if item_key.startswith("910") and len(item_key) >= 6:
+        from src.data.stage_catalog import boss_chest_level_for_key
+
+        boss_level = boss_chest_level_for_key(f"92{item_key[2:]}")
+        if boss_level is not None:
+            return boss_level
     return None
 
 

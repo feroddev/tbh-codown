@@ -16,8 +16,8 @@ class ConfigLoaderChestFarmTests(unittest.TestCase):
             )
             raw = config_path.read_text(encoding="utf-8")
             raw = raw.replace(
-                "priority: 3\n",
-                "priority: 3\n  clear_time_seconds: 157\n",
+                "chest_level: 40\n  stage_key: 2109",
+                "chest_level: 40\n  stage_key: 2109\n  clear_time_seconds: 157",
                 1,
             )
             config_path.write_text(raw, encoding="utf-8")

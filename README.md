@@ -10,7 +10,7 @@ Aplicativo Windows que monitora o jogo em tempo real e ajuda na rotação entre 
 
 - Lê o `Player.log` e o save (`SaveFile_Live.es3` e backups de rotação) automaticamente
 - Detecta drops de baú de chefe (e baú comum, se habilitado)
-- Inicia cronômetros por nível de baú (Lv 65, 50, 40, 30…)
+- Inicia cronômetros por nível de baú (Lv 50, 40…)
 - Indica o próximo mapa da rotação configurada
 - Interface gráfica com timers, farm por baú e log de eventos
 
@@ -51,7 +51,8 @@ monitor:
   poll_interval_seconds: 0.5
   save_poll_interval_seconds: 2.0
   debounce_seconds: 4.0
-  average_drop_minutes: 12.0
+  boss_drop_minutes: 7.0
+  common_drop_minutes: 5.0
   window_title: TaskBarHero
   dry_run: false
 
@@ -62,22 +63,14 @@ ui:
   language: pt-BR
 
 chest_farms:
-  - chest_level: 65
-    stage_key: 3205
-    enabled: true
-    priority: 1
   - chest_level: 50
     stage_key: 2305
     enabled: true
-    priority: 2
+    priority: 1
   - chest_level: 40
     stage_key: 2109
     enabled: true
-    priority: 3
-  - chest_level: 30
-    stage_key: 1308
-    enabled: true
-    priority: 4
+    priority: 2
 ```
 
 ### Campos principais
@@ -87,7 +80,7 @@ chest_farms:
 | `paths.player_log` | Log do Unity (`Player.log`) |
 | `paths.save_file` | Save principal do jogo |
 | `paths.state_file` | Estado persistido do monitor (rotação, timers) |
-| `paths.es3_password` | Senha do save ES3 (detectada automaticamente se omitida) |
+| `paths.es3_password` | Chave de leitura do save ES3 do jogo (detectada automaticamente se omitida; não é senha de conta) |
 | `chest_farms` | Baús monitorados, mapa (`stage_key`) e ordem de rotação (`priority`: 1 = maior prioridade) |
 | `strategy.consider_common_chest` | Se `true`, baús comuns também são detectados |
 | `monitor.dry_run` | Detecta drops sem sugerir troca de mapa |
@@ -103,6 +96,8 @@ Para consultar o stage atual do save:
 ```bash
 python -m src.main status
 ```
+
+No PowerShell, ao usar o executável empacotado, prefixe com `.\` (ex.: `.\TBH-Monitor.exe status`).
 
 ## Desenvolvimento local (desktop)
 
@@ -127,7 +122,7 @@ python -m src.main paths      # caminhos detectados do jogo
 build.bat
 ```
 
-O build gera `dist/TBH-Monitor/TBH-Monitor.exe` com `config.yaml` incluído.
+O build gera a pasta `dist/TBH-Monitor/` pronta para distribuição. Compacte **a pasta inteira** em um ZIP (incluindo `_internal/`). O `config.yaml` de release vem de `config.dist.yaml` e usa detecção automática dos caminhos do jogo.
 
 ### Testes
 

@@ -4,6 +4,7 @@ import os
 import re
 import sys
 from collections.abc import Callable
+from dataclasses import dataclass
 from pathlib import Path
 
 DEFAULT_ES3_PASSWORD = "emuMqG3bLYJ938ZDCfieWJ"
@@ -204,7 +205,15 @@ def resolve_path(
     return discover()
 
 
-def discover_es3_password(game_resources_path: Path | None = None) -> str:
+@dataclass(frozen=True)
+class Es3PasswordDiscovery:
+    password: str
+    from_game: bool
+
+
+def discover_es3_password_result(
+    game_resources_path: Path | None = None,
+) -> Es3PasswordDiscovery:
     resources_path = game_resources_path or GAME_RESOURCES_ASSETS
     if not resources_path.exists():
         game_exe = discover_game_exe()
@@ -212,19 +221,35 @@ def discover_es3_password(game_resources_path: Path | None = None) -> str:
             resources_path = game_exe.parent / "TaskBarHero_Data/resources.assets"
 
     if not resources_path.exists():
-        return DEFAULT_ES3_PASSWORD
+        return Es3PasswordDiscovery(
+            password=DEFAULT_ES3_PASSWORD,
+            from_game=False,
+        )
 
     data = resources_path.read_bytes()
     marker = b"SaveFile_Live.es3"
     index = data.find(marker)
     if index < 0:
-        return DEFAULT_ES3_PASSWORD
+        return Es3PasswordDiscovery(
+            password=DEFAULT_ES3_PASSWORD,
+            from_game=False,
+        )
 
     chunk = data[index : index + 120]
     match = re.search(rb"SaveFile_Live\.es3\x00([A-Za-z0-9]{8,64})", chunk)
     if match:
-        return match.group(1).decode("ascii")
-    return DEFAULT_ES3_PASSWORD
+        return Es3PasswordDiscovery(
+            password=match.group(1).decode("ascii"),
+            from_game=True,
+        )
+    return Es3PasswordDiscovery(
+        password=DEFAULT_ES3_PASSWORD,
+        from_game=False,
+    )
+
+
+def discover_es3_password(game_resources_path: Path | None = None) -> str:
+    return discover_es3_password_result(game_resources_path).password
 
 
 def format_discovered_paths() -> str:

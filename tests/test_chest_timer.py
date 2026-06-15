@@ -22,7 +22,7 @@ class ChestTimerRowTests(unittest.TestCase):
         return ChestTimerRow(
             self._root,
             timer_key=50,
-            duration_minutes=12.0,
+            duration_minutes=7.0,
         )
 
     def test_is_counting_false_when_waiting(self) -> None:

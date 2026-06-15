@@ -8,6 +8,7 @@ from dataclasses import asdict, dataclass, replace
 from pathlib import Path
 
 from src.config_loader import AppConfig
+from src.data.chest_catalog import common_chest_key_for_boss_key
 from src.domain.chest_level_resolver import drop_chest_level_for_event
 from src.data.stage_codec import decode_stage_key
 from src.data.stage_catalog import find_catalog_entry
@@ -15,6 +16,7 @@ from src.domain.chest_drop_correlator import ChestDropCorrelator, ConfirmedChest
 from src.domain.chest_event import ChestEvent, ChestType
 from src.domain.confirmed_drop_notification import ConfirmedDropNotification
 from src.domain.chest_event_validator import is_chest_event_consistent_with_stage
+from src.domain.chest_timer_keys import common_chest_timer_key
 from src.domain.drop_cooldown import DropCooldownRegistry
 from src.domain.drop_filter import should_rotate_on_drop
 from src.domain.rotation_engine import MapConfig, RotationEngine, RotationResult
@@ -102,6 +104,7 @@ class MonitorService:
         on_drop_log: Callable[[str], None] | None = None,
         on_stage_changed: Callable[[int], None] | None = None,
         is_timer_counting: Callable[[int], bool] | None = None,
+        is_common_timer_counting: Callable[[int], bool] | None = None,
     ) -> None:
         self._config = config
         self._language = config.language
@@ -113,8 +116,10 @@ class MonitorService:
         self._state_store = StateStore(config.state_file_path)
         persisted = self._state_store.load()
         self._drop_cooldown = DropCooldownRegistry(
-            cooldown_minutes_provider=lambda: self._config.monitor.average_drop_minutes,
-            is_timer_counting=is_timer_counting,
+            boss_cooldown_minutes_provider=lambda: self._config.monitor.boss_drop_minutes,
+            common_cooldown_minutes_provider=lambda: self._config.monitor.common_drop_minutes,
+            is_boss_timer_counting=is_timer_counting,
+            is_common_timer_counting=is_common_timer_counting,
             last_drop_by_level=persisted.last_drop_by_level,
         )
         self._rotation = RotationEngine(config.maps, current_index=persisted.current_index)
@@ -128,6 +133,7 @@ class MonitorService:
             consider_common_chest=config.strategy.consider_common_chest,
             debounce_seconds=config.monitor.debounce_seconds,
             watch_boss_keys=self._rotation_boss_keys(),
+            watch_common_keys=self._rotation_common_keys(),
             flat_count_drop_gate=self._drop_cooldown.should_accept_flat_count_for_key,
         )
         self._drop_deduplicator = DropDeduplicator(
@@ -166,11 +172,22 @@ class MonitorService:
         )
         self._save_detector.set_consider_common_chest(enabled)
         self._log_poller.set_consider_common_chest(enabled)
+        self._log_poller.set_watch_common_keys(self._rotation_common_keys())
 
     def _rotation_boss_keys(self) -> frozenset[str]:
         keys: set[str] = set()
         for map_config in self._rotation.maps:
             keys.update(map_config.boss_chest_keys)
+        return frozenset(keys)
+
+    def _rotation_common_keys(self) -> frozenset[str]:
+        keys: set[str] = set()
+        if not self.consider_common_chest:
+            return frozenset()
+        for boss_key in self._rotation_boss_keys():
+            common_key = common_chest_key_for_boss_key(boss_key)
+            if common_key is not None:
+                keys.add(common_key)
         return frozenset(keys)
 
     def _stage_boss_item_keys(self, stage_key: int) -> frozenset[str]:
@@ -179,16 +196,28 @@ class MonitorService:
             return frozenset()
         return frozenset({entry.boss_chest_key})
 
+    def _stage_common_item_keys(self, stage_key: int) -> frozenset[str]:
+        if not self.consider_common_chest:
+            return frozenset()
+        keys: set[str] = set()
+        for boss_key in self._stage_boss_item_keys(stage_key):
+            common_key = common_chest_key_for_boss_key(boss_key)
+            if common_key is not None:
+                keys.add(common_key)
+        return frozenset(keys)
+
     def _log_preserve_item_keys(self) -> frozenset[str]:
         keys: set[str] = set()
         stage_key = self._cached_log_stage_key or self._cached_stage_key
         if stage_key is not None:
             keys.update(self._stage_boss_item_keys(stage_key))
+            keys.update(self._stage_common_item_keys(stage_key))
         if (
             self._previous_stage_key is not None
             and self._is_recent_stage_transition()
         ):
             keys.update(self._stage_boss_item_keys(self._previous_stage_key))
+            keys.update(self._stage_common_item_keys(self._previous_stage_key))
         return frozenset(keys)
 
     def _emit_status(self, message: str) -> None:
@@ -242,12 +271,6 @@ class MonitorService:
             chest_level = self._chest_level_for_event(event, stage_key)
             return f"save:{event.chest_type.value}:{stage_key}:{event.count}:{chest_level}"
         return f"log:{event.item_key}:{time.time_ns()}"
-
-    def _map_name_for_stage_key(self, stage_key: int) -> str:
-        entry = find_catalog_entry(stage_key)
-        if entry is not None:
-            return entry.name
-        return decode_stage_key(stage_key).label
 
     def _sync_stage_from_save(self, stage_key: int) -> MapConfig | None:
         active_map = self._resolve_active_map(stage_key)
@@ -330,20 +353,19 @@ class MonitorService:
             return
 
         chest_level = self._chest_level_for_event(event, stage_key)
-        stage = decode_stage_key(stage_key)
-        map_name = self._map_name_for_stage_key(stage_key)
 
         if chest_level is not None:
             log_message = format_chest_drop_log(
                 chest_level=chest_level,
-                map_name=map_name,
-                act=stage.act,
-                stage=stage.stage,
-                difficulty=stage.difficulty.value,
+                stage_key=stage_key,
                 chest_kind=chest_kind_label(event.chest_type, language=self._language),
                 language=self._language,
             )
-            self._drop_cooldown.record_drop(chest_level)
+            self._drop_cooldown.record_drop(
+                common_chest_timer_key(chest_level)
+                if event.chest_type == ChestType.NORMAL_BROWN
+                else chest_level
+            )
             self._persist_state()
             if self._on_confirmed_drop is not None:
                 self._on_confirmed_drop(
@@ -574,6 +596,24 @@ class MonitorService:
             if self._dry_run
             else t("mode_active", language=self._language)
         )
+        player_log_path = self._config.player_log_path
+        log_path_status = (
+            t("log_player_log_found", language=self._language)
+            if player_log_path.exists()
+            else t("log_player_log_missing", language=self._language)
+        )
+        self._emit_status(
+            t(
+                "log_player_log_path",
+                language=self._language,
+                path=str(player_log_path).replace("\\", "/"),
+                status=log_path_status,
+            )
+        )
+        if self._config.es3_password_is_default:
+            self._emit_status(
+                t("log_es3_password_default", language=self._language)
+            )
         self._emit_status(
             t(
                 "monitor_started",

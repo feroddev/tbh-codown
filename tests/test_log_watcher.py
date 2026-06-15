@@ -99,8 +99,9 @@ class LogWatcherTests(unittest.TestCase):
 
     def test_flat_count_drop_accepted_without_previous_drop_history(self) -> None:
         registry = DropCooldownRegistry(
-            cooldown_minutes_provider=lambda: 13.0,
-            is_timer_counting=lambda _level: False,
+            boss_cooldown_minutes_provider=lambda: 7.0,
+            common_cooldown_minutes_provider=lambda: 5.0,
+            is_boss_timer_counting=lambda _level: False,
             last_drop_by_level={},
             monitor_started_at=1_000.0 - 60.0,
         )
@@ -121,8 +122,9 @@ class LogWatcherTests(unittest.TestCase):
 
     def test_flat_count_drop_accepted_after_cooldown(self) -> None:
         registry = DropCooldownRegistry(
-            cooldown_minutes_provider=lambda: 13.0,
-            is_timer_counting=lambda _level: False,
+            boss_cooldown_minutes_provider=lambda: 7.0,
+            common_cooldown_minutes_provider=lambda: 5.0,
+            is_boss_timer_counting=lambda _level: False,
             last_drop_by_level={50: 1_000.0},
             monitor_started_at=500.0,
         )
@@ -145,8 +147,9 @@ class LogWatcherTests(unittest.TestCase):
         import time
 
         registry = DropCooldownRegistry(
-            cooldown_minutes_provider=lambda: 13.0,
-            is_timer_counting=lambda _level: False,
+            boss_cooldown_minutes_provider=lambda: 7.0,
+            common_cooldown_minutes_provider=lambda: 5.0,
+            is_boss_timer_counting=lambda _level: False,
             last_drop_by_level={50: time.time()},
             monitor_started_at=time.time() - 120.0,
         )
@@ -166,8 +169,9 @@ class LogWatcherTests(unittest.TestCase):
 
     def test_flat_count_drop_rejected_when_timer_is_counting(self) -> None:
         registry = DropCooldownRegistry(
-            cooldown_minutes_provider=lambda: 13.0,
-            is_timer_counting=lambda level: level == 50,
+            boss_cooldown_minutes_provider=lambda: 7.0,
+            common_cooldown_minutes_provider=lambda: 5.0,
+            is_boss_timer_counting=lambda level: level == 50,
             last_drop_by_level={50: 1_000.0},
             monitor_started_at=500.0,
         )
@@ -179,6 +183,68 @@ class LogWatcherTests(unittest.TestCase):
         )
         detector.enable_count_tracking(True)
         line = "GetBoxCount Success Count : 1 // ItemKey : 920501"
+
+        detector.seed_line(line)
+        event = detector.process_line(line)
+
+        self.assertIsNone(event)
+
+    def test_watch_common_key_emits_first_sight_count_one(self) -> None:
+        detector = ChestDetector(
+            consider_common_chest=True,
+            debounce_seconds=4.0,
+            watch_common_keys=frozenset({"910501"}),
+        )
+        detector.enable_count_tracking(True)
+
+        event = detector.process_line(
+            "GetBoxCount Success Count : 1 // ItemKey : 910501"
+        )
+
+        self.assertIsNotNone(event)
+        self.assertEqual(event.count, 1)
+        self.assertEqual(event.chest_type, ChestType.NORMAL_BROWN)
+
+    def test_common_flat_count_drop_accepted_after_cooldown(self) -> None:
+        registry = DropCooldownRegistry(
+            boss_cooldown_minutes_provider=lambda: 7.0,
+            common_cooldown_minutes_provider=lambda: 5.0,
+            is_common_timer_counting=lambda _level: False,
+            last_drop_by_level={-50: 1_000.0},
+            monitor_started_at=500.0,
+        )
+        detector = ChestDetector(
+            consider_common_chest=True,
+            debounce_seconds=4.0,
+            watch_common_keys=frozenset({"910501"}),
+            flat_count_drop_gate=registry.should_accept_flat_count_for_key,
+        )
+        detector.enable_count_tracking(True)
+        line = "GetBoxCount Success Count : 1 // ItemKey : 910501"
+
+        detector.seed_line(line)
+        event = detector.process_line(line)
+
+        self.assertIsNotNone(event)
+        self.assertEqual(event.item_key, "910501")
+        self.assertEqual(event.chest_type, ChestType.NORMAL_BROWN)
+
+    def test_common_flat_count_drop_rejected_when_not_watched(self) -> None:
+        registry = DropCooldownRegistry(
+            boss_cooldown_minutes_provider=lambda: 7.0,
+            common_cooldown_minutes_provider=lambda: 5.0,
+            is_common_timer_counting=lambda _level: False,
+            last_drop_by_level={-50: 1_000.0},
+            monitor_started_at=500.0,
+        )
+        detector = ChestDetector(
+            consider_common_chest=True,
+            debounce_seconds=4.0,
+            watch_common_keys=frozenset(),
+            flat_count_drop_gate=registry.should_accept_flat_count_for_key,
+        )
+        detector.enable_count_tracking(True)
+        line = "GetBoxCount Success Count : 1 // ItemKey : 910501"
 
         detector.seed_line(line)
         event = detector.process_line(line)

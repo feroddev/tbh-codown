@@ -30,8 +30,10 @@ MESSAGES: dict[str, dict[str, str]] = {
         "lang_pt_br": "Português (BR)",
         "lang_en": "English",
         "chest_timers_title": "Cronômetros",
+        "tab_monitor": "Monitor",
+        "tab_config": "Configuração",
         "timers_next_phase": "Próxima fase: {instruction} ({chest})",
-        "timers_none_enabled": "Configure baús à esquerda para ver cronômetros.",
+        "timers_none_enabled": "Configure baús na aba Configuração para ver cronômetros.",
         "watch_title": "Baús monitorados",
         "watch_drag_hint": "Arraste para definir prioridade",
         "watch_clear_time_hint": (
@@ -75,6 +77,10 @@ MESSAGES: dict[str, dict[str, str]] = {
         "consider_common_chest": "Baú comum",
         "dry_run_mode": "Modo simulação (só log)",
         "timer_duration_minutes": "Min",
+        "timer_boss_duration_minutes": "Chefe (min)",
+        "timer_common_duration_minutes": "Comum (min)",
+        "common_chest_auto_open_hint": "Auto-abrir no jogo",
+        "timer_reset_short": "Reset",
         "start_monitor": "Iniciar monitor",
         "stop_monitor": "Parar monitor",
         "save_rotation": "Salvar rotação",
@@ -93,7 +99,14 @@ MESSAGES: dict[str, dict[str, str]] = {
         "chest_lv": "Baú Lv {level}",
         "chest_lv_short": "Baú Lv {level}",
         "log_chest_drop": "{time} · Lv{level}",
-        "log_chest_drop_detail": "{time} · {kind} Lv{level}",
+        "log_chest_drop_detail": "{time} · {kind} · Lv{level} · {map}",
+        "log_player_log_path": "Player.log: {path} ({status})",
+        "log_player_log_found": "arquivo encontrado",
+        "log_player_log_missing": "aguardando arquivo",
+        "log_es3_password_default": (
+            "Save: chave de leitura não extraída do jogo — usando chave conhecida do "
+            "Taskbar Hero (não é sua senha pessoal; só descriptografa o arquivo de save)"
+        ),
         "log_chest_ignored": "{time} · Lv{level} — ignorado: {reason}",
         "log_timer_skipped": "{time} · {label} — cronômetro já ativo, não reiniciado",
         "log_timer_not_watched": "{time} · Lv{level} — fora dos baús monitorados",
@@ -163,8 +176,10 @@ MESSAGES: dict[str, dict[str, str]] = {
         "lang_pt_br": "Português (BR)",
         "lang_en": "English",
         "chest_timers_title": "Timers",
+        "tab_monitor": "Monitor",
+        "tab_config": "Settings",
         "timers_next_phase": "Next phase: {instruction} ({chest})",
-        "timers_none_enabled": "Configure chests on the left to see timers.",
+        "timers_none_enabled": "Configure chests in the Settings tab to see timers.",
         "watch_title": "Watched chests",
         "watch_drag_hint": "Drag to set priority",
         "watch_clear_time_hint": (
@@ -208,6 +223,10 @@ MESSAGES: dict[str, dict[str, str]] = {
         "consider_common_chest": "Common chest",
         "dry_run_mode": "Simulation mode (log only)",
         "timer_duration_minutes": "Min",
+        "timer_boss_duration_minutes": "Boss (min)",
+        "timer_common_duration_minutes": "Common (min)",
+        "common_chest_auto_open_hint": "Auto-open in game",
+        "timer_reset_short": "Reset",
         "start_monitor": "Start monitor",
         "stop_monitor": "Stop monitor",
         "save_rotation": "Save rotation",
@@ -226,7 +245,14 @@ MESSAGES: dict[str, dict[str, str]] = {
         "chest_lv": "Chest Lv {level}",
         "chest_lv_short": "Chest Lv {level}",
         "log_chest_drop": "{time} · Lv{level}",
-        "log_chest_drop_detail": "{time} · {kind} Lv{level}",
+        "log_chest_drop_detail": "{time} · {kind} · Lv{level} · {map}",
+        "log_player_log_path": "Player.log: {path} ({status})",
+        "log_player_log_found": "file found",
+        "log_player_log_missing": "waiting for file",
+        "log_es3_password_default": (
+            "Save: decryption key not read from game — using known Taskbar Hero key "
+            "(not your personal password; only decrypts the save file)"
+        ),
         "log_chest_ignored": "{time} · Lv{level} — ignored: {reason}",
         "log_timer_skipped": "{time} · {label} — timer already active, not restarted",
         "log_timer_not_watched": "{time} · Lv{level} — not in watched chests",
@@ -535,15 +561,12 @@ def localized_map_label(
 def format_chest_drop_log(
     *,
     chest_level: int,
-    map_name: str | None = None,
-    act: int | None = None,
-    stage: int | None = None,
-    difficulty: str | None = None,
+    stage_key: int,
     chest_kind: str,
     language: Language | None = None,
     dropped_at: datetime | None = None,
 ) -> str:
-    _ = (map_name, act, stage, difficulty)
+    map_label = format_watch_map_label_for_stage_key(stage_key, language=language)
     timestamp = dropped_at or datetime.now()
     return t(
         "log_chest_drop_detail",
@@ -551,4 +574,5 @@ def format_chest_drop_log(
         time=timestamp.strftime("%H:%M:%S"),
         kind=chest_kind,
         level=chest_level,
+        map=map_label,
     )

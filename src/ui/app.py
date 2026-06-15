@@ -12,6 +12,7 @@ import customtkinter as ctk
 from src.application.monitor_service import MonitorService
 from src.config_loader import AppConfig, load_config, save_config
 from src.domain.chest_event import ChestType
+from src.domain.chest_timer_keys import common_chest_timer_key
 from src.domain.confirmed_drop_notification import ConfirmedDropNotification
 from src.domain.chest_farm import enabled_farm_maps
 from src.runtime_paths import app_icon_path
@@ -36,7 +37,7 @@ from src.ui.theme import (
     DEFAULT_WINDOW_WIDTH,
     DROPS_PANEL_WIDTH,
     GAP_PANEL,
-    LEFT_PANEL_MIN_WIDTH,
+    HOVER,
     PAD_INNER,
     PAD_SECTION,
     PAD_TIGHT,
@@ -44,7 +45,6 @@ from src.ui.theme import (
     SUCCESS,
     SWITCH_PROGRESS,
     TEXT_SECONDARY,
-    TIMERS_SECTION_MIN_HEIGHT,
     apply_root_window,
     log_textbox,
     option_menu,
@@ -81,6 +81,9 @@ class MonitorApp(ctk.CTk):
         self._current_stage_key: int | None = None
         self._window_size_job: str | None = None
         self._ui_ready = False
+        self._current_tab = "monitor"
+        self._tab_monitor_label = t("tab_monitor")
+        self._tab_config_label = t("tab_config")
 
         self.title(t("app_title"))
         window_width = max(self.config.window_width, DEFAULT_WINDOW_WIDTH)
@@ -100,6 +103,36 @@ class MonitorApp(ctk.CTk):
         self.after(350, self._poll_current_stage)
         self.after(0, self._start_monitor)
         self.after(150, self._mark_ui_ready)
+
+    def _build_duration_entry(
+        self,
+        parent,
+        variable: ctk.StringVar,
+        label_text: str,
+        commit_handler,
+    ) -> None:
+        entry = ctk.CTkEntry(
+            parent,
+            textvariable=variable,
+            width=48,
+            height=28,
+            justify="center",
+            corner_radius=8,
+            border_width=1,
+            border_color=BORDER,
+            fg_color=BG_INSET,
+        )
+        entry.pack(side="right", padx=(PAD_TIGHT, 0))
+        entry.bind("<Return>", commit_handler)
+        entry.bind("<FocusOut>", commit_handler)
+
+        label = ctk.CTkLabel(
+            parent,
+            text=label_text,
+            font=ctk.CTkFont(family="Segoe UI", size=11),
+            text_color=TEXT_SECONDARY,
+        )
+        label.pack(side="right", padx=(PAD_TIGHT, 0))
 
     def _mark_ui_ready(self) -> None:
         self._ui_ready = True
@@ -150,16 +183,14 @@ class MonitorApp(ctk.CTk):
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(0, weight=1)
 
-        root.grid_columnconfigure(0, weight=1, minsize=LEFT_PANEL_MIN_WIDTH)
-        root.grid_columnconfigure(1, weight=0, minsize=DROPS_PANEL_WIDTH)
-        root.grid_rowconfigure(1, weight=1)
-        root.grid_rowconfigure(2, weight=0, minsize=TIMERS_SECTION_MIN_HEIGHT)
+        root.grid_columnconfigure(0, weight=1)
+        root.grid_rowconfigure(2, weight=1)
 
         pad = PAD_WINDOW
         gap = GAP_PANEL
 
         header = ctk.CTkFrame(root, fg_color="transparent")
-        header.grid(row=0, column=0, columnspan=2, sticky="ew", padx=pad, pady=(pad, gap))
+        header.grid(row=0, column=0, sticky="ew", padx=pad, pady=(pad, gap))
 
         self.sidebar_title_label = section_label(
             header,
@@ -178,85 +209,129 @@ class MonitorApp(ctk.CTk):
             width=128,
         )
         self.language_menu.set(self._language_display_name(self._language))
-        self.language_menu.pack(side="right", padx=(PAD_TIGHT, 0))
+        self.language_menu.pack(side="right")
 
-        self.timer_duration_var = ctk.StringVar(
-            value=self._format_timer_duration(self.config.monitor.average_drop_minutes)
-        )
-        self.timer_duration_entry = ctk.CTkEntry(
-            header_tools,
-            textvariable=self.timer_duration_var,
-            width=48,
-            height=28,
-            justify="center",
-            corner_radius=8,
-            border_width=1,
-            border_color=BORDER,
+        tab_bar_frame = ctk.CTkFrame(root, fg_color="transparent")
+        tab_bar_frame.grid(row=1, column=0, sticky="ew", padx=pad, pady=(0, gap))
+
+        self.tab_bar = ctk.CTkSegmentedButton(
+            tab_bar_frame,
+            values=[self._tab_monitor_label, self._tab_config_label],
+            command=self._on_tab_selected,
+            font=ctk.CTkFont(family="Segoe UI", size=13, weight="bold"),
             fg_color=BG_INSET,
+            selected_color=BTN_NEUTRAL,
+            selected_hover_color=BTN_NEUTRAL_HOVER,
+            unselected_color=BG_INSET,
+            unselected_hover_color=HOVER,
         )
-        self.timer_duration_entry.pack(side="right", padx=(PAD_TIGHT, 0))
-        self.timer_duration_entry.bind("<Return>", self._on_timer_duration_commit)
-        self.timer_duration_entry.bind("<FocusOut>", self._on_timer_duration_commit)
+        self.tab_bar.set(self._tab_monitor_label)
+        self.tab_bar.pack(fill="x")
 
-        self.timer_duration_label = ctk.CTkLabel(
-            header_tools,
-            text=t("timer_duration_minutes"),
-            font=ctk.CTkFont(family="Segoe UI", size=11),
-            text_color=TEXT_SECONDARY,
+        self.boss_timer_duration_var = ctk.StringVar(
+            value=self._format_timer_duration(self.config.monitor.boss_drop_minutes)
         )
-        self.timer_duration_label.pack(side="right", padx=(PAD_TIGHT, 0))
+        self.common_timer_duration_var = ctk.StringVar(
+            value=self._format_timer_duration(self.config.monitor.common_drop_minutes)
+        )
+
+        self.content_host = ctk.CTkFrame(root, fg_color="transparent")
+        self.content_host.grid(row=2, column=0, sticky="nsew", padx=pad, pady=(0, pad))
+        self.content_host.grid_columnconfigure(0, weight=1)
+        self.content_host.grid_rowconfigure(0, weight=1)
+
+        self.monitor_tab = ctk.CTkFrame(self.content_host, fg_color="transparent")
+        self.config_tab = ctk.CTkFrame(self.content_host, fg_color="transparent")
+        for tab in (self.monitor_tab, self.config_tab):
+            tab.grid(row=0, column=0, sticky="nsew")
+            tab.grid_columnconfigure(0, weight=1)
+            tab.grid_rowconfigure(0, weight=1)
+
+        self._build_monitor_tab(self.monitor_tab, gap=gap, pad=0)
+        self._build_config_tab(self.config_tab, gap=gap, pad=0)
+        self._show_tab("monitor")
+
+    def _build_config_tab(self, parent, *, gap: int, pad: int) -> None:
+        parent.grid_rowconfigure(0, weight=1)
+        parent.grid_rowconfigure(1, weight=0)
+        parent.grid_columnconfigure(0, weight=1)
+
+        watch_card = panel_frame(parent)
+        watch_card.grid(row=0, column=0, sticky="nsew", pady=(0, gap))
+        watch_card.grid_columnconfigure(0, weight=1)
+        watch_card.grid_rowconfigure(0, weight=1)
+
+        self.chest_watch_panel = ChestWatchPanel(
+            watch_card,
+            language=self._language,
+            on_change=self._on_watch_changed,
+            scroll_max_visible_rows=10,
+        )
+        self.chest_watch_panel.grid(row=0, column=0, sticky="nsew", padx=PAD_INNER, pady=PAD_INNER)
+
+        settings_card = panel_frame(parent)
+        settings_card.grid(row=1, column=0, sticky="ew")
+        settings_card.grid_columnconfigure(0, weight=1)
+
+        settings_body = ctk.CTkFrame(settings_card, fg_color="transparent")
+        settings_body.grid(row=0, column=0, sticky="ew", padx=PAD_INNER, pady=PAD_INNER)
+        settings_body.grid_columnconfigure(0, weight=1)
+
+        settings_row = ctk.CTkFrame(settings_body, fg_color="transparent")
+        settings_row.pack(fill="x")
 
         self.consider_common_var = ctk.BooleanVar(value=self.config.strategy.consider_common_chest)
         self.consider_common_switch = ctk.CTkSwitch(
-            header_tools,
+            settings_row,
             text=t("consider_common_chest"),
             variable=self.consider_common_var,
             command=self._on_watch_changed,
-            font=ctk.CTkFont(family="Segoe UI", size=11),
+            font=ctk.CTkFont(family="Segoe UI", size=12),
             progress_color=SWITCH_PROGRESS,
             button_color=BG_INSET,
             button_hover_color=BG_INSET,
         )
-        self.consider_common_switch.pack(side="right", padx=(PAD_TIGHT, 0))
+        self.consider_common_switch.pack(side="left")
 
-        left_card = panel_frame(root)
-        left_card.grid(
-            row=1,
+        duration_tools = ctk.CTkFrame(settings_row, fg_color="transparent")
+        duration_tools.pack(side="right")
+
+        self._build_duration_entry(
+            duration_tools,
+            self.common_timer_duration_var,
+            t("timer_common_duration_minutes"),
+            self._on_common_timer_duration_commit,
+        )
+        self._build_duration_entry(
+            duration_tools,
+            self.boss_timer_duration_var,
+            t("timer_boss_duration_minutes"),
+            self._on_boss_timer_duration_commit,
+        )
+
+    def _build_monitor_tab(self, parent, *, gap: int, pad: int) -> None:
+        parent.grid_rowconfigure(0, weight=1)
+        parent.grid_rowconfigure(1, weight=0)
+        parent.grid_columnconfigure(0, weight=1)
+        parent.grid_columnconfigure(1, weight=0, minsize=DROPS_PANEL_WIDTH)
+
+        self.chest_timer_board = ChestTimerBoard(
+            parent,
+            boss_duration_minutes=self.config.monitor.boss_drop_minutes,
+            common_duration_minutes=self.config.monitor.common_drop_minutes,
+            show_common_timer=self.config.strategy.consider_common_chest,
+            language=self._language,
+        )
+        self.chest_timer_board.grid(
+            row=0,
             column=0,
             sticky="nsew",
-            padx=(pad, gap),
+            padx=(0, gap),
             pady=(0, gap),
         )
-        left_card.grid_columnconfigure(0, weight=1)
-        left_card.grid_rowconfigure(0, weight=0)
-        left_card.grid_rowconfigure(1, weight=1)
-        left_card.grid_rowconfigure(2, weight=0)
 
-        left_card_spacer = ctk.CTkFrame(left_card, fg_color="transparent")
-        left_card_spacer.grid(row=1, column=0, sticky="nsew")
-
-        self.chest_watch_panel = ChestWatchPanel(
-            left_card,
-            language=self._language,
-            on_change=self._on_watch_changed,
-        )
-        self.chest_watch_panel.grid(row=0, column=0, sticky="new", padx=PAD_INNER, pady=PAD_INNER)
-
-        self.start_button = primary_button(
-            left_card,
-            text=t("start_monitor"),
-            command=self._toggle_monitor,
-        )
-        self.start_button.grid(row=2, column=0, sticky="ew", padx=PAD_INNER, pady=(0, PAD_INNER))
-
-        logs_card = panel_frame(root)
-        logs_card.grid(
-            row=1,
-            column=1,
-            sticky="nsew",
-            padx=(0, pad),
-            pady=(0, gap),
-        )
+        logs_card = panel_frame(parent)
+        logs_card.grid(row=0, column=1, rowspan=2, sticky="nsew")
         logs_card.grid_columnconfigure(0, weight=1)
         logs_card.grid_rowconfigure(1, weight=1)
 
@@ -287,31 +362,45 @@ class MonitorApp(ctk.CTk):
         self.log_text.grid(row=0, column=0, sticky="nsew")
         self.log_text.configure(state="disabled")
 
-        status_footer = ctk.CTkFrame(logs_card, fg_color="transparent")
-        status_footer.grid(row=2, column=0, sticky="ew", padx=PAD_INNER, pady=(0, PAD_INNER))
+        monitor_footer = ctk.CTkFrame(parent, fg_color="transparent")
+        monitor_footer.grid(row=1, column=0, sticky="ew", padx=(0, gap))
+        monitor_footer.grid_columnconfigure(0, weight=1)
+
+        status_row = ctk.CTkFrame(monitor_footer, fg_color="transparent")
+        status_row.grid(row=0, column=0, sticky="ew", pady=(0, gap))
+        status_row.grid_columnconfigure(0, weight=1)
 
         self.monitor_status_label = ctk.CTkLabel(
-            status_footer,
+            status_row,
             text=t("status_stopped"),
             text_color=DANGER,
             font=ctk.CTkFont(family="Segoe UI", size=12, weight="bold"),
             anchor="w",
         )
-        self.monitor_status_label.pack(side="left")
+        self.monitor_status_label.grid(row=0, column=0, sticky="w")
 
-        self.chest_timer_board = ChestTimerBoard(
-            root,
-            duration_minutes=self.config.monitor.average_drop_minutes,
-            language=self._language,
+        self.start_button = primary_button(
+            status_row,
+            text=t("start_monitor"),
+            command=self._toggle_monitor,
+            height=36,
         )
-        self.chest_timer_board.grid(
-            row=2,
-            column=0,
-            columnspan=2,
-            sticky="nsew",
-            padx=pad,
-            pady=(0, pad),
-        )
+        self.start_button.grid(row=0, column=1, sticky="e")
+
+    def _show_tab(self, tab_id: str) -> None:
+        self._current_tab = tab_id
+        if tab_id == "monitor":
+            self.config_tab.grid_remove()
+            self.monitor_tab.grid(row=0, column=0, sticky="nsew")
+        else:
+            self.monitor_tab.grid_remove()
+            self.config_tab.grid(row=0, column=0, sticky="nsew")
+
+    def _on_tab_selected(self, value: str) -> None:
+        if value == self._tab_monitor_label:
+            self._show_tab("monitor")
+        else:
+            self._show_tab("config")
 
     @staticmethod
     def _language_display_name(language: Language) -> str:
@@ -334,8 +423,14 @@ class MonitorApp(ctk.CTk):
         self.sidebar_title_label.configure(text=t("app_title"))
         self.language_menu.set(self._language_display_name(self._language))
         self.consider_common_switch.configure(text=t("consider_common_chest"))
-        self.timer_duration_label.configure(text=t("timer_duration_minutes"))
         self.events_title_label.configure(text=t("events"))
+
+        self._tab_monitor_label = t("tab_monitor")
+        self._tab_config_label = t("tab_config")
+        self.tab_bar.configure(values=[self._tab_monitor_label, self._tab_config_label])
+        self.tab_bar.set(
+            self._tab_monitor_label if self._current_tab == "monitor" else self._tab_config_label
+        )
 
         monitor_running = self._monitor_thread and self._monitor_thread.is_alive()
         self.start_button.configure(
@@ -354,8 +449,8 @@ class MonitorApp(ctk.CTk):
             return str(int(minutes))
         return f"{minutes:.1f}".rstrip("0").rstrip(".")
 
-    def _parse_timer_duration_value(self) -> float | None:
-        raw = self.timer_duration_var.get().strip().replace(",", ".")
+    def _parse_timer_duration_value(self, variable: ctk.StringVar) -> float | None:
+        raw = variable.get().strip().replace(",", ".")
         if not raw:
             return None
         try:
@@ -366,35 +461,54 @@ class MonitorApp(ctk.CTk):
             return None
         return value
 
-    def _current_timer_duration_minutes(self) -> float:
-        parsed = self._parse_timer_duration_value()
+    def _current_boss_drop_minutes(self) -> float:
+        parsed = self._parse_timer_duration_value(self.boss_timer_duration_var)
         if parsed is not None:
             return parsed
-        return self.config.monitor.average_drop_minutes
+        return self.config.monitor.boss_drop_minutes
 
-    def _on_timer_duration_commit(self, _event=None) -> None:
-        parsed = self._parse_timer_duration_value()
+    def _current_common_drop_minutes(self) -> float:
+        parsed = self._parse_timer_duration_value(self.common_timer_duration_var)
+        if parsed is not None:
+            return parsed
+        return self.config.monitor.common_drop_minutes
+
+    def _on_boss_timer_duration_commit(self, _event=None) -> None:
+        parsed = self._parse_timer_duration_value(self.boss_timer_duration_var)
         if parsed is None:
-            self.timer_duration_var.set(
-                self._format_timer_duration(self.config.monitor.average_drop_minutes)
+            self.boss_timer_duration_var.set(
+                self._format_timer_duration(self.config.monitor.boss_drop_minutes)
             )
             return
 
         normalized = self._format_timer_duration(parsed)
-        if parsed == self.config.monitor.average_drop_minutes:
-            self.timer_duration_var.set(normalized)
+        if parsed != self.config.monitor.boss_drop_minutes:
+            self.chest_timer_board.set_boss_duration_minutes(parsed)
+            self.config = self._collect_config()
+            save_config(self.config_path, self.config)
+        self.boss_timer_duration_var.set(normalized)
+
+    def _on_common_timer_duration_commit(self, _event=None) -> None:
+        parsed = self._parse_timer_duration_value(self.common_timer_duration_var)
+        if parsed is None:
+            self.common_timer_duration_var.set(
+                self._format_timer_duration(self.config.monitor.common_drop_minutes)
+            )
             return
 
-        self.chest_timer_board.set_duration_minutes(parsed)
-        self.config = self._collect_config()
-        save_config(self.config_path, self.config)
-        self.timer_duration_var.set(normalized)
+        normalized = self._format_timer_duration(parsed)
+        if parsed != self.config.monitor.common_drop_minutes:
+            self.chest_timer_board.set_common_duration_minutes(parsed)
+            self.config = self._collect_config()
+            save_config(self.config_path, self.config)
+        self.common_timer_duration_var.set(normalized)
 
     def _load_watch_slots(self) -> None:
         self.chest_watch_panel.load_slots(self.config.chest_farms)
 
     def _on_watch_changed(self) -> None:
         enabled = self.consider_common_var.get()
+        self.chest_timer_board.set_show_common_timer(enabled)
         self._sync_timers()
         if self._monitor_service is not None:
             self._monitor_service.set_consider_common_chest(enabled)
@@ -411,7 +525,8 @@ class MonitorApp(ctk.CTk):
         maps = enabled_farm_maps(chest_farms)
         monitor = replace(
             self.config.monitor,
-            average_drop_minutes=self._current_timer_duration_minutes(),
+            boss_drop_minutes=self._current_boss_drop_minutes(),
+            common_drop_minutes=self._current_common_drop_minutes(),
         )
         strategy = replace(
             self.config.strategy,
@@ -479,8 +594,6 @@ class MonitorApp(ctk.CTk):
         self._stage_key_queue.put(stage_key)
 
     def _process_confirmed_drop(self, notification: ConfirmedDropNotification) -> None:
-        from datetime import datetime
-
         event = notification.event
         chest_level = notification.chest_level
 
@@ -489,28 +602,17 @@ class MonitorApp(ctk.CTk):
         if event.chest_type == ChestType.NORMAL_BROWN and not self.consider_common_var.get():
             return
 
-        timestamp = datetime.now().strftime("%H:%M:%S")
+        if event.chest_type == ChestType.NORMAL_BROWN:
+            common_key = common_chest_timer_key(chest_level)
+            if self.chest_timer_board.has_timer_row(common_key):
+                self.chest_timer_board.start_timer(common_key)
+            return
+
         watched = self.chest_watch_panel.watched_levels()
         if chest_level not in watched:
-            self._append_log(
-                t(
-                    "log_timer_not_watched",
-                    language=self._language,
-                    time=timestamp,
-                    level=chest_level,
-                )
-            )
             return
 
         if not self.chest_timer_board.has_timer_row(chest_level):
-            self._append_log(
-                t(
-                    "log_timer_not_watched",
-                    language=self._language,
-                    time=timestamp,
-                    level=chest_level,
-                )
-            )
             return
 
         self.chest_timer_board.start_timer(chest_level)
@@ -564,17 +666,22 @@ class MonitorApp(ctk.CTk):
 
         save_config(self.config_path, self.config)
         set_language(self.config.language)
-        self.chest_timer_board.set_duration_minutes(self._current_timer_duration_minutes())
+        self.chest_timer_board.set_boss_duration_minutes(self._current_boss_drop_minutes())
+        self.chest_timer_board.set_common_duration_minutes(self._current_common_drop_minutes())
+        self.chest_timer_board.set_show_common_timer(self.config.strategy.consider_common_chest)
         self._sync_timers()
         self.chest_timer_board.reset_all()
 
+        enqueue_log = self._drop_log_queue.put
         self._monitor_service = MonitorService(
             self.config,
             dry_run=self.config.monitor.dry_run,
+            on_status=enqueue_log,
             on_confirmed_drop=self._handle_confirmed_drop,
-            on_drop_log=lambda message: self._drop_log_queue.put(message),
+            on_drop_log=enqueue_log,
             on_stage_changed=self._handle_stage_changed,
-            is_timer_counting=self.chest_timer_board.is_timer_counting,
+            is_timer_counting=self.chest_timer_board.is_boss_timer_counting,
+            is_common_timer_counting=self.chest_timer_board.is_common_timer_counting,
         )
 
         self._monitor_thread = threading.Thread(target=self._run_monitor_safe, daemon=True)

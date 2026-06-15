@@ -75,7 +75,7 @@
 
       <section class="grid min-w-0 gap-6 lg:grid-cols-3">
         <div
-          class="min-w-0 overflow-hidden rounded-xl border border-slate-800 bg-slate-900/80 p-5 lg:col-span-2"
+          class="min-w-0 overflow-hidden rounded-xl border border-slate-800 bg-slate-900/80 p-5 pb-5 lg:col-span-2"
         >
           <div class="flex min-w-0 flex-wrap items-end gap-3">
             <label class="text-sm text-slate-300">
@@ -94,9 +94,20 @@
             </label>
 
             <label class="text-sm text-slate-300">
-              <span id="durationLabel">Duracao padrao (min)</span>
+              <span id="bossDurationLabel">Chefe (min)</span>
               <input
-                id="durationInput"
+                id="bossDurationInput"
+                type="number"
+                min="1"
+                step="0.5"
+                class="mt-1 block w-32 rounded-md border border-slate-700 bg-slate-950 px-3 py-2.5 text-base text-slate-100 focus:border-indigo-500 focus:outline-none"
+              />
+            </label>
+
+            <label class="text-sm text-slate-300">
+              <span id="commonDurationLabel">Comum (min)</span>
+              <input
+                id="commonDurationInput"
                 type="number"
                 min="1"
                 step="0.5"
@@ -154,7 +165,7 @@
             Arraste para definir prioridade
           </p>
 
-          <div id="timersContainer" class="mt-2 flex flex-col gap-3"></div>
+          <div id="timersContainer" class="mt-2 flex flex-col gap-2 pb-2"></div>
         </div>
 
         <div class="flex min-w-0 flex-col gap-6">
@@ -438,102 +449,163 @@
 
     <template id="timerRowTemplate">
       <article
-        class="flex min-w-0 items-stretch overflow-hidden rounded-lg border border-slate-800 bg-slate-950/70 transition-shadow"
+        class="flex min-w-0 overflow-hidden rounded-lg border border-slate-800 bg-slate-950/70"
       >
         <div
           data-role="drag-handle"
-          class="flex w-8 shrink-0 cursor-grab select-none items-center justify-center self-stretch text-lg leading-none text-slate-500/70 transition-colors hover:text-slate-300 active:cursor-grabbing"
+          class="flex w-8 shrink-0 cursor-grab select-none items-center justify-center self-stretch border-r border-slate-800/80 bg-slate-900/30 text-lg leading-none text-slate-500/70 transition-colors hover:text-slate-300 active:cursor-grabbing"
           aria-label="Arrastar para reordenar"
         >
           ⠿
         </div>
 
         <div
-          class="grid min-w-0 flex-1 gap-3 p-3 pl-0 sm:grid-cols-[auto_minmax(6rem,auto)_minmax(0,1fr)_minmax(5rem,auto)_minmax(6rem,auto)_minmax(0,1fr)] sm:items-end"
+          class="grid min-w-0 flex-1 grid-cols-[minmax(0,1fr)_auto_auto] grid-rows-[auto_auto_auto] items-center gap-x-3 gap-y-1.5 p-2.5 sm:gap-x-4"
         >
-          <p
-            data-role="priority"
-            class="self-center text-center font-mono text-xs font-bold text-slate-500"
+          <div
+            class="col-start-1 row-start-1 flex min-w-0 items-end gap-2"
           >
-            #1
-          </p>
+            <p
+              data-role="priority"
+              class="shrink-0 rounded bg-slate-800/80 px-1.5 py-0.5 font-mono text-[10px] font-bold text-slate-400"
+            >
+              #1
+            </p>
+            <label class="min-w-0 flex-1 text-[11px] text-slate-400">
+              <span data-role="label-level">Bau Lv</span>
+              <select
+                data-role="level"
+                class="mt-0.5 block w-full rounded-md border border-slate-700 bg-slate-900 px-2 py-1.5 text-sm text-slate-100 focus:border-indigo-500 focus:outline-none"
+              ></select>
+            </label>
+          </div>
 
-          <label class="text-xs text-slate-400">
-            <span data-role="label-level">Bau Lv</span>
-            <select
-              data-role="level"
-              class="mt-1 block w-full rounded-md border border-slate-700 bg-slate-900 px-3 py-2.5 text-sm text-slate-100 focus:border-indigo-500 focus:outline-none"
-            ></select>
-          </label>
-
-          <label class="text-xs text-slate-400">
+          <label class="col-start-1 row-start-2 min-w-0 text-[11px] text-slate-400">
             <span data-role="label-map">Mapa</span>
             <select
               data-role="map"
-              class="mt-1 block w-full rounded-md border border-slate-700 bg-slate-900 px-3 py-2.5 text-sm text-slate-100 focus:border-indigo-500 focus:outline-none"
+              class="mt-0.5 block w-full rounded-md border border-slate-700 bg-slate-900 px-2 py-1.5 text-sm text-slate-100 focus:border-indigo-500 focus:outline-none"
             ></select>
           </label>
 
-          <label class="text-xs text-slate-400">
-            <span data-role="label-clear-time">Conclusao (s)</span>
+          <label
+            class="col-start-1 row-start-3 max-w-[8rem] text-[11px] text-slate-400"
+          >
+            <span data-role="label-clear-time">Volta (s)</span>
             <input
               data-role="clear-time"
               type="number"
               min="0"
               step="1"
               placeholder="opcional"
-              class="mt-1 block w-full rounded-md border border-slate-700 bg-slate-900 px-2 py-2.5 text-sm text-slate-100 placeholder:text-slate-600 focus:border-indigo-500 focus:outline-none"
+              class="mt-0.5 block w-full rounded-md border border-slate-700 bg-slate-900 px-2 py-1.5 text-sm text-slate-100 placeholder:text-slate-600 focus:border-indigo-500 focus:outline-none"
             />
           </label>
 
-          <div>
-            <p data-role="label-timer" class="text-xs text-slate-400">Timer</p>
-            <p
-              data-role="timer"
-              class="mt-1 font-mono text-xl font-semibold text-slate-300"
+          <div
+            class="col-start-2 row-start-1 row-span-3 flex min-w-[16rem] flex-col justify-center gap-2 border-l border-slate-800/80 pl-3 sm:min-w-[18rem]"
+          >
+            <div
+              class="rounded-lg border border-fuchsia-500/25 bg-gradient-to-br from-slate-900/90 to-fuchsia-950/20 p-3"
             >
-              --:--
-            </p>
+              <div class="flex min-w-0 items-center gap-3">
+                <span
+                  data-role="label-boss-timer"
+                  class="shrink-0 text-xs font-semibold uppercase tracking-wide text-fuchsia-300/90"
+                  >Chefe</span
+                >
+                <span
+                  data-role="boss-level"
+                  class="shrink-0 rounded-md bg-fuchsia-500/15 px-2 py-0.5 font-mono text-sm font-bold text-fuchsia-200"
+                  >Lv 50</span
+                >
+                <p
+                  data-role="boss-timer"
+                  class="min-w-[4.5rem] shrink-0 font-mono text-2xl font-bold leading-none text-slate-100"
+                >
+                  --:--
+                </p>
+              </div>
+              <div class="mt-2.5 flex flex-wrap gap-2">
+                <button
+                  data-role="boss-drop"
+                  type="button"
+                  class="min-w-0 flex-1 rounded-md bg-gradient-to-r from-fuchsia-500 to-indigo-500 px-3 py-2 text-center text-xs font-bold text-white shadow-md shadow-indigo-900/30 transition hover:from-fuchsia-400 hover:to-indigo-400"
+                >
+                  Chefe dropou
+                </button>
+                <button
+                  data-role="boss-reset"
+                  type="button"
+                  class="shrink-0 rounded-md border border-slate-600 bg-slate-800/80 px-3 py-2 text-center text-xs font-semibold text-slate-200 transition hover:bg-slate-700"
+                >
+                  Reset
+                </button>
+              </div>
+            </div>
+
+            <div
+              class="rounded-lg border border-teal-500/25 bg-gradient-to-br from-slate-900/90 to-teal-950/20 p-3"
+            >
+              <div class="flex min-w-0 items-center gap-3">
+                <span
+                  data-role="label-common-timer"
+                  class="shrink-0 text-xs font-semibold uppercase tracking-wide text-teal-300/90"
+                  >Comum</span
+                >
+                <span
+                  data-role="common-level"
+                  class="shrink-0 rounded-md bg-teal-500/15 px-2 py-0.5 font-mono text-sm font-bold text-teal-200"
+                  >Lv 50</span
+                >
+                <p
+                  data-role="common-timer"
+                  class="min-w-[4.5rem] shrink-0 font-mono text-2xl font-bold leading-none text-slate-100"
+                >
+                  --:--
+                </p>
+              </div>
+              <div class="mt-2.5 flex flex-wrap gap-2">
+                <button
+                  data-role="common-drop"
+                  type="button"
+                  class="min-w-0 flex-1 rounded-md bg-gradient-to-r from-cyan-500 to-teal-500 px-3 py-2 text-center text-xs font-bold text-white shadow-md shadow-teal-900/30 transition hover:from-cyan-400 hover:to-teal-400"
+                >
+                  Comum dropou
+                </button>
+                <button
+                  data-role="common-reset"
+                  type="button"
+                  class="shrink-0 rounded-md border border-slate-600 bg-slate-800/80 px-3 py-2 text-center text-xs font-semibold text-slate-200 transition hover:bg-slate-700"
+                >
+                  Reset
+                </button>
+              </div>
+            </div>
           </div>
 
-          <div class="flex min-w-0 flex-wrap items-center gap-2">
-            <button
-              data-role="drop"
-              type="button"
-              class="max-w-full rounded-md bg-gradient-to-r from-fuchsia-500 to-indigo-500 px-3.5 py-2 text-center text-xs font-bold text-white shadow-lg shadow-indigo-900/40 ring-1 ring-fuchsia-300/40 transition hover:scale-105 hover:from-fuchsia-400 hover:to-indigo-400"
+          <button
+            data-role="remove"
+            type="button"
+            class="col-start-3 row-start-1 row-span-3 inline-flex h-8 w-8 shrink-0 items-center justify-center self-center rounded-md border border-rose-400/40 bg-rose-500/20 text-rose-300 transition hover:bg-rose-500/30"
+          >
+            <svg
+              viewBox="0 0 24 24"
+              class="h-3.5 w-3.5"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
             >
-              Bau dropou
-            </button>
-            <button
-              data-role="reset"
-              type="button"
-              class="max-w-full rounded-md bg-slate-700 px-3 py-2 text-center text-xs font-semibold text-slate-100 transition hover:bg-slate-600"
-            >
-              Reset
-            </button>
-            <button
-              data-role="remove"
-              type="button"
-              class="inline-flex h-9 w-9 items-center justify-center rounded-md border border-rose-400/40 bg-rose-500/20 text-rose-300 transition hover:bg-rose-500/30"
-            >
-              <svg
-                viewBox="0 0 24 24"
-                class="h-4 w-4"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="1.8"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                aria-hidden="true"
-              >
-                <path d="M3 6h18"></path>
-                <path d="M8 6V4h8v2"></path>
-                <path d="M6 6l1 14h10l1-14"></path>
-                <path d="M10 10v7"></path>
-                <path d="M14 10v7"></path>
-              </svg>
-            </button>
-          </div>
+              <path d="M3 6h18"></path>
+              <path d="M8 6V4h8v2"></path>
+              <path d="M6 6l1 14h10l1-14"></path>
+              <path d="M10 10v7"></path>
+              <path d="M14 10v7"></path>
+            </svg>
+          </button>
         </div>
       </article>
     </template>
@@ -558,6 +630,7 @@
         65: 3205,
         80: 4103,
       };
+      const DEFAULT_TIMER_LEVELS = [50, 40];
 
       const MAP_NAMES_PT_BR = {
         "Bug Nest": "Ninho de Insetos",
@@ -748,6 +821,20 @@
             'Clique em "Bau dropou" para iniciar o cronometro. Veja o guia de rota na barra lateral.',
           languageLabel: "Idioma",
           durationLabel: "Duracao padrao (min)",
+          bossDurationLabel: "Chefe (min)",
+          commonDurationLabel: "Comum (min)",
+          commonTimerTitle: "Bau comum",
+          commonTimerHint: "Pode deixar auto-abrir ligado no jogo",
+          commonTimerLabel: "Timer",
+          commonTimerDropButton: "Bau dropou",
+          commonTimerResetButton: "Reset",
+          logCommonStartedForLevel:
+            "Comum Lv{level} | {map}: timer iniciado ({minutes} min).",
+          logCommonExpiredForLevel: "Comum Lv{level}: timer expirou (0:00).",
+          logCommonAlreadyCountingForLevel:
+            "Comum Lv{level} ignorado: timer ja esta rodando.",
+          logBossDurationUpdated: "Duracao de chefe atualizada para {minutes} min.",
+          logCommonDurationUpdated: "Duracao de comum atualizada para {minutes} min.",
           alertVolumeLabel: "Volume do alerta",
           testAlertButton: "Testar alerta",
           addTimerButton: "Adicionar bau",
@@ -764,6 +851,22 @@
           releaseNotesSubtitle:
             "Historico de melhorias do site e do TBH Monitor",
           releaseNotesReleases: [
+            {
+              isoDate: "2026-06-15",
+              publishedAtIso: "2026-06-15T18:00:00-03:00",
+              publishedAt:
+                "15 de junho de 2026 · 18:00 · GMT-3 (Horario de Brasilia)",
+              title: "Cronometros separados — chefe 7 min / comum 5 min",
+              scope: "Site + TBH Monitor",
+              items: [
+                "Cronometros separados por nivel e tipo: <strong>chefe (7 min)</strong> e <strong>comum (5 min)</strong> no mesmo Lv/mapas.",
+                "Site: campos <strong>Chefe (min)</strong> e <strong>Comum (min)</strong>, botoes <strong>Chefe dropou</strong> / <strong>Comum dropou</strong> e resets independentes.",
+                "TBH Monitor: abas <strong>Monitor</strong> e <strong>Configuracao</strong> — timers na Monitor, baus e duracoes na Config.",
+                "TBH Monitor: deteccao e cronometro de bau comum com cooldown proprio quando a opcao estiver ativa.",
+                "TBH Monitor: exibe caminho do <code>Player.log</code> ao iniciar e avisa se a chave ES3 do save nao foi detectada no jogo.",
+                "TBH Monitor: farms padrao <strong>Lv50</strong> e <strong>Lv40</strong>; build usa <code>config.dist.yaml</code> com deteccao automatica de caminhos.",
+              ],
+            },
             {
               isoDate: "2026-06-13",
               publishedAtIso: "2026-06-13T23:20:00-03:00",
@@ -803,9 +906,12 @@
           rowMap: "Mapa",
           rowClearTime: "Volta (s)",
           rowClearTimePlaceholder: "opcional",
-          rowTimer: "Timer",
-          rowDrop: "Bau dropou",
-          rowReset: "Reset",
+          rowBossTimer: "Chefe",
+          rowCommonTimer: "Comum",
+          rowBossDrop: "Chefe dropou",
+          rowCommonDrop: "Comum dropou",
+          rowBossReset: "Reset",
+          rowCommonReset: "Reset",
           rowRemove: "Remover",
           timersDragHint: "Arraste para definir prioridade",
           rowDragHandle: "Arrastar para reordenar",
@@ -822,7 +928,8 @@
             "Lv{level} ja esta em uso. Escolha outro nivel de bau.",
           logAllLevelsUsed: "Todos os niveis de bau ja estao configurados.",
           logResetAll: "Todos os cronometros foram resetados.",
-          logResetSingle: "Timer Lv{level} resetado.",
+          logResetBossSingle: "Chefe Lv{level} resetado.",
+          logResetCommonSingle: "Comum Lv{level} resetado.",
           logAlreadyCounting:
             "Lv{level} ignorado: cronometro ja esta contando.",
           logStarted:
@@ -884,8 +991,9 @@
             {
               heading: "Tempo do cronometro",
               items: [
-                "O bau comum tem cerca de <strong>14 minutos</strong> de cooldown. Ajuste o campo <strong>Duracao padrao (min)</strong> no topo para 14 enquanto farmar baús comuns.",
-                "Quando os baús comuns estiverem cheios, mude a duracao para <strong>13 minutos</strong> e faca a rotacao de baús de chefe.",
+                "Baú comum e baú de chefe usam o <strong>mesmo nível</strong> (ex.: Lv 40 no mesmo mapa). Cooldown: chefe <strong>7 min</strong>, comum <strong>5 min</strong> — cada nível tem timer separado.",
+                "Ajuste <strong>Chefe (min)</strong> e <strong>Comum (min)</strong> no topo se quiser farm mais agressivo.",
+                "Baús comuns podem ficar com <strong>auto-abrir</strong> ligado — o cooldown é por nível, igual ao de chefe.",
               ],
             },
             {
@@ -908,13 +1016,13 @@
               ],
             },
             {
-              heading: "Exemplo — baús Lv 50, 40 e 30",
+              heading: "Exemplo — baús Lv 50 e 40",
               items: [
-                "Adicione os 3 baús (Lv 50, Lv 40 e Lv 30) no site.",
+                "O site ja vem com 2 baús (Lv 50 e Lv 40); adicione mais com <strong>Adicionar bau</strong> se quiser.",
                 "Entre em um mapa (ex.: Lv 50) e farme ate dropar o bau.",
                 "Quando dropar, clique em <strong>Bau dropou</strong> — o cronometro daquele nivel comeca a contar.",
                 "Enquanto o cronometro estiver ativo, ha <strong>0% de chance</strong> de dropar outro bau daquele nivel.",
-                "Use esse tempo para ir a outro mapa (ex.: Lv 40 ou Lv 30) e farmar um nivel diferente.",
+                "Use esse tempo para ir a outro mapa (ex.: Lv 40) e farmar um nivel diferente.",
                 "Quando um timer expirar (<strong>0:00</strong>), volte aquele mapa para tentar o proximo drop.",
                 "Assim voce maximiza itens no mesmo periodo, alternando entre niveis enquanto os cronometros rodam.",
               ],
@@ -927,6 +1035,20 @@
             'Click "Chest dropped" to start each timer. See the route guide in the sidebar.',
           languageLabel: "Language",
           durationLabel: "Default duration (min)",
+          bossDurationLabel: "Boss (min)",
+          commonDurationLabel: "Common (min)",
+          commonTimerTitle: "Common chest",
+          commonTimerHint: "Auto-open in game is fine",
+          commonTimerLabel: "Timer",
+          commonTimerDropButton: "Chest dropped",
+          commonTimerResetButton: "Reset",
+          logCommonStartedForLevel:
+            "Common Lv{level} | {map}: timer started ({minutes} min).",
+          logCommonExpiredForLevel: "Common Lv{level}: timer expired (0:00).",
+          logCommonAlreadyCountingForLevel:
+            "Common Lv{level} ignored: timer already running.",
+          logBossDurationUpdated: "Boss duration updated to {minutes} min.",
+          logCommonDurationUpdated: "Common duration updated to {minutes} min.",
           alertVolumeLabel: "Alert volume",
           testAlertButton: "Test alert",
           addTimerButton: "Add chest",
@@ -942,6 +1064,21 @@
           releaseNotesTitle: "Software update notes",
           releaseNotesSubtitle: "History of site and TBH Monitor improvements",
           releaseNotesReleases: [
+            {
+              isoDate: "2026-06-15",
+              publishedAtIso: "2026-06-15T18:00:00-03:00",
+              publishedAt: "June 15, 2026 · 6:00 PM · GMT-3 (Brasilia time)",
+              title: "Separate timers — boss 7 min / common 5 min",
+              scope: "Website & TBH Monitor",
+              items: [
+                "Separate timers per level and type: <strong>boss (7 min)</strong> and <strong>common (5 min)</strong> on the same Lv/maps.",
+                "Website: <strong>Boss (min)</strong> and <strong>Common (min)</strong> fields, <strong>Boss dropped</strong> / <strong>Common dropped</strong> buttons, and independent resets.",
+                "TBH Monitor: <strong>Monitor</strong> and <strong>Settings</strong> tabs — timers on Monitor, chest farms and durations on Settings.",
+                "TBH Monitor: common chest detection and timer with its own cooldown when the option is enabled.",
+                "TBH Monitor: shows <code>Player.log</code> path on startup and warns if the ES3 save key was not detected from the game.",
+                "TBH Monitor: default farms <strong>Lv50</strong> and <strong>Lv40</strong>; build uses <code>config.dist.yaml</code> with automatic path discovery.",
+              ],
+            },
             {
               isoDate: "2026-06-13",
               publishedAtIso: "2026-06-13T23:20:00-03:00",
@@ -979,9 +1116,12 @@
           rowMap: "Map",
           rowClearTime: "Clear (s)",
           rowClearTimePlaceholder: "optional",
-          rowTimer: "Timer",
-          rowDrop: "Chest dropped",
-          rowReset: "Reset",
+          rowBossTimer: "Boss",
+          rowCommonTimer: "Common",
+          rowBossDrop: "Boss dropped",
+          rowCommonDrop: "Common dropped",
+          rowBossReset: "Reset",
+          rowCommonReset: "Reset",
           rowRemove: "Remove",
           timersDragHint: "Drag to set priority",
           rowDragHandle: "Drag to reorder",
@@ -998,7 +1138,8 @@
             "Lv{level} is already in use. Choose another chest level.",
           logAllLevelsUsed: "All chest levels are already configured.",
           logResetAll: "All timers were reset.",
-          logResetSingle: "Timer Lv{level} reset.",
+          logResetBossSingle: "Boss Lv{level} reset.",
+          logResetCommonSingle: "Common Lv{level} reset.",
           logAlreadyCounting: "Lv{level} ignored: timer is already running.",
           logStarted:
             "Drop confirmed: Lv{level} | {map}. Timer started ({minutes} min).",
@@ -1058,8 +1199,9 @@
             {
               heading: "Timer duration",
               items: [
-                "Common chests have about a <strong>14-minute</strong> cooldown. Set <strong>Default duration (min)</strong> at the top to 14 while farming common chests.",
-                "When common chest slots are full, switch the duration to <strong>13 minutes</strong> and rotate boss chests.",
+                "Common and boss chests share the <strong>same level</strong> (e.g. Lv 40 on the same map). Cooldown: boss <strong>7 min</strong>, common <strong>5 min</strong> — separate timer per level.",
+                "Adjust <strong>Boss (min)</strong> and <strong>Common (min)</strong> at the top for more aggressive farming.",
+                "Common chests can stay on <strong>auto-open</strong> — cooldown is per level, like boss chests.",
               ],
             },
             {
@@ -1082,13 +1224,13 @@
               ],
             },
             {
-              heading: "Example — Lv 50, 40 and 30 chests",
+              heading: "Example — Lv 50 and 40 chests",
               items: [
-                "Add all three chests (Lv 50, Lv 40 and Lv 30) on the site.",
+                "The site starts with 2 chests (Lv 50 and Lv 40); use <strong>Add chest</strong> if you want more.",
                 "Enter a map (e.g. Lv 50) and farm until a chest drops.",
                 "When it drops, click <strong>Chest dropped</strong> — the timer for that level starts.",
                 "While the timer is running, there is <strong>0% chance</strong> to drop another chest of that level.",
-                "Use that time to go to another map (e.g. Lv 40 or Lv 30) and farm a different level.",
+                "Use that time to go to another map (e.g. Lv 40) and farm a different level.",
                 "When a timer expires (<strong>0:00</strong>), return to that map to try the next drop.",
                 "This way you maximize loot in the same period by alternating levels while timers count down.",
               ],
@@ -1117,6 +1259,22 @@
           releaseNotesSubtitle:
             "Historial de mejoras del sitio y del TBH Monitor",
           releaseNotesReleases: [
+            {
+              isoDate: "2026-06-15",
+              publishedAtIso: "2026-06-15T18:00:00-03:00",
+              publishedAt:
+                "15 de junio de 2026 · 18:00 · GMT-3 (hora de Brasilia)",
+              title: "Cronometros separados — jefe 7 min / comun 5 min",
+              scope: "Sitio + TBH Monitor",
+              items: [
+                "Cronometros separados por nivel y tipo: <strong>jefe (7 min)</strong> y <strong>comun (5 min)</strong> en el mismo Nv/mapas.",
+                "Sitio: campos <strong>Jefe (min)</strong> y <strong>Comun (min)</strong>, botones <strong>Jefe caido</strong> / <strong>Comun caido</strong> y reinicios independientes.",
+                "TBH Monitor: pestanas <strong>Monitor</strong> y <strong>Configuracion</strong> — timers en Monitor, cofres y duraciones en Config.",
+                "TBH Monitor: deteccion y cronometro de cofre comun con cooldown propio cuando la opcion esta activa.",
+                "TBH Monitor: muestra la ruta de <code>Player.log</code> al iniciar y avisa si la clave ES3 del save no se detecto en el juego.",
+                "TBH Monitor: farms predeterminados <strong>Nv50</strong> y <strong>Nv40</strong>; build usa <code>config.dist.yaml</code> con deteccion automatica de rutas.",
+              ],
+            },
             {
               isoDate: "2026-06-13",
               publishedAtIso: "2026-06-13T23:20:00-03:00",
@@ -1159,6 +1317,8 @@
           rowTimer: "Timer",
           rowDrop: "Cofre caido",
           rowReset: "Reiniciar",
+          rowBossReset: "Reiniciar",
+          rowCommonReset: "Reiniciar",
           rowRemove: "Eliminar",
           timersDragHint: "Arrastra para definir prioridad",
           rowDragHandle: "Arrastrar para reordenar",
@@ -1176,7 +1336,8 @@
             "Nv{level} ya esta en uso. Elige otro nivel de cofre.",
           logAllLevelsUsed: "Todos los niveles de cofre ya estan configurados.",
           logResetAll: "Todos los cronometros fueron restablecidos.",
-          logResetSingle: "Timer Nv{level} reiniciado.",
+          logResetBossSingle: "Jefe Nv{level} reiniciado.",
+          logResetCommonSingle: "Comun Nv{level} reiniciado.",
           logAlreadyCounting:
             "Nv{level} ignorado: el cronometro ya esta en marcha.",
           logStarted:
@@ -1240,8 +1401,9 @@
             {
               heading: "Duracion del cronometro",
               items: [
-                "El cofre comun tiene un cooldown de unos <strong>14 minutos</strong>. Ajusta <strong>Duracion predeterminada (min)</strong> arriba a 14 mientras farmees cofres comunes.",
-                "Cuando los cofres comunes esten llenos, cambia la duracion a <strong>13 minutos</strong> y rota cofres de jefe.",
+                "Cofre comum y de jefe comparten el <strong>mismo nivel</strong> (ej. Lv 40 en el mismo mapa). Cooldown: jefe <strong>7 min</strong>, comum <strong>5 min</strong> — timer separado por nivel.",
+                "Ajusta <strong>Jefe (min)</strong> y <strong>Comun (min)</strong> arriba para farm mas agresivo.",
+                "Los cofres comunes pueden quedar con <strong>auto-abrir</strong> — el cooldown es por nivel.",
               ],
             },
             {
@@ -1264,13 +1426,13 @@
               ],
             },
             {
-              heading: "Ejemplo — cofres Nv 50, 40 y 30",
+              heading: "Ejemplo — cofres Nv 50 y 40",
               items: [
-                "Agrega los 3 cofres (Nv 50, Nv 40 y Nv 30) en el sitio.",
+                "El sitio ya incluye 2 cofres (Nv 50 y Nv 40); usa <strong>Agregar cofre</strong> si quieres mas.",
                 "Entra a un mapa (ej.: Nv 50) y farmea hasta que caiga el cofre.",
                 "Cuando caiga, haz clic en <strong>Cofre caido</strong> — el cronometro de ese nivel comienza.",
                 "Mientras el cronometro este activo, hay <strong>0% de probabilidad</strong> de dropear otro cofre de ese nivel.",
-                "Usa ese tiempo para ir a otro mapa (ej.: Nv 40 o Nv 30) y farmear un nivel diferente.",
+                "Usa ese tiempo para ir a otro mapa (ej.: Nv 40) y farmear un nivel diferente.",
                 "Cuando un timer expire (<strong>0:00</strong>), vuelve a ese mapa para intentar el siguiente drop.",
                 "Asi maximizas objetos en el mismo periodo, alternando niveles mientras los cronometros corren.",
               ],
@@ -1299,6 +1461,22 @@
           releaseNotesSubtitle:
             "Historique des ameliorations du site et du TBH Monitor",
           releaseNotesReleases: [
+            {
+              isoDate: "2026-06-15",
+              publishedAtIso: "2026-06-15T18:00:00-03:00",
+              publishedAt:
+                "15 juin 2026 · 18:00 · GMT-3 (heure de Brasilia)",
+              title: "Chronos separes — boss 7 min / commun 5 min",
+              scope: "Site + TBH Monitor",
+              items: [
+                "Chronos separes par niveau et type : <strong>boss (7 min)</strong> et <strong>commun (5 min)</strong> sur le meme Nv/cartes.",
+                "Site : champs <strong>Boss (min)</strong> et <strong>Commun (min)</strong>, boutons <strong>Boss obtenu</strong> / <strong>Commun obtenu</strong> et resets independants.",
+                "TBH Monitor : onglets <strong>Monitor</strong> et <strong>Configuration</strong> — chronos sur Monitor, coffres et durees sur Config.",
+                "TBH Monitor : detection et chrono de coffre commun avec cooldown propre quand l'option est activee.",
+                "TBH Monitor : affiche le chemin de <code>Player.log</code> au demarrage et avertit si la cle ES3 du save n'a pas ete detectee dans le jeu.",
+                "TBH Monitor : farms par defaut <strong>Nv50</strong> et <strong>Nv40</strong> ; build utilise <code>config.dist.yaml</code> avec detection automatique des chemins.",
+              ],
+            },
             {
               isoDate: "2026-06-13",
               publishedAtIso: "2026-06-13T23:20:00-03:00",
@@ -1341,6 +1519,8 @@
           rowTimer: "Chrono",
           rowDrop: "Coffre obtenu",
           rowReset: "Reinitialiser",
+          rowBossReset: "Reinitialiser",
+          rowCommonReset: "Reinitialiser",
           rowRemove: "Supprimer",
           timersDragHint: "Glissez pour definir la priorite",
           rowDragHandle: "Glisser pour reordonner",
@@ -1359,7 +1539,8 @@
           logAllLevelsUsed:
             "Tous les niveaux de coffre sont deja configures.",
           logResetAll: "Tous les chronos ont ete reinitialises.",
-          logResetSingle: "Chrono Nv{level} reinitialise.",
+          logResetBossSingle: "Boss Nv{level} reinitialise.",
+          logResetCommonSingle: "Commun Nv{level} reinitialise.",
           logAlreadyCounting:
             "Nv{level} ignore : le chrono est deja en cours.",
           logStarted:
@@ -1423,8 +1604,9 @@
             {
               heading: "Duree du chrono",
               items: [
-                "Le coffre commun a un cooldown d'environ <strong>14 minutes</strong>. Reglez <strong>Duree par defaut (min)</strong> en haut sur 14 pendant le farm de coffres communs.",
-                "Quand les coffres communs sont pleins, passez la duree a <strong>13 minutes</strong> et faites la rotation des coffres de boss.",
+                "Coffre commun et boss partagent le <strong>meme niveau</strong> (ex. Lv 40 sur le meme map). Cooldown : boss <strong>7 min</strong>, commun <strong>5 min</strong> — chrono separe par niveau.",
+                "Reglez <strong>Boss (min)</strong> et <strong>Commun (min)</strong> en haut pour un farm plus agressif.",
+                "Les coffres communs peuvent rester en <strong>ouverture auto</strong> — cooldown par niveau.",
               ],
             },
             {
@@ -1447,13 +1629,13 @@
               ],
             },
             {
-              heading: "Exemple — coffres Nv 50, 40 et 30",
+              heading: "Exemple — coffres Nv 50 et 40",
               items: [
-                "Ajoutez les 3 coffres (Nv 50, Nv 40 et Nv 30) sur le site.",
+                "Le site demarre avec 2 coffres (Nv 50 et Nv 40) ; utilisez <strong>Ajouter un coffre</strong> pour en ajouter.",
                 "Entrez dans une carte (ex. : Nv 50) et farmez jusqu'au drop du coffre.",
                 "Quand il drop, cliquez sur <strong>Coffre obtenu</strong> — le chrono de ce niveau demarre.",
                 "Pendant que le chrono tourne, il y a <strong>0% de chance</strong> de dropper un autre coffre de ce niveau.",
-                "Utilisez ce temps pour aller sur une autre carte (ex. : Nv 40 ou Nv 30) et farmer un niveau different.",
+                "Utilisez ce temps pour aller sur une autre carte (ex. : Nv 40) et farmer un niveau different.",
                 "Quand un chrono expire (<strong>0:00</strong>), revenez sur cette carte pour tenter le prochain drop.",
                 "Ainsi vous maximisez le butin sur la meme periode en alternant les niveaux pendant que les chronos tournent.",
               ],
@@ -1481,6 +1663,21 @@
           releaseNotesTitle: "软件更新说明",
           releaseNotesSubtitle: "网站与 TBH Monitor 的更新历史",
           releaseNotesReleases: [
+            {
+              isoDate: "2026-06-15",
+              publishedAtIso: "2026-06-15T18:00:00-03:00",
+              publishedAt: "2026年6月15日 · 18:00 · GMT-3（巴西利亚时间）",
+              title: "分离计时 — 首领 7 分钟 / 普通 5 分钟",
+              scope: "网站 + TBH Monitor",
+              items: [
+                "按等级与类型分离计时：<strong>首领（7 分钟）</strong>与<strong>普通（5 分钟）</strong>，同一 Lv/地图并存。",
+                "网站：<strong>首领 (分钟)</strong> 与 <strong>普通 (分钟)</strong> 字段，<strong>首领掉落</strong> / <strong>普通掉落</strong> 按钮及独立重置。",
+                "TBH Monitor：<strong>监控</strong> 与 <strong>设置</strong> 标签页 — 计时在监控页，宝箱与时长在设置页。",
+                "TBH Monitor：启用选项后检测普通宝箱并独立冷却计时。",
+                "TBH Monitor：启动时显示 <code>Player.log</code> 路径；若未从游戏检测到 ES3 密钥会提示。",
+                "TBH Monitor：默认农场 <strong>Lv50</strong> 与 <strong>Lv40</strong>；构建使用 <code>config.dist.yaml</code> 自动发现路径。",
+              ],
+            },
             {
               isoDate: "2026-06-13",
               publishedAtIso: "2026-06-13T23:20:00-03:00",
@@ -1521,6 +1718,8 @@
           rowTimer: "计时器",
           rowDrop: "宝箱掉落",
           rowReset: "重置",
+          rowBossReset: "重置",
+          rowCommonReset: "重置",
           rowRemove: "删除",
           timersDragHint: "拖动以设置优先级",
           rowDragHandle: "拖动以重新排序",
@@ -1534,7 +1733,8 @@
           logLevelDuplicate: "Lv{level} 已被使用。请选择其他宝箱等级。",
           logAllLevelsUsed: "所有宝箱等级均已配置。",
           logResetAll: "所有计时器已重置。",
-          logResetSingle: "Lv{level} 计时器已重置。",
+          logResetBossSingle: "首领 Lv{level} 已重置。",
+          logResetCommonSingle: "普通 Lv{level} 已重置。",
           logAlreadyCounting: "Lv{level} 已忽略：计时器已在运行。",
           logStarted:
             "掉落确认：Lv{level} | {map}。计时开始 ({minutes} 分钟)。",
@@ -1586,8 +1786,9 @@
             {
               heading: "计时器时长",
               items: [
-                "普通宝箱冷却约 <strong>14 分钟</strong>。刷普通宝箱时，将顶部 <strong>默认时长 (分钟)</strong> 设为 14。",
-                "普通宝箱栏满后，将时长改为 <strong>13 分钟</strong>，进行 Boss 宝箱轮换。",
+                "普通宝箱与 Boss 宝箱共享<strong>同一等级</strong>（例如 Lv 40 在同一地图）。冷却：Boss <strong>7 分钟</strong>，普通 <strong>5 分钟</strong> — 每个等级独立计时。",
+                "可在顶部调整 <strong>首领 (分钟)</strong> 和 <strong>普通 (分钟)</strong> 以优化 farm。",
+                "普通宝箱可开启<strong>自动打开</strong> — 按等级独立冷却。",
               ],
             },
             {
@@ -1610,13 +1811,13 @@
               ],
             },
             {
-              heading: "示例 — Lv 50、40、30 宝箱",
+              heading: "示例 — Lv 50、40 宝箱",
               items: [
-                "在网站添加 Lv 50、Lv 40、Lv 30 三个宝箱。",
+                "网站默认包含 2 个宝箱（Lv 50 和 Lv 40）；需要更多可点击「添加宝箱」。",
                 "进入地图（如 Lv 50）刷到宝箱掉落。",
                 "掉落后点击 <strong>宝箱掉落</strong> — 该等级计时开始。",
                 "计时进行中，该等级宝箱 <strong>0% 概率</strong> 再次掉落。",
-                "利用这段时间前往其他地图（如 Lv 40 或 Lv 30）刷不同等级。",
+                "利用这段时间前往其他地图（如 Lv 40）刷不同等级。",
                 "计时结束（<strong>0:00</strong>）后，返回该地图尝试下一次掉落。",
                 "在计时交替运行期间切换等级，可在相同时间内获得更多物品。",
               ],
@@ -1644,6 +1845,21 @@
           releaseNotesTitle: "ソフトウェア更新履歴",
           releaseNotesSubtitle: "サイトと TBH Monitor の更新履歴",
           releaseNotesReleases: [
+            {
+              isoDate: "2026-06-15",
+              publishedAtIso: "2026-06-15T18:00:00-03:00",
+              publishedAt: "2026年6月15日 · 18:00 · GMT-3（ブラジリア時間）",
+              title: "分離タイマー — ボス 7 分 / 通常 5 分",
+              scope: "サイト + TBH Monitor",
+              items: [
+                "レベルと種別ごとに分離：<strong>ボス（7 分）</strong>と<strong>通常（5 分）</strong>を同じ Lv/マップで並行管理。",
+                "サイト：<strong>ボス (分)</strong> と <strong>通常 (分)</strong> フィールド、<strong>ボスドロップ</strong> / <strong>通常ドロップ</strong> ボタンと独立リセット。",
+                "TBH Monitor：<strong>モニター</strong> と <strong>設定</strong> タブ — タイマーはモニター、宝箱と時間は設定。",
+                "TBH Monitor：オプション有効時に通常宝箱を検出し、専用クールダウンでタイマー管理。",
+                "TBH Monitor：起動時に <code>Player.log</code> のパスを表示；ゲームから ES3 キーが検出されない場合は警告。",
+                "TBH Monitor：デフォルトファーム <strong>Lv50</strong> と <strong>Lv40</strong>；ビルドは <code>config.dist.yaml</code> でパス自動検出。",
+              ],
+            },
             {
               isoDate: "2026-06-13",
               publishedAtIso: "2026-06-13T23:20:00-03:00",
@@ -1684,6 +1900,8 @@
           rowTimer: "タイマー",
           rowDrop: "宝箱ドロップ",
           rowReset: "リセット",
+          rowBossReset: "リセット",
+          rowCommonReset: "リセット",
           rowRemove: "削除",
           timersDragHint: "ドラッグして優先順位を設定",
           rowDragHandle: "ドラッグして並べ替え",
@@ -1699,7 +1917,8 @@
             "Lv{level} は既に使用中です。別の宝箱レベルを選んでください。",
           logAllLevelsUsed: "すべての宝箱レベルが既に設定されています。",
           logResetAll: "すべてのタイマーをリセットしました。",
-          logResetSingle: "Lv{level} のタイマーをリセットしました。",
+          logResetBossSingle: "ボス Lv{level} をリセットしました。",
+          logResetCommonSingle: "通常 Lv{level} をリセットしました。",
           logAlreadyCounting:
             "Lv{level} は無視されました: 既にカウント中です。",
           logStarted:
@@ -1761,8 +1980,9 @@
             {
               heading: "タイマー時間",
               items: [
-                "通常宝箱のクールダウンは約<strong>14分</strong>です。通常宝箱を回す間は、上部の<strong>標準時間 (分)</strong>を14に設定してください。",
-                "通常宝箱の所持枠がいっぱいになったら、時間を<strong>13分</strong>に変更してボス宝箱のローテーションを行います。",
+                "通常宝箱とボス宝箱は<strong>同じレベル</strong>（例：Lv 40 は同じマップ）。クールダウン：ボス <strong>7分</strong>、通常 <strong>5分</strong> — レベルごとに独立タイマー。",
+                "上部の<strong>ボス (分)</strong>と<strong>通常 (分)</strong>で farm を調整できます。",
+                "通常宝箱は<strong>自動開封</strong>のままで OK — レベルごとのクールダウンです。",
               ],
             },
             {
@@ -1785,13 +2005,13 @@
               ],
             },
             {
-              heading: "例 — Lv 50・40・30 の宝箱",
+              heading: "例 — Lv 50・40 の宝箱",
               items: [
-                "サイトに Lv 50、Lv 40、Lv 30 の3つの宝箱を追加します。",
+                "サイトは Lv 50 と Lv 40 の2つの宝箱で始まります。追加する場合は<strong>宝箱を追加</strong>を使います。",
                 "マップに入り（例: Lv 50）、宝箱がドロップするまで周回します。",
                 "ドロップしたら<strong>宝箱ドロップ</strong>を押すと、そのレベルのタイマーが開始します。",
                 "タイマーが動いている間、そのレベルの宝箱は<strong>0%の確率</strong>でしか落ちません。",
-                "その時間を使って別のマップ（例: Lv 40 や Lv 30）で別レベルを周回します。",
+                "その時間を使って別のマップ（例: Lv 40）で別レベルを周回します。",
                 "タイマーが終了（<strong>0:00</strong>）したら、そのマップに戻って次のドロップを狙います。",
                 "タイマーを交互に回しながらレベルを切り替えることで、同じ時間でより多くのアイテムを獲得できます。",
               ],
@@ -1803,9 +2023,10 @@
       const stageCache = [];
       const stageByKey = new Map();
 
-      const ALERT_PEAK_GAIN = 1.0;
+      const ALERT_SOUND_URL = "./sounds/stardew_valley.mp3";
 
-      const durationInput = document.querySelector("#durationInput");
+      const bossDurationInput = document.querySelector("#bossDurationInput");
+      const commonDurationInput = document.querySelector("#commonDurationInput");
       const alertVolumeInput = document.querySelector("#alertVolumeInput");
       const alertVolumeValue = document.querySelector("#alertVolumeValue");
       const testAlertButton = document.querySelector("#testAlertButton");
@@ -1817,7 +2038,8 @@
       const pageTitle = document.querySelector("#pageTitle");
       const subtitleText = document.querySelector("#subtitleText");
       const languageLabel = document.querySelector("#languageLabel");
-      const durationLabel = document.querySelector("#durationLabel");
+      const bossDurationLabel = document.querySelector("#bossDurationLabel");
+      const commonDurationLabel = document.querySelector("#commonDurationLabel");
       const alertVolumeLabel = document.querySelector("#alertVolumeLabel");
       const addTimerButton = document.querySelector("#addTimerButton");
       const resetAllButton = document.querySelector("#resetAllButton");
@@ -1967,45 +2189,29 @@
         return "en";
       }
 
+      function createDefaultTimer(level) {
+        return {
+          id: crypto.randomUUID(),
+          level,
+          stageKey: RECOMMENDED_FARM_PRESET[level],
+          expiresAt: null,
+          expired: false,
+          commonExpiresAt: null,
+          commonExpired: false,
+        };
+      }
+
       function createDefaultState() {
         return {
           language: loadLanguagePreference(),
-          durationMinutes: 14,
+          bossDurationMinutes: 7,
+          commonDurationMinutes: 5,
           alertVolume: 100,
           farmMode: "player",
           playerLevel: 50,
           cubeLevel: 50,
           runeBonusPercent: 0,
-          timers: [
-            {
-              id: crypto.randomUUID(),
-              level: 65,
-              stageKey: 3205,
-              expiresAt: null,
-              expired: false,
-            },
-            {
-              id: crypto.randomUUID(),
-              level: 50,
-              stageKey: 2305,
-              expiresAt: null,
-              expired: false,
-            },
-            {
-              id: crypto.randomUUID(),
-              level: 40,
-              stageKey: 2109,
-              expiresAt: null,
-              expired: false,
-            },
-            {
-              id: crypto.randomUUID(),
-              level: 30,
-              stageKey: 1308,
-              expiresAt: null,
-              expired: false,
-            },
-          ],
+          timers: DEFAULT_TIMER_LEVELS.map(createDefaultTimer),
         };
       }
 
@@ -2272,17 +2478,31 @@
         return stageLabel(entry, false);
       }
 
+      function normalizeDurationMinutes(value, fallback) {
+        const parsed = Number(value);
+        if (!Number.isFinite(parsed) || parsed < 1 || parsed > 999) {
+          return fallback;
+        }
+        return parsed;
+      }
+
       function normalizeState() {
         if (!isSupportedLanguage(state.language)) {
           state.language = loadLanguagePreference();
         }
-        if (
-          !Number.isFinite(state.durationMinutes) ||
-          state.durationMinutes < 1 ||
-          state.durationMinutes > 999
-        ) {
-          state.durationMinutes = 14;
-        }
+
+        const legacyDuration = Number(state.durationMinutes);
+        state.bossDurationMinutes = normalizeDurationMinutes(
+          state.bossDurationMinutes ??
+            (Number.isFinite(legacyDuration) ? legacyDuration : undefined),
+          7,
+        );
+        state.commonDurationMinutes = normalizeDurationMinutes(
+          state.commonDurationMinutes,
+          5,
+        );
+        delete state.durationMinutes;
+        delete state.commonTimer;
 
         if (
           !Number.isFinite(state.alertVolume) ||
@@ -2347,6 +2567,10 @@
               ? Number(timer.expiresAt)
               : null,
             expired: Boolean(timer.expired),
+            commonExpiresAt: Number.isFinite(Number(timer.commonExpiresAt))
+              ? Number(timer.commonExpiresAt)
+              : null,
+            commonExpired: Boolean(timer.commonExpired),
           };
         });
 
@@ -2391,7 +2615,11 @@
             language: isSupportedLanguage(parsed.language)
               ? parsed.language
               : loadLanguagePreference(),
+            bossDurationMinutes: Number(parsed.bossDurationMinutes),
+            commonDurationMinutes: Number(parsed.commonDurationMinutes),
             durationMinutes: Number(parsed.durationMinutes),
+            durationMinutes: Number(parsed.durationMinutes),
+            commonTimer: parsed.commonTimer,
             alertVolume: Number(parsed.alertVolume),
             farmMode: parsed.farmMode,
             playerLevel: Number(parsed.playerLevel),
@@ -2475,7 +2703,8 @@
         pageTitle.textContent = t("pageTitle");
         subtitleText.textContent = t("subtitle");
         languageLabel.textContent = t("languageLabel");
-        durationLabel.textContent = t("durationLabel");
+        bossDurationLabel.textContent = t("bossDurationLabel");
+        commonDurationLabel.textContent = t("commonDurationLabel");
         alertVolumeLabel.textContent = t("alertVolumeLabel");
         testAlertButton.textContent = t("testAlertButton");
         addTimerButton.textContent = t("addTimerButton");
@@ -2561,6 +2790,8 @@
           clearTimeSeconds: null,
           expiresAt: null,
           expired: false,
+          commonExpiresAt: null,
+          commonExpired: false,
         };
         state.timers.push(timer);
         saveState();
@@ -2756,16 +2987,34 @@
           node.dataset.timerId = timer.id;
           const levelSelect = node.querySelector("[data-role='level']");
           const mapSelect = node.querySelector("[data-role='map']");
-          const timerLabel = node.querySelector("[data-role='timer']");
+          const bossTimerLabel = node.querySelector("[data-role='boss-timer']");
+          const commonTimerLabel = node.querySelector(
+            "[data-role='common-timer']",
+          );
+          const bossLevelLabel = node.querySelector("[data-role='boss-level']");
+          const commonLevelLabel = node.querySelector(
+            "[data-role='common-level']",
+          );
           const labelLevel = node.querySelector("[data-role='label-level']");
           const labelMap = node.querySelector("[data-role='label-map']");
           const labelClearTime = node.querySelector(
             "[data-role='label-clear-time']",
           );
           const clearTimeInput = node.querySelector("[data-role='clear-time']");
-          const labelTimer = node.querySelector("[data-role='label-timer']");
-          const dropButton = node.querySelector("[data-role='drop']");
-          const resetButton = node.querySelector("[data-role='reset']");
+          const labelBossTimer = node.querySelector(
+            "[data-role='label-boss-timer']",
+          );
+          const labelCommonTimer = node.querySelector(
+            "[data-role='label-common-timer']",
+          );
+          const bossDropButton = node.querySelector("[data-role='boss-drop']");
+          const commonDropButton = node.querySelector(
+            "[data-role='common-drop']",
+          );
+          const bossResetButton = node.querySelector("[data-role='boss-reset']");
+          const commonResetButton = node.querySelector(
+            "[data-role='common-reset']",
+          );
           const removeButton = node.querySelector("[data-role='remove']");
           const priorityLabel = node.querySelector("[data-role='priority']");
 
@@ -2780,9 +3029,12 @@
             timer.clearTimeSeconds === undefined
               ? ""
               : String(timer.clearTimeSeconds);
-          labelTimer.textContent = t("rowTimer");
-          dropButton.textContent = t("rowDrop");
-          resetButton.textContent = t("rowReset");
+          labelBossTimer.textContent = t("rowBossTimer");
+          labelCommonTimer.textContent = t("rowCommonTimer");
+          bossDropButton.textContent = t("rowBossDrop");
+          commonDropButton.textContent = t("rowCommonDrop");
+          bossResetButton.textContent = t("rowBossReset");
+          commonResetButton.textContent = t("rowCommonReset");
           removeButton.title = t("rowRemove");
           removeButton.setAttribute("aria-label", t("rowRemove"));
 
@@ -2795,7 +3047,9 @@
           }
 
           populateMapSelect(mapSelect, timer);
-          refreshTimerLabel(timer, timerLabel);
+          refreshTimerLevelLabels(timer, bossLevelLabel, commonLevelLabel);
+          refreshTimerLabel(timer, bossTimerLabel, "boss");
+          refreshTimerLabel(timer, commonTimerLabel, "common");
 
           levelSelect.addEventListener("change", () => {
             const newLevel = Number(levelSelect.value);
@@ -2822,7 +3076,7 @@
               timer.clearTimeSeconds = null;
               clearTimeInput.value = "";
               saveState();
-              refreshTimerLabel(timer, timerLabel);
+              refreshTimerLabel(timer, bossTimerLabel, "boss");
               return;
             }
             const parsed = Number(raw);
@@ -2842,25 +3096,25 @@
             timer.clearTimeSeconds = Math.floor(parsed);
             clearTimeInput.value = String(timer.clearTimeSeconds);
             saveState();
-            refreshTimerLabel(timer, timerLabel);
+            refreshTimerLabel(timer, bossTimerLabel, "boss");
           });
 
-          dropButton.addEventListener("click", () => {
+          bossDropButton.addEventListener("click", () => {
             if (timer.expiresAt && timer.expiresAt > Date.now()) {
               appendLog(t("logAlreadyCounting", { level: timer.level }));
               return;
             }
-            timer.expiresAt = Date.now() + state.durationMinutes * 60_000;
+            timer.expiresAt = Date.now() + state.bossDurationMinutes * 60_000;
             timer.expired = false;
             saveState();
-            refreshTimerLabel(timer, timerLabel);
+            refreshTimerLabel(timer, bossTimerLabel, "boss");
             const clearSeconds = effectiveClearSeconds(timer);
             if (clearSeconds > 0) {
               appendLog(
                 t("logStartedWithClear", {
                   level: timer.level,
                   map: mapLabelForTimer(timer),
-                  minutes: state.durationMinutes,
+                  minutes: state.bossDurationMinutes,
                   seconds: clearSeconds,
                 }),
               );
@@ -2869,18 +3123,50 @@
                 t("logStarted", {
                   level: timer.level,
                   map: mapLabelForTimer(timer),
-                  minutes: state.durationMinutes,
+                  minutes: state.bossDurationMinutes,
                 }),
               );
             }
           });
 
-          resetButton.addEventListener("click", () => {
+          commonDropButton.addEventListener("click", () => {
+            if (
+              timer.commonExpiresAt &&
+              timer.commonExpiresAt > Date.now()
+            ) {
+              appendLog(
+                t("logCommonAlreadyCountingForLevel", { level: timer.level }),
+              );
+              return;
+            }
+            timer.commonExpiresAt =
+              Date.now() + state.commonDurationMinutes * 60_000;
+            timer.commonExpired = false;
+            saveState();
+            refreshTimerLabel(timer, commonTimerLabel, "common");
+            appendLog(
+              t("logCommonStartedForLevel", {
+                level: timer.level,
+                map: mapLabelForTimer(timer),
+                minutes: state.commonDurationMinutes,
+              }),
+            );
+          });
+
+          bossResetButton.addEventListener("click", () => {
             timer.expiresAt = null;
             timer.expired = false;
             saveState();
-            refreshTimerLabel(timer, timerLabel);
-            appendLog(t("logResetSingle", { level: timer.level }));
+            refreshTimerLabel(timer, bossTimerLabel, "boss");
+            appendLog(t("logResetBossSingle", { level: timer.level }));
+          });
+
+          commonResetButton.addEventListener("click", () => {
+            timer.commonExpiresAt = null;
+            timer.commonExpired = false;
+            saveState();
+            refreshTimerLabel(timer, commonTimerLabel, "common");
+            appendLog(t("logResetCommonSingle", { level: timer.level }));
           });
 
           removeButton.addEventListener("click", () => {
@@ -2904,41 +3190,74 @@
         return `${minutes}:${String(seconds).padStart(2, "0")}`;
       }
 
-      function refreshTimerLabel(timer, labelElement) {
-        if (timer.expired) {
+      function refreshTimerLevelLabels(timer, bossLevelLabel, commonLevelLabel) {
+        const levelText = `Lv ${timer.level}`;
+        if (bossLevelLabel) bossLevelLabel.textContent = levelText;
+        if (commonLevelLabel) commonLevelLabel.textContent = levelText;
+      }
+
+      function timerDisplayClass(kind, state) {
+        const base =
+          "min-w-[4.5rem] shrink-0 font-mono text-2xl font-bold leading-none";
+        if (state === "expired") return `${base} text-rose-400`;
+        if (state === "waiting") return `${base} text-slate-300`;
+        return kind === "common"
+          ? `${base} text-cyan-300`
+          : `${base} text-fuchsia-300`;
+      }
+
+      function refreshTimerLabel(timer, labelElement, kind = "boss") {
+        const isCommon = kind === "common";
+        const expiresAt = isCommon ? timer.commonExpiresAt : timer.expiresAt;
+        const expired = isCommon ? timer.commonExpired : timer.expired;
+
+        if (expired) {
           labelElement.textContent = "0:00";
-          labelElement.className =
-            "mt-1 font-mono text-xl font-semibold text-rose-400";
-          if (timer.expiresAt && timer.expiresAt <= Date.now()) {
-            timer.expiresAt = null;
+          labelElement.className = timerDisplayClass(kind, "expired");
+          if (expiresAt && expiresAt <= Date.now()) {
+            if (isCommon) {
+              timer.commonExpiresAt = null;
+            } else {
+              timer.expiresAt = null;
+            }
             saveState();
           }
           return;
         }
 
-        if (!timer.expiresAt) {
+        if (!expiresAt) {
           labelElement.textContent = "--:--";
-          labelElement.className =
-            "mt-1 font-mono text-xl font-semibold text-slate-300";
+          labelElement.className = timerDisplayClass(kind, "waiting");
           return;
         }
 
-        const realRemainingMs = timer.expiresAt - Date.now();
-        const clearMs = effectiveClearSeconds(timer) * 1000;
+        const realRemainingMs = expiresAt - Date.now();
+        const clearMs = isCommon ? 0 : effectiveClearSeconds(timer) * 1000;
         const displayRemainingMs = realRemainingMs - clearMs;
 
         if (displayRemainingMs <= 0) {
-          const justExpired = !timer.expired;
-          timer.expired = true;
+          const justExpired = !expired;
+          if (isCommon) {
+            timer.commonExpired = true;
+          } else {
+            timer.expired = true;
+          }
           labelElement.textContent = "0:00";
-          labelElement.className =
-            "mt-1 font-mono text-xl font-semibold text-rose-400";
+          labelElement.className = timerDisplayClass(kind, "expired");
           if (justExpired) {
             playExpiredSound();
-            appendLog(t("logExpired", { level: timer.level }));
+            appendLog(
+              isCommon
+                ? t("logCommonExpiredForLevel", { level: timer.level })
+                : t("logExpired", { level: timer.level }),
+            );
           }
           if (realRemainingMs <= 0) {
-            timer.expiresAt = null;
+            if (isCommon) {
+              timer.commonExpiresAt = null;
+            } else {
+              timer.expiresAt = null;
+            }
           }
           saveState();
           return;
@@ -2947,8 +3266,7 @@
         labelElement.textContent = formatCountdown(
           Math.floor(displayRemainingMs / 1000),
         );
-        labelElement.className =
-          "mt-1 font-mono text-xl font-semibold text-emerald-400";
+        labelElement.className = timerDisplayClass(kind, "active");
       }
 
       function formatTimestamp() {
@@ -2963,8 +3281,13 @@
         logsContainer.scrollTop = logsContainer.scrollHeight;
       }
 
-      function alertPeakGain() {
-        return ALERT_PEAK_GAIN * (state.alertVolume / 100);
+      let alertAudio = null;
+
+      function getAlertAudio() {
+        if (!alertAudio) {
+          alertAudio = new Audio(ALERT_SOUND_URL);
+        }
+        return alertAudio;
       }
 
       function updateAlertVolumeDisplay() {
@@ -2972,47 +3295,14 @@
         alertVolumeValue.textContent = `${state.alertVolume}%`;
       }
 
-      function playToneSequence(tones, options = {}) {
-        const peakGain = alertPeakGain();
-        if (peakGain <= 0.0001) return;
-
-        const AudioContextRef =
-          window.AudioContext || window.webkitAudioContext;
-        if (!AudioContextRef) return;
-
-        const ctx = new AudioContextRef();
-        const masterGain = ctx.createGain();
-        masterGain.gain.setValueAtTime(peakGain, ctx.currentTime);
-        masterGain.connect(ctx.destination);
-
-        const waveform = options.waveform ?? "square";
-        let offset = ctx.currentTime;
-        for (const [frequency, durationMs] of tones) {
-          const osc = ctx.createOscillator();
-          const gain = ctx.createGain();
-          osc.type = waveform;
-          osc.frequency.setValueAtTime(frequency, offset);
-          gain.gain.setValueAtTime(0.0001, offset);
-          gain.gain.exponentialRampToValueAtTime(1, offset + 0.005);
-          gain.gain.exponentialRampToValueAtTime(
-            0.0001,
-            offset + durationMs / 1000,
-          );
-          osc.connect(gain);
-          gain.connect(masterGain);
-          osc.start(offset);
-          osc.stop(offset + durationMs / 1000);
-          offset += durationMs / 1000 + 0.04;
-        }
-
-        setTimeout(() => ctx.close(), 1500);
-      }
-
       function playExpiredSound() {
-        playToneSequence([
-          [880, 120],
-          [440, 160],
-        ]);
+        const volume = state.alertVolume / 100;
+        if (volume <= 0.0001) return;
+
+        const audio = getAlertAudio();
+        audio.volume = volume;
+        audio.currentTime = 0;
+        audio.play().catch(() => {});
       }
 
       async function bootstrap() {
@@ -3027,7 +3317,8 @@
         state = loadState();
         normalizeState();
         applyLanguage();
-        durationInput.value = String(state.durationMinutes);
+        bossDurationInput.value = String(state.bossDurationMinutes);
+        commonDurationInput.value = String(state.commonDurationMinutes);
         updateAlertVolumeDisplay();
         updateFarmModeUi();
         renderTimers();
@@ -3105,6 +3396,8 @@
             clearTimeSeconds: null,
             expiresAt: null,
             expired: false,
+            commonExpiresAt: null,
+            commonExpired: false,
           });
           saveState();
           renderTimers();
@@ -3118,29 +3411,43 @@
             ...timer,
             expiresAt: null,
             expired: false,
+            commonExpiresAt: null,
+            commonExpired: false,
           }));
           saveState();
           renderTimers();
           appendLog(t("logResetAll"));
         });
 
+      bossDurationInput.addEventListener("change", () => {
+        const parsed = Number(bossDurationInput.value);
+        if (!Number.isFinite(parsed) || parsed < 1 || parsed > 999) {
+          bossDurationInput.value = String(state.bossDurationMinutes);
+          appendLog(t("invalidDuration"));
+          return;
+        }
+        state.bossDurationMinutes = parsed;
+        saveState();
+        appendLog(t("logBossDurationUpdated", { minutes: parsed }));
+      });
+
+      commonDurationInput.addEventListener("change", () => {
+        const parsed = Number(commonDurationInput.value);
+        if (!Number.isFinite(parsed) || parsed < 1 || parsed > 999) {
+          commonDurationInput.value = String(state.commonDurationMinutes);
+          appendLog(t("invalidDuration"));
+          return;
+        }
+        state.commonDurationMinutes = parsed;
+        saveState();
+        appendLog(t("logCommonDurationUpdated", { minutes: parsed }));
+      });
+
       document
         .querySelector("#clearLogsButton")
         .addEventListener("click", () => {
           logsContainer.innerHTML = "";
         });
-
-      durationInput.addEventListener("change", () => {
-        const parsed = Number(durationInput.value);
-        if (!Number.isFinite(parsed) || parsed < 1 || parsed > 999) {
-          durationInput.value = String(state.durationMinutes);
-          appendLog(t("invalidDuration"));
-          return;
-        }
-        state.durationMinutes = parsed;
-        saveState();
-        appendLog(t("logDurationUpdated", { minutes: parsed }));
-      });
 
       alertVolumeInput.addEventListener("input", () => {
         state.alertVolume = Number(alertVolumeInput.value);
@@ -3169,9 +3476,10 @@
         rows.forEach((row, index) => {
           const timer = state.timers[index];
           if (!timer) return;
-          const label = row.querySelector("[data-role='timer']");
-          if (!label) return;
-          refreshTimerLabel(timer, label);
+          const bossLabel = row.querySelector("[data-role='boss-timer']");
+          const commonLabel = row.querySelector("[data-role='common-timer']");
+          if (bossLabel) refreshTimerLabel(timer, bossLabel, "boss");
+          if (commonLabel) refreshTimerLabel(timer, commonLabel, "common");
         });
       }, 250);
 

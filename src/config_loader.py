@@ -28,7 +28,8 @@ from src.ui.theme import DEFAULT_WINDOW_HEIGHT, DEFAULT_WINDOW_WIDTH
 class MonitorSettings:
     poll_interval_seconds: float
     debounce_seconds: float
-    average_drop_minutes: float
+    boss_drop_minutes: float
+    common_drop_minutes: float
     window_title: str
     dry_run: bool
     save_poll_interval_seconds: float
@@ -40,6 +41,8 @@ class AppConfig:
     save_file_path: Path
     state_file_path: Path
     es3_password: str
+    es3_password_is_default: bool
+    es3_password_from_config: bool
     language: Language
     window_width: int
     window_height: int
@@ -86,7 +89,7 @@ def _chest_farm_to_dict(slot: ChestFarmSlot) -> dict[str, Any]:
 
 def _default_chest_farms() -> list[ChestFarmSlot]:
     slots: list[ChestFarmSlot] = []
-    for index, level in enumerate((65, 50, 40, 30), start=1):
+    for index, level in enumerate((50, 40), start=1):
         suggested = suggested_stage_for_chest_level(level)
         slots.append(
             ChestFarmSlot(
@@ -188,7 +191,7 @@ def load_raw_config(config_path: Path) -> dict[str, Any]:
 
 def load_config(config_path: Path) -> AppConfig:
     from src.infrastructure.game_paths import (
-        discover_es3_password,
+        discover_es3_password_result,
         discover_player_log,
         discover_save_file,
         resolve_path,
@@ -205,18 +208,37 @@ def load_config(config_path: Path) -> AppConfig:
     obtainable_boss_keys = default_chest_item_keys()["boss"]
     boss_keys = obtainable_boss_keys
 
+    configured_password = paths.get("es3_password")
+    if configured_password is not None and str(configured_password).strip():
+        es3_password = str(configured_password)
+        es3_password_is_default = False
+        es3_password_from_config = True
+    else:
+        password_discovery = discover_es3_password_result()
+        es3_password = password_discovery.password
+        es3_password_is_default = not password_discovery.from_game
+        es3_password_from_config = False
+
     return AppConfig(
         player_log_path=resolve_path(paths.get("player_log"), discover=discover_player_log),
         save_file_path=resolve_path(paths.get("save_file"), discover=discover_save_file),
         state_file_path=resolve_app_relative_path(paths.get("state_file", "state.json")),
-        es3_password=str(paths.get("es3_password", discover_es3_password())),
+        es3_password=es3_password,
+        es3_password_is_default=es3_password_is_default,
+        es3_password_from_config=es3_password_from_config,
         language=Language.from_code(ui_raw.get("language")),
         window_width=int(ui_raw.get("window_width", DEFAULT_WINDOW_WIDTH)),
         window_height=int(ui_raw.get("window_height", DEFAULT_WINDOW_HEIGHT)),
         monitor=MonitorSettings(
             poll_interval_seconds=float(monitor_raw.get("poll_interval_seconds", 0.35)),
             debounce_seconds=float(monitor_raw.get("debounce_seconds", 4.0)),
-            average_drop_minutes=float(monitor_raw.get("average_drop_minutes", 12)),
+            boss_drop_minutes=float(
+                monitor_raw.get(
+                    "boss_drop_minutes",
+                    monitor_raw.get("average_drop_minutes", 7),
+                )
+            ),
+            common_drop_minutes=float(monitor_raw.get("common_drop_minutes", 5)),
             window_title=str(monitor_raw.get("window_title", "TaskBarHero")),
             dry_run=bool(monitor_raw.get("dry_run", False)),
             save_poll_interval_seconds=float(monitor_raw.get("save_poll_interval_seconds", 2.0)),
@@ -238,16 +260,19 @@ def load_config(config_path: Path) -> AppConfig:
 
 def save_config(config_path: Path, app_config: AppConfig) -> None:
     raw = load_raw_config(config_path) if config_path.exists() else {}
-    raw["paths"] = {
+    paths: dict[str, str] = {
         "player_log": str(app_config.player_log_path).replace("\\", "/"),
         "save_file": str(app_config.save_file_path).replace("\\", "/"),
         "state_file": str(app_config.state_file_path).replace("\\", "/"),
-        "es3_password": app_config.es3_password,
     }
+    if app_config.es3_password_from_config:
+        paths["es3_password"] = app_config.es3_password
+    raw["paths"] = paths
     raw["monitor"] = {
         "poll_interval_seconds": app_config.monitor.poll_interval_seconds,
         "debounce_seconds": app_config.monitor.debounce_seconds,
-        "average_drop_minutes": app_config.monitor.average_drop_minutes,
+        "boss_drop_minutes": app_config.monitor.boss_drop_minutes,
+        "common_drop_minutes": app_config.monitor.common_drop_minutes,
         "window_title": app_config.monitor.window_title,
         "dry_run": app_config.monitor.dry_run,
         "save_poll_interval_seconds": app_config.monitor.save_poll_interval_seconds,

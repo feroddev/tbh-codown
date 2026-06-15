@@ -345,10 +345,18 @@ class ChestWatchRow(ctk.CTkFrame):
 
 
 class ChestWatchPanel(ctk.CTkFrame):
-    def __init__(self, master, language: Language, on_change, **kwargs) -> None:
+    def __init__(
+        self,
+        master,
+        language: Language,
+        on_change,
+        scroll_max_visible_rows: int = SCROLL_MAX_VISIBLE_ROWS,
+        **kwargs,
+    ) -> None:
         super().__init__(master, fg_color="transparent", corner_radius=0, **kwargs)
         self._language = language
         self._on_change = on_change
+        self._scroll_max_visible_rows = scroll_max_visible_rows
         self._rows: list[ChestWatchRow] = []
         self._dragging_row: ChestWatchRow | None = None
 
@@ -402,7 +410,7 @@ class ChestWatchPanel(ctk.CTkFrame):
         return ROW_CONTROL_HEIGHT + ROW_PAD_Y * 2 + ROW_GAP_Y * 2
 
     def _scroll_frame_height(self) -> int:
-        visible_rows = max(1, min(len(self._rows), SCROLL_MAX_VISIBLE_ROWS))
+        visible_rows = max(1, min(len(self._rows), self._scroll_max_visible_rows))
         return (
             SCROLL_HEADER_HEIGHT
             + visible_rows * self._row_block_height()
@@ -487,7 +495,7 @@ class ChestWatchPanel(ctk.CTkFrame):
 
     def _default_slots(self) -> list[ChestFarmSlot]:
         defaults: list[ChestFarmSlot] = []
-        for index, level in enumerate((65, 50, 40, 30), start=1):
+        for index, level in enumerate((50, 40), start=1):
             suggested = suggested_stage_for_chest_level(level)
             defaults.append(
                 ChestFarmSlot(

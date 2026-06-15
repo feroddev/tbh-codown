@@ -53,6 +53,7 @@ class ChestDetector:
         on_chest_detected: Callable[[ChestEvent], None] | None = None,
         debounce_seconds: float = 4.0,
         watch_boss_keys: frozenset[str] = frozenset(),
+        watch_common_keys: frozenset[str] = frozenset(),
         flat_count_drop_gate: Callable[[str], bool] | None = None,
     ) -> None:
         self._consider_common_chest = consider_common_chest
@@ -61,6 +62,7 @@ class ChestDetector:
         self._use_count_tracking = False
         self._last_counts: dict[str, int] = {}
         self._watch_boss_keys = watch_boss_keys
+        self._watch_common_keys = watch_common_keys
         self._flat_count_drop_gate = flat_count_drop_gate
 
     def set_flat_count_drop_gate(
@@ -74,6 +76,9 @@ class ChestDetector:
 
     def set_watch_boss_keys(self, keys: frozenset[str]) -> None:
         self._watch_boss_keys = keys
+
+    def set_watch_common_keys(self, keys: frozenset[str]) -> None:
+        self._watch_common_keys = keys
 
     def enable_count_tracking(self, enabled: bool) -> None:
         self._use_count_tracking = enabled
@@ -113,7 +118,7 @@ class ChestDetector:
             self._last_counts[item_key] = count
 
             if previous_count is None:
-                if item_key in self._watch_boss_keys and count > 0:
+                if count > 0 and self._is_watched_item_key(item_key):
                     previous_count = 0
                 else:
                     return None
@@ -132,10 +137,15 @@ class ChestDetector:
             self._on_chest_detected(event)
         return event
 
+    def _is_watched_item_key(self, item_key: str) -> bool:
+        if item_key in self._watch_boss_keys:
+            return True
+        return self._consider_common_chest and item_key in self._watch_common_keys
+
     def _should_accept_flat_count_drop(self, item_key: str) -> bool:
         if self._flat_count_drop_gate is None:
             return False
-        if item_key not in self._watch_boss_keys:
+        if not self._is_watched_item_key(item_key):
             return False
         return self._flat_count_drop_gate(item_key)
 
@@ -148,6 +158,7 @@ class PlayerLogPoller:
         consider_common_chest: bool,
         debounce_seconds: float = 4.0,
         watch_boss_keys: frozenset[str] = frozenset(),
+        watch_common_keys: frozenset[str] = frozenset(),
         flat_count_drop_gate: Callable[[str], bool] | None = None,
     ) -> None:
         self._log_path = log_path
@@ -155,6 +166,7 @@ class PlayerLogPoller:
             consider_common_chest=consider_common_chest,
             debounce_seconds=debounce_seconds,
             watch_boss_keys=watch_boss_keys,
+            watch_common_keys=watch_common_keys,
             flat_count_drop_gate=flat_count_drop_gate,
         )
         self._detector.enable_count_tracking(True)
@@ -166,6 +178,9 @@ class PlayerLogPoller:
 
     def set_watch_boss_keys(self, keys: frozenset[str]) -> None:
         self._detector.set_watch_boss_keys(keys)
+
+    def set_watch_common_keys(self, keys: frozenset[str]) -> None:
+        self._detector.set_watch_common_keys(keys)
 
     def set_flat_count_drop_gate(
         self,

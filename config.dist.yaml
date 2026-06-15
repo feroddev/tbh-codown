@@ -1,0 +1,27 @@
+paths:
+  state_file: state.json
+
+monitor:
+  poll_interval_seconds: 0.35
+  debounce_seconds: 4.0
+  boss_drop_minutes: 7.0
+  common_drop_minutes: 5.0
+  window_title: TaskBarHero
+  dry_run: false
+  save_poll_interval_seconds: 2.0
+
+strategy:
+  consider_common_chest: true
+
+ui:
+  language: pt-BR
+
+chest_farms:
+  - chest_level: 50
+    stage_key: 2305
+    enabled: true
+    priority: 1
+  - chest_level: 40
+    stage_key: 2109
+    enabled: true
+    priority: 2
