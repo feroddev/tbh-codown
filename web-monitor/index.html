@@ -867,6 +867,7 @@
               items: [
                 "Corrigido bug em que um unico bau comum podia gerar <strong>duas linhas no log</strong> quando o save e o <code>Player.log</code> detectavam o mesmo drop no mesmo ciclo.",
                 "Deduplicacao reforcada: save + log, log + save e linhas repetidas do <code>Player.log</code> passam a contar como um unico drop.",
+                "Corrigido falso positivo de bau comum quando o jogo reconsulta o inventario apos drop do chefe com um bau comum ainda <strong>nao aberto</strong> no inventario.",
               ],
             },
             {
@@ -1091,6 +1092,7 @@
               items: [
                 "Fixed a bug where a single common chest drop could produce <strong>two log entries</strong> when the save file and <code>Player.log</code> detected the same drop in the same poll cycle.",
                 "Stronger deduplication: save + log, log + save, and repeated <code>Player.log</code> lines now count as one drop.",
+                "Fixed false common chest detection when the game re-queries inventory after a boss drop while an unopened common chest is still in the bag.",
               ],
             },
             {
@@ -1298,6 +1300,7 @@
               items: [
                 "Corregido un bug en el que un solo cofre comun podia generar <strong>dos lineas en el log</strong> cuando el save y el <code>Player.log</code> detectaban el mismo drop en el mismo ciclo.",
                 "Deduplicacion reforzada: save + log, log + save y lineas repetidas del <code>Player.log</code> cuentan como un unico drop.",
+                "Corregido falso positivo de cofre comun cuando el juego reconsulta el inventario tras un drop de jefe con un cofre comun aun <strong>sin abrir</strong>.",
               ],
             },
             {
@@ -1512,6 +1515,7 @@
               items: [
                 "Correction d'un bug ou un seul coffre commun pouvait produire <strong>deux lignes dans le log</strong> lorsque la save et le <code>Player.log</code> detectaient le meme drop dans le meme cycle.",
                 "Deduplication renforcee : save + log, log + save et lignes repetees du <code>Player.log</code> comptent desormais comme un seul drop.",
+                "Correction d'un faux positif de coffre commun quand le jeu re-interroge l'inventaire apres un drop boss avec un coffre commun encore <strong>non ouvert</strong>.",
               ],
             },
             {
@@ -1725,6 +1729,7 @@
               items: [
                 "修复了单个普通宝箱掉落可能产生<strong>两条日志</strong>的问题（当存档与 <code>Player.log</code> 在同一轮询周期检测到同一掉落时）。",
                 "加强去重：save + log、log + save 以及 <code>Player.log</code> 重复行现均计为一次掉落。",
+                "修复了首领掉落后游戏重新查询库存时，若背包中仍有<strong>未打开</strong>的普通宝箱，会误记为普通掉落的问题。",
               ],
             },
             {
@@ -1918,6 +1923,7 @@
               items: [
                 "セーブと <code>Player.log</code> が同一ポーリング周期で同じドロップを検出した際、通常宝箱1回で<strong>ログが2行</strong>出る不具合を修正。",
                 "重複排除を強化：save + log、log + save、および <code>Player.log</code> の重複行は1回のドロップとして扱います。",
+                "未開封の通常宝箱がバッグに残っている状態でボスドロップ後にゲームがインベントリを再照会した際、誤って通常ドロップと記録される問題を修正。",
               ],
             },
             {

@@ -61,6 +61,7 @@ class ChestDetector:
         self._debounce_seconds = debounce_seconds
         self._use_count_tracking = False
         self._last_counts: dict[str, int] = {}
+        self._last_emitted_count: dict[str, int] = {}
         self._watch_boss_keys = watch_boss_keys
         self._watch_common_keys = watch_common_keys
         self._flat_count_drop_gate = flat_count_drop_gate
@@ -126,6 +127,11 @@ class ChestDetector:
             if count <= previous_count:
                 if not self._should_accept_flat_count_drop(item_key):
                     return None
+                last_emitted = self._last_emitted_count.get(item_key)
+                if last_emitted is not None and count <= last_emitted:
+                    return None
+
+        self._last_emitted_count[item_key] = count
 
         event = ChestEvent(
             item_key=item_key,

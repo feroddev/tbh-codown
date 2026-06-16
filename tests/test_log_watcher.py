@@ -251,6 +251,47 @@ class LogWatcherTests(unittest.TestCase):
 
         self.assertIsNone(event)
 
+    def test_flat_count_rejected_when_already_emitted_at_same_count(self) -> None:
+        registry = DropCooldownRegistry(
+            boss_cooldown_minutes_provider=lambda: 7.0,
+            common_cooldown_minutes_provider=lambda: 5.0,
+            is_common_timer_counting=lambda _level: False,
+            last_drop_by_level={-40: 1_000.0},
+            monitor_started_at=500.0,
+        )
+        detector = ChestDetector(
+            consider_common_chest=True,
+            debounce_seconds=4.0,
+            watch_common_keys=frozenset({"910401"}),
+            flat_count_drop_gate=registry.should_accept_flat_count_for_key,
+        )
+        detector.enable_count_tracking(True)
+        line = "GetBoxCount Success Count : 1 // ItemKey : 910401"
+
+        first = detector.process_line(line)
+        resync = detector.process_line(line)
+
+        self.assertIsNotNone(first)
+        self.assertEqual(first.chest_type, ChestType.NORMAL_BROWN)
+        self.assertIsNone(resync)
+
+    def test_common_drop_after_opening_chest_still_detects_increment(self) -> None:
+        detector = ChestDetector(
+            consider_common_chest=True,
+            debounce_seconds=4.0,
+            watch_common_keys=frozenset({"910401"}),
+        )
+        detector.enable_count_tracking(True)
+
+        detector.process_line("GetBoxCount Success Count : 1 // ItemKey : 910401")
+        detector.process_line("GetBoxCount Success Count : 0 // ItemKey : 910401")
+        new_drop = detector.process_line(
+            "GetBoxCount Success Count : 1 // ItemKey : 910401"
+        )
+
+        self.assertIsNotNone(new_drop)
+        self.assertEqual(new_drop.count, 1)
+
     def test_seed_from_log_tail_sets_baseline_without_emitting(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
             log_path = Path(temp_dir) / "Player.log"
