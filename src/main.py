@@ -11,6 +11,7 @@ from src.runtime_paths import ensure_default_config, resolve_config_path
 from src.data.stage_codec import decode_stage_key
 from src.infrastructure.game_paths import format_discovered_paths
 from src.infrastructure.save_reader import SaveReader
+from src.infrastructure.windows_console import ensure_console_for_cli
 from src.ui.app import run_gui
 
 logger = logging.getLogger(__name__)
@@ -82,13 +83,17 @@ def build_parser() -> argparse.ArgumentParser:
 def main(argv: list[str] | None = None) -> int:
     parser = build_parser()
     args = parser.parse_args(argv)
+    command = args.command or "gui"
+    if command != "gui":
+        ensure_console_for_cli()
+
     configure_logging(args.verbose)
 
     config_path = ensure_default_config(resolve_config_path(args.config))
-    command = args.command or "gui"
     if command == "gui":
         run_gui(config_path)
         return 0
+
     if command == "status":
         return run_status(config_path)
     if command == "paths":
