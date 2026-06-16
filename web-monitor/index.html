@@ -361,6 +361,17 @@
               e marca o cronometro quando um bau dropa, sem precisar clicar em
               "Bau dropou" manualmente.
             </p>
+            <p class="mt-2 break-words text-sm text-slate-400">
+              <a
+                id="downloadTutorialLink"
+                href="https://youtu.be/eNKxyZug_V4"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="font-medium text-sky-400 underline decoration-sky-500/40 underline-offset-2 transition hover:text-sky-300"
+              >
+                Video: como usar o TBH Monitor
+              </a>
+            </p>
             <p
               id="downloadReleaseNotesHint"
               class="mt-2 break-words text-sm text-slate-400"
@@ -850,6 +861,7 @@
             "O TBH Monitor e o software para Windows com praticamente as mesmas funcoes deste site: cronometros de baus, guia de rotas e recomendacoes de farm.",
           downloadDetails:
             'A diferenca e que o programa le os logs do jogo automaticamente e marca o cronometro quando um bau dropa, sem precisar clicar em "Bau dropou" manualmente.',
+          downloadTutorialLink: "Video: como usar o TBH Monitor",
           downloadButton: "Baixar TBH Monitor (.zip)",
           downloadReleaseNotesHint:
             'Novidades do software estao nas <a href="#releaseNotesSection" class="font-medium text-sky-400 underline decoration-sky-500/40 underline-offset-2 transition hover:text-sky-300">notas de atualizacao</a> no rodape da pagina.',
@@ -1077,6 +1089,7 @@
             "TBH Monitor is the Windows app with practically the same features as this site: chest timers, route guide, and farm recommendations.",
           downloadDetails:
             'The difference is that it reads the game logs automatically and starts the timer when a chest drops, with no need to click "Chest dropped" manually.',
+          downloadTutorialLink: "Video: how to use TBH Monitor",
           downloadButton: "Download TBH Monitor (.zip)",
           downloadReleaseNotesHint:
             'See what is new in the <a href="#releaseNotesSection" class="font-medium text-sky-400 underline decoration-sky-500/40 underline-offset-2 transition hover:text-sky-300">update notes</a> at the bottom of the page.',
@@ -1283,6 +1296,7 @@
             "TBH Monitor es la aplicacion de Windows con practicamente las mismas funciones que este sitio: cronometros de cofres, guia de rutas y recomendaciones de farm.",
           downloadDetails:
             'La diferencia es que lee los logs del juego automaticamente y marca el cronometro cuando cae un cofre, sin necesidad de hacer clic en "Cofre caido" manualmente.',
+          downloadTutorialLink: "Video: como usar TBH Monitor",
           downloadButton: "Descargar TBH Monitor (.zip)",
           downloadReleaseNotesHint:
             'Novedades del software en las <a href="#releaseNotesSection" class="font-medium text-sky-400 underline decoration-sky-500/40 underline-offset-2 transition hover:text-sky-300">notas de actualizacion</a> al pie de la pagina.',
@@ -1498,6 +1512,7 @@
             "TBH Monitor est l'application Windows avec pratiquement les memes fonctions que ce site : chronos de coffres, guide de route et recommandations de farm.",
           downloadDetails:
             'La difference est qu\'elle lit automatiquement les logs du jeu et demarre le chrono quand un coffre tombe, sans avoir a cliquer sur "Coffre obtenu" manuellement.',
+          downloadTutorialLink: "Video : comment utiliser TBH Monitor",
           downloadButton: "Telecharger TBH Monitor (.zip)",
           downloadReleaseNotesHint:
             'Nouveautes du logiciel dans les <a href="#releaseNotesSection" class="font-medium text-sky-400 underline decoration-sky-500/40 underline-offset-2 transition hover:text-sky-300">notes de mise a jour</a> en bas de page.',
@@ -1714,6 +1729,7 @@
             "TBH Monitor 是 Windows 桌面程序，功能与本网站基本相同：宝箱计时、路线指南和刷图建议。",
           downloadDetails:
             "区别在于它会自动读取游戏日志，在宝箱掉落时自动启动计时器，无需手动点击「宝箱掉落」。",
+          downloadTutorialLink: "视频：如何使用 TBH Monitor",
           downloadButton: "下载 TBH Monitor (.zip)",
           downloadReleaseNotesHint:
             '软件更新内容见页面底部的<a href="#releaseNotesSection" class="font-medium text-sky-400 underline decoration-sky-500/40 underline-offset-2 transition hover:text-sky-300">更新说明</a>。',
@@ -1908,6 +1924,7 @@
             "TBH Monitor は Windows 向けアプリで、このサイトとほぼ同じ機能（宝箱タイマー、ルートガイド、ファーム提案）を備えています。",
           downloadDetails:
             "違いは、ゲームログを自動で読み取り、宝箱ドロップ時にタイマーを自動開始することです。「宝箱ドロップ」を手動で押す必要はありません。",
+          downloadTutorialLink: "動画：TBH Monitor の使い方",
           downloadButton: "TBH Monitor (.zip) をダウンロード",
           downloadReleaseNotesHint:
             'ソフトの更新内容はページ下部の<a href="#releaseNotesSection" class="font-medium text-sky-400 underline decoration-sky-500/40 underline-offset-2 transition hover:text-sky-300">更新履歴</a>をご覧ください。',
@@ -2129,6 +2146,9 @@
         "#downloadDescription",
       );
       const downloadDetails = document.querySelector("#downloadDetails");
+      const downloadTutorialLink = document.querySelector(
+        "#downloadTutorialLink",
+      );
       const desktopDownloadLink = document.querySelector(
         "#desktopDownloadLink",
       );
@@ -2837,6 +2857,7 @@
         downloadTitle.textContent = t("downloadTitle");
         downloadDescription.textContent = t("downloadDescription");
         downloadDetails.textContent = t("downloadDetails");
+        downloadTutorialLink.textContent = t("downloadTutorialLink");
         desktopDownloadLink.textContent = t("downloadButton");
         downloadReleaseNotesHint.innerHTML = t("downloadReleaseNotesHint");
         eventsTitle.textContent = t("eventsTitle");
