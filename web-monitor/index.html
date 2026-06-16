@@ -25,6 +25,58 @@
         </p>
       </section>
 
+      <section
+        class="overflow-hidden rounded-xl border border-indigo-500/40 bg-gradient-to-br from-indigo-950/60 via-slate-900/90 to-slate-900/80 p-5 shadow-lg shadow-indigo-950/30 sm:p-6"
+      >
+        <div
+          class="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between"
+        >
+          <div class="min-w-0 flex-1">
+            <span
+              id="liveTrackerBadge"
+              class="inline-flex items-center rounded-full border border-indigo-400/40 bg-indigo-500/15 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-indigo-200"
+              >Recomendado</span
+            >
+            <h2
+              id="liveTrackerTitle"
+              class="mt-2 text-lg font-semibold tracking-tight text-indigo-50 sm:text-xl"
+            >
+              Tracker automatico — sem instalar nada
+            </h2>
+            <p
+              id="liveTrackerDescription"
+              class="mt-2 max-w-2xl text-sm leading-relaxed text-slate-300"
+            >
+              Conecte o Player.log no navegador. Drops sao detectados
+              automaticamente e os timers iniciam sozinhos — a mesma funcao do
+              software desktop, direto no site.
+            </p>
+            <p
+              id="liveTrackerSunsetNote"
+              class="mt-3 rounded-md border border-amber-500/30 bg-amber-950/25 px-3 py-2 text-xs leading-relaxed text-amber-100/90"
+            >
+              O TBH Monitor (desktop) sera descontinuado. Manteremos apenas a
+              versao web, com foco no Live Tracker.
+            </p>
+          </div>
+          <div class="flex shrink-0 flex-col items-stretch gap-2 sm:items-end">
+            <a
+              id="liveTrackerCta"
+              href="./tracker.html"
+              class="inline-flex items-center justify-center rounded-md bg-indigo-500 px-5 py-3 text-center text-sm font-semibold text-white shadow-lg shadow-indigo-500/25 transition hover:bg-indigo-400"
+            >
+              Abrir Live Tracker
+            </a>
+            <p
+              id="liveTrackerCtaHint"
+              class="text-center text-[11px] text-slate-500 sm:text-right"
+            >
+              Chrome ou Edge · gratuito
+            </p>
+          </div>
+        </div>
+      </section>
+
       <div
         class="flex flex-col gap-2 rounded-lg border border-amber-500/40 bg-amber-950/30 px-4 py-2.5 text-sm shadow-sm shadow-amber-950/25"
       >
@@ -93,27 +145,12 @@
               </select>
             </label>
 
-            <label class="text-sm text-slate-300">
-              <span id="bossDurationLabel">Chefe (min)</span>
-              <input
-                id="bossDurationInput"
-                type="number"
-                min="1"
-                step="0.5"
-                class="mt-1 block w-32 rounded-md border border-slate-700 bg-slate-950 px-3 py-2.5 text-base text-slate-100 focus:border-indigo-500 focus:outline-none"
-              />
-            </label>
-
-            <label class="text-sm text-slate-300">
-              <span id="commonDurationLabel">Comum (min)</span>
-              <input
-                id="commonDurationInput"
-                type="number"
-                min="1"
-                step="0.5"
-                class="mt-1 block w-32 rounded-md border border-slate-700 bg-slate-950 px-3 py-2.5 text-base text-slate-100 focus:border-indigo-500 focus:outline-none"
-              />
-            </label>
+            <p
+              id="fixedCooldownHint"
+              class="self-end text-xs leading-snug text-slate-500"
+            >
+              Cooldown fixo: chefe 7 min · comum 5 min
+            </p>
 
             <label class="min-w-48 text-sm text-slate-300">
               <span id="alertVolumeLabel">Volume do alerta</span>
@@ -345,44 +382,52 @@
           <section
             class="min-w-0 overflow-hidden rounded-xl border border-slate-800 bg-slate-900/80 p-5"
           >
-            <h2 id="downloadTitle" class="break-words text-base font-semibold">
-              Download do TBH Monitor (desktop)
+            <p
+              id="downloadSunsetNotice"
+              class="rounded-md border border-amber-500/35 bg-amber-950/30 px-3 py-2.5 text-xs leading-relaxed text-amber-100"
+            >
+              O TBH Monitor (desktop) sera descontinuado. Novas funcionalidades
+              serao apenas na versao web — use o Live Tracker acima.
+            </p>
+            <h2
+              id="downloadTitle"
+              class="mt-4 break-words text-base font-semibold text-slate-400"
+            >
+              TBH Monitor (desktop) — legado
             </h2>
             <p
               id="downloadDescription"
-              class="mt-2 break-words text-sm text-slate-300"
+              class="mt-2 break-words text-sm text-slate-400"
             >
-              O TBH Monitor e o software para Windows com praticamente as
-              mesmas funcoes deste site: cronometros de baus, guia de rotas e
-              recomendacoes de farm.
+              O software para Windows nao recebera mais atualizacoes. A deteccao
+              automatica de drops agora e feita pelo Live Tracker no site.
             </p>
-            <p id="downloadDetails" class="mt-2 break-words text-sm text-slate-400">
-              A diferenca e que o programa le os logs do jogo automaticamente
-              e marca o cronometro quando um bau dropa, sem precisar clicar em
-              "Bau dropou" manualmente.
+            <p id="downloadDetails" class="mt-2 break-words text-sm text-slate-500">
+              O download permanece disponivel apenas para quem ja usa a versao
+              instalada.
             </p>
-            <p class="mt-2 break-words text-sm text-slate-400">
+            <p class="mt-2 break-words text-sm text-slate-500">
               <a
                 id="downloadTutorialLink"
                 href="https://youtu.be/eNKxyZug_V4"
                 target="_blank"
                 rel="noopener noreferrer"
-                class="font-medium text-sky-400 underline decoration-sky-500/40 underline-offset-2 transition hover:text-sky-300"
+                class="font-medium text-sky-400/80 underline decoration-sky-500/30 underline-offset-2 transition hover:text-sky-300"
               >
                 Video: como usar o TBH Monitor
               </a>
             </p>
             <p
               id="downloadReleaseNotesHint"
-              class="mt-2 break-words text-sm text-slate-400"
+              class="mt-2 break-words text-sm text-slate-500"
             ></p>
             <a
               id="desktopDownloadLink"
               href="./TBH-Monitor.zip"
               download
-              class="mt-3 inline-flex w-full items-center justify-center rounded-md bg-emerald-500 px-4 py-2 text-sm font-medium text-slate-950 transition hover:bg-emerald-400"
+              class="mt-3 inline-flex w-full items-center justify-center rounded-md border border-slate-600 bg-slate-800 px-4 py-2 text-sm font-medium text-slate-300 transition hover:bg-slate-700"
             >
-              Baixar TBH Monitor (.zip)
+              Baixar versao legada (.zip)
             </a>
           </section>
 
@@ -629,6 +674,8 @@
       const CURRENT_STATE_VERSION = 3;
       const DEFAULT_BOSS_DURATION_MINUTES = 7;
       const DEFAULT_COMMON_DURATION_MINUTES = 5;
+      const BOSS_COOLDOWN_MS = DEFAULT_BOSS_DURATION_MINUTES * 60_000;
+      const COMMON_COOLDOWN_MS = DEFAULT_COMMON_DURATION_MINUTES * 60_000;
       const LEGACY_DEFAULT_DURATION_MINUTES = 12;
       const CHEST_LEVELS = [7, 15, 20, 30, 40, 50, 65, 80];
       const DIFFICULTY_CODE = { Normal: 1, Nightmare: 2, Hell: 3, Torment: 4 };
@@ -838,8 +885,9 @@
             'Clique em "Bau dropou" para iniciar o cronometro. Veja o guia de rota na barra lateral.',
           languageLabel: "Idioma",
           durationLabel: "Duracao padrao (min)",
-          bossDurationLabel: "Chefe (min)",
-          commonDurationLabel: "Comum (min)",
+          fixedCooldownHint:
+            "Cooldown fixo: chefe 7 min · comum 5 min",
+          rowTimerReady: "Pronto",
           commonTimerTitle: "Bau comum",
           commonTimerHint: "Pode deixar auto-abrir ligado no jogo",
           commonTimerLabel: "Timer",
@@ -856,13 +904,23 @@
           testAlertButton: "Testar alerta",
           addTimerButton: "Adicionar bau",
           resetAllButton: "Resetar todos",
-          downloadTitle: "Download do TBH Monitor (desktop)",
+          liveTrackerBadge: "Recomendado",
+          liveTrackerTitle: "Tracker automatico — sem instalar nada",
+          liveTrackerDescription:
+            "Conecte o Player.log no navegador. Drops sao detectados automaticamente e os timers iniciam sozinhos — a mesma funcao do software desktop, direto no site.",
+          liveTrackerSunsetNote:
+            "O TBH Monitor (desktop) sera descontinuado. Manteremos apenas a versao web, com foco no Live Tracker.",
+          liveTrackerCta: "Abrir Live Tracker",
+          liveTrackerCtaHint: "Chrome ou Edge · gratuito",
+          downloadSunsetNotice:
+            "O TBH Monitor (desktop) sera descontinuado. Novas funcionalidades serao apenas na versao web — use o Live Tracker acima.",
+          downloadTitle: "TBH Monitor (desktop) — legado",
           downloadDescription:
-            "O TBH Monitor e o software para Windows com praticamente as mesmas funcoes deste site: cronometros de baus, guia de rotas e recomendacoes de farm.",
+            "O software para Windows nao recebera mais atualizacoes. A deteccao automatica de drops agora e feita pelo Live Tracker no site.",
           downloadDetails:
-            'A diferenca e que o programa le os logs do jogo automaticamente e marca o cronometro quando um bau dropa, sem precisar clicar em "Bau dropou" manualmente.',
+            "O download permanece disponivel apenas para quem ja usa a versao instalada.",
           downloadTutorialLink: "Video: como usar o TBH Monitor",
-          downloadButton: "Baixar TBH Monitor (.zip)",
+          downloadButton: "Baixar versao legada (.zip)",
           downloadReleaseNotesHint:
             'Novidades do software estao nas <a href="#releaseNotesSection" class="font-medium text-sky-400 underline decoration-sky-500/40 underline-offset-2 transition hover:text-sky-300">notas de atualizacao</a> no rodape da pagina.',
           releaseNotesTitle: "Notas de atualizacao do software",
@@ -1066,8 +1124,8 @@
             'Click "Chest dropped" to start each timer. See the route guide in the sidebar.',
           languageLabel: "Language",
           durationLabel: "Default duration (min)",
-          bossDurationLabel: "Boss (min)",
-          commonDurationLabel: "Common (min)",
+          fixedCooldownHint: "Fixed cooldown: boss 7 min · common 5 min",
+          rowTimerReady: "Ready",
           commonTimerTitle: "Common chest",
           commonTimerHint: "Auto-open in game is fine",
           commonTimerLabel: "Timer",
@@ -1084,13 +1142,23 @@
           testAlertButton: "Test alert",
           addTimerButton: "Add chest",
           resetAllButton: "Reset all",
-          downloadTitle: "Download TBH Monitor (desktop)",
+          liveTrackerBadge: "Recommended",
+          liveTrackerTitle: "Automatic tracker — no install needed",
+          liveTrackerDescription:
+            "Connect Player.log in your browser. Drops are detected automatically and timers start on their own — the same as the desktop app, right on the website.",
+          liveTrackerSunsetNote:
+            "TBH Monitor (desktop) will be discontinued. We will maintain only the web version, focused on the Live Tracker.",
+          liveTrackerCta: "Open Live Tracker",
+          liveTrackerCtaHint: "Chrome or Edge · free",
+          downloadSunsetNotice:
+            "TBH Monitor (desktop) will be discontinued. New features will be web-only — use the Live Tracker above.",
+          downloadTitle: "TBH Monitor (desktop) — legacy",
           downloadDescription:
-            "TBH Monitor is the Windows app with practically the same features as this site: chest timers, route guide, and farm recommendations.",
+            "The Windows app will no longer receive updates. Automatic drop detection is now handled by the Live Tracker on the website.",
           downloadDetails:
-            'The difference is that it reads the game logs automatically and starts the timer when a chest drops, with no need to click "Chest dropped" manually.',
+            "The download remains available only for users who already have the installed version.",
           downloadTutorialLink: "Video: how to use TBH Monitor",
-          downloadButton: "Download TBH Monitor (.zip)",
+          downloadButton: "Download legacy version (.zip)",
           downloadReleaseNotesHint:
             'See what is new in the <a href="#releaseNotesSection" class="font-medium text-sky-400 underline decoration-sky-500/40 underline-offset-2 transition hover:text-sky-300">update notes</a> at the bottom of the page.',
           releaseNotesTitle: "Software update notes",
@@ -1287,17 +1355,28 @@
             'Haz clic en "Cofre caido" para iniciar cada cronometro. Consulta la guia de ruta en la barra lateral.',
           languageLabel: "Idioma",
           durationLabel: "Duracion predeterminada (min)",
-          alertVolumeLabel: "Volumen de alerta",
+          fixedCooldownHint: "Cooldown fijo: jefe 7 min · comun 5 min",
+          rowTimerReady: "Listo",
           testAlertButton: "Probar alerta",
           addTimerButton: "Agregar cofre",
           resetAllButton: "Restablecer todo",
-          downloadTitle: "Descarga de TBH Monitor (escritorio)",
+          liveTrackerBadge: "Recomendado",
+          liveTrackerTitle: "Tracker automatico — sin instalar nada",
+          liveTrackerDescription:
+            "Conecta Player.log en el navegador. Los drops se detectan automaticamente y los timers inician solos — la misma funcion del software de escritorio, directo en el sitio.",
+          liveTrackerSunsetNote:
+            "TBH Monitor (escritorio) sera descontinuado. Mantendremos solo la version web, con foco en el Live Tracker.",
+          liveTrackerCta: "Abrir Live Tracker",
+          liveTrackerCtaHint: "Chrome o Edge · gratis",
+          downloadSunsetNotice:
+            "TBH Monitor (escritorio) sera descontinuado. Las nuevas funciones seran solo en la web — usa el Live Tracker arriba.",
+          downloadTitle: "TBH Monitor (escritorio) — legado",
           downloadDescription:
-            "TBH Monitor es la aplicacion de Windows con practicamente las mismas funciones que este sitio: cronometros de cofres, guia de rutas y recomendaciones de farm.",
+            "El software para Windows ya no recibira actualizaciones. La deteccion automatica de drops ahora la hace el Live Tracker en el sitio.",
           downloadDetails:
-            'La diferencia es que lee los logs del juego automaticamente y marca el cronometro cuando cae un cofre, sin necesidad de hacer clic en "Cofre caido" manualmente.',
+            "La descarga sigue disponible solo para quienes ya usan la version instalada.",
           downloadTutorialLink: "Video: como usar TBH Monitor",
-          downloadButton: "Descargar TBH Monitor (.zip)",
+          downloadButton: "Descargar version legada (.zip)",
           downloadReleaseNotesHint:
             'Novedades del software en las <a href="#releaseNotesSection" class="font-medium text-sky-400 underline decoration-sky-500/40 underline-offset-2 transition hover:text-sky-300">notas de actualizacion</a> al pie de la pagina.',
           releaseNotesTitle: "Notas de actualizacion del software",
@@ -1503,17 +1582,29 @@
             'Cliquez sur "Coffre obtenu" pour demarrer chaque chrono. Consultez le guide de route dans la barre laterale.',
           languageLabel: "Langue",
           durationLabel: "Duree par defaut (min)",
+          fixedCooldownHint: "Cooldown fixe : boss 7 min · commun 5 min",
+          rowTimerReady: "Pret",
           alertVolumeLabel: "Volume de l'alerte",
           testAlertButton: "Tester l'alerte",
           addTimerButton: "Ajouter un coffre",
           resetAllButton: "Tout reinitialiser",
-          downloadTitle: "Telechargement de TBH Monitor (bureau)",
+          liveTrackerBadge: "Recommande",
+          liveTrackerTitle: "Tracker automatique — sans installation",
+          liveTrackerDescription:
+            "Connectez Player.log dans le navigateur. Les drops sont detectes automatiquement et les chronos demarrent seuls — comme l'application bureau, directement sur le site.",
+          liveTrackerSunsetNote:
+            "TBH Monitor (bureau) sera discontinu. Nous ne maintiendrons que la version web, centree sur le Live Tracker.",
+          liveTrackerCta: "Ouvrir le Live Tracker",
+          liveTrackerCtaHint: "Chrome ou Edge · gratuit",
+          downloadSunsetNotice:
+            "TBH Monitor (bureau) sera discontinu. Les nouvelles fonctions seront uniquement sur le web — utilisez le Live Tracker ci-dessus.",
+          downloadTitle: "TBH Monitor (bureau) — legacy",
           downloadDescription:
-            "TBH Monitor est l'application Windows avec pratiquement les memes fonctions que ce site : chronos de coffres, guide de route et recommandations de farm.",
+            "L'application Windows ne recevra plus de mises a jour. La detection automatique des drops est desormais faite par le Live Tracker sur le site.",
           downloadDetails:
-            'La difference est qu\'elle lit automatiquement les logs du jeu et demarre le chrono quand un coffre tombe, sans avoir a cliquer sur "Coffre obtenu" manuellement.',
+            "Le telechargement reste disponible uniquement pour ceux qui utilisent deja la version installee.",
           downloadTutorialLink: "Video : comment utiliser TBH Monitor",
-          downloadButton: "Telecharger TBH Monitor (.zip)",
+          downloadButton: "Telecharger la version legacy (.zip)",
           downloadReleaseNotesHint:
             'Nouveautes du logiciel dans les <a href="#releaseNotesSection" class="font-medium text-sky-400 underline decoration-sky-500/40 underline-offset-2 transition hover:text-sky-300">notes de mise a jour</a> en bas de page.',
           releaseNotesTitle: "Notes de mise a jour du logiciel",
@@ -1720,17 +1811,29 @@
             "点击「宝箱掉落」开始计时。请查看侧边栏的路线指南。",
           languageLabel: "语言",
           durationLabel: "默认时长 (分钟)",
+          fixedCooldownHint: "固定冷却：首领 7 分钟 · 普通 5 分钟",
+          rowTimerReady: "就绪",
           alertVolumeLabel: "提示音量",
           testAlertButton: "测试提示",
           addTimerButton: "添加宝箱",
           resetAllButton: "全部重置",
-          downloadTitle: "下载 TBH Monitor（桌面版）",
+          liveTrackerBadge: "推荐",
+          liveTrackerTitle: "自动追踪 — 无需安装",
+          liveTrackerDescription:
+            "在浏览器中连接 Player.log。掉落自动检测，计时器自动启动 — 与桌面软件相同的功能，直接在网站上使用。",
+          liveTrackerSunsetNote:
+            "TBH Monitor（桌面版）将停止维护。我们将只保留网页版，重点开发 Live Tracker。",
+          liveTrackerCta: "打开 Live Tracker",
+          liveTrackerCtaHint: "Chrome 或 Edge · 免费",
+          downloadSunsetNotice:
+            "TBH Monitor（桌面版）将停止维护。新功能仅在网页版提供 — 请使用上方的 Live Tracker。",
+          downloadTitle: "TBH Monitor（桌面版）— 旧版",
           downloadDescription:
-            "TBH Monitor 是 Windows 桌面程序，功能与本网站基本相同：宝箱计时、路线指南和刷图建议。",
+            "Windows 软件将不再更新。自动掉落检测现由网站上的 Live Tracker 完成。",
           downloadDetails:
-            "区别在于它会自动读取游戏日志，在宝箱掉落时自动启动计时器，无需手动点击「宝箱掉落」。",
+            "下载仍仅供已安装旧版的用户保留。",
           downloadTutorialLink: "视频：如何使用 TBH Monitor",
-          downloadButton: "下载 TBH Monitor (.zip)",
+          downloadButton: "下载旧版 (.zip)",
           downloadReleaseNotesHint:
             '软件更新内容见页面底部的<a href="#releaseNotesSection" class="font-medium text-sky-400 underline decoration-sky-500/40 underline-offset-2 transition hover:text-sky-300">更新说明</a>。',
           releaseNotesTitle: "软件更新说明",
@@ -1915,17 +2018,29 @@
             "「宝箱ドロップ」でタイマーを開始します。サイドバーのルートガイドをご覧ください。",
           languageLabel: "言語",
           durationLabel: "標準時間 (分)",
+          fixedCooldownHint: "固定クールダウン：ボス 7分 · 通常 5分",
+          rowTimerReady: "準備完了",
           alertVolumeLabel: "アラート音量",
           testAlertButton: "アラートをテスト",
           addTimerButton: "宝箱を追加",
           resetAllButton: "すべてリセット",
-          downloadTitle: "TBH Monitor のダウンロード（デスクトップ版）",
+          liveTrackerBadge: "おすすめ",
+          liveTrackerTitle: "自動トラッカー — インストール不要",
+          liveTrackerDescription:
+            "ブラウザで Player.log を接続。ドロップを自動検出し、タイマーが自動で開始されます — デスクトップ版と同じ機能をサイト上で。",
+          liveTrackerSunsetNote:
+            "TBH Monitor（デスクトップ版）は提供終了予定です。今後は Live Tracker を中心とした Web 版のみを維持します。",
+          liveTrackerCta: "Live Tracker を開く",
+          liveTrackerCtaHint: "Chrome または Edge · 無料",
+          downloadSunsetNotice:
+            "TBH Monitor（デスクトップ版）は提供終了予定です。新機能は Web 版のみ — 上の Live Tracker をご利用ください。",
+          downloadTitle: "TBH Monitor（デスクトップ版）— レガシー",
           downloadDescription:
-            "TBH Monitor は Windows 向けアプリで、このサイトとほぼ同じ機能（宝箱タイマー、ルートガイド、ファーム提案）を備えています。",
+            "Windows アプリは今後更新されません。自動ドロップ検出はサイトの Live Tracker が担当します。",
           downloadDetails:
-            "違いは、ゲームログを自動で読み取り、宝箱ドロップ時にタイマーを自動開始することです。「宝箱ドロップ」を手動で押す必要はありません。",
+            "ダウンロードは、すでにインストール済みの方のみ利用できます。",
           downloadTutorialLink: "動画：TBH Monitor の使い方",
-          downloadButton: "TBH Monitor (.zip) をダウンロード",
+          downloadButton: "レガシー版をダウンロード (.zip)",
           downloadReleaseNotesHint:
             'ソフトの更新内容はページ下部の<a href="#releaseNotesSection" class="font-medium text-sky-400 underline decoration-sky-500/40 underline-offset-2 transition hover:text-sky-300">更新履歴</a>をご覧ください。',
           releaseNotesTitle: "ソフトウェア更新履歴",
@@ -2123,8 +2238,7 @@
 
       const ALERT_SOUND_URL = "./sounds/stardew_valley.mp3";
 
-      const bossDurationInput = document.querySelector("#bossDurationInput");
-      const commonDurationInput = document.querySelector("#commonDurationInput");
+      const fixedCooldownHint = document.querySelector("#fixedCooldownHint");
       const alertVolumeInput = document.querySelector("#alertVolumeInput");
       const alertVolumeValue = document.querySelector("#alertVolumeValue");
       const testAlertButton = document.querySelector("#testAlertButton");
@@ -2135,13 +2249,24 @@
       const timerRowTemplate = document.querySelector("#timerRowTemplate");
       const pageTitle = document.querySelector("#pageTitle");
       const subtitleText = document.querySelector("#subtitleText");
+      const liveTrackerBadge = document.querySelector("#liveTrackerBadge");
+      const liveTrackerTitle = document.querySelector("#liveTrackerTitle");
+      const liveTrackerDescription = document.querySelector(
+        "#liveTrackerDescription",
+      );
+      const liveTrackerSunsetNote = document.querySelector(
+        "#liveTrackerSunsetNote",
+      );
+      const liveTrackerCta = document.querySelector("#liveTrackerCta");
+      const liveTrackerCtaHint = document.querySelector("#liveTrackerCtaHint");
       const languageLabel = document.querySelector("#languageLabel");
-      const bossDurationLabel = document.querySelector("#bossDurationLabel");
-      const commonDurationLabel = document.querySelector("#commonDurationLabel");
       const alertVolumeLabel = document.querySelector("#alertVolumeLabel");
       const addTimerButton = document.querySelector("#addTimerButton");
       const resetAllButton = document.querySelector("#resetAllButton");
       const downloadTitle = document.querySelector("#downloadTitle");
+      const downloadSunsetNotice = document.querySelector(
+        "#downloadSunsetNotice",
+      );
       const downloadDescription = document.querySelector(
         "#downloadDescription",
       );
@@ -2846,14 +2971,20 @@
         document.title = t("pageTitle");
         pageTitle.textContent = t("pageTitle");
         subtitleText.textContent = t("subtitle");
+        liveTrackerBadge.textContent = t("liveTrackerBadge");
+        liveTrackerTitle.textContent = t("liveTrackerTitle");
+        liveTrackerDescription.textContent = t("liveTrackerDescription");
+        liveTrackerSunsetNote.textContent = t("liveTrackerSunsetNote");
+        liveTrackerCta.textContent = t("liveTrackerCta");
+        liveTrackerCtaHint.textContent = t("liveTrackerCtaHint");
         languageLabel.textContent = t("languageLabel");
-        bossDurationLabel.textContent = t("bossDurationLabel");
-        commonDurationLabel.textContent = t("commonDurationLabel");
+        fixedCooldownHint.textContent = t("fixedCooldownHint");
         alertVolumeLabel.textContent = t("alertVolumeLabel");
         testAlertButton.textContent = t("testAlertButton");
         addTimerButton.textContent = t("addTimerButton");
         resetAllButton.textContent = t("resetAllButton");
         timersDragHint.textContent = t("timersDragHint");
+        downloadSunsetNotice.textContent = t("downloadSunsetNotice");
         downloadTitle.textContent = t("downloadTitle");
         downloadDescription.textContent = t("downloadDescription");
         downloadDetails.textContent = t("downloadDetails");
@@ -3249,7 +3380,7 @@
               appendLog(t("logAlreadyCounting", { level: timer.level }));
               return;
             }
-            timer.expiresAt = Date.now() + state.bossDurationMinutes * 60_000;
+            timer.expiresAt = Date.now() + BOSS_COOLDOWN_MS;
             timer.expired = false;
             saveState();
             refreshTimerLabel(timer, bossTimerLabel, "boss");
@@ -3259,7 +3390,7 @@
                 t("logStartedWithClear", {
                   level: timer.level,
                   map: mapLabelForTimer(timer),
-                  minutes: state.bossDurationMinutes,
+                  minutes: DEFAULT_BOSS_DURATION_MINUTES,
                   seconds: clearSeconds,
                 }),
               );
@@ -3268,7 +3399,7 @@
                 t("logStarted", {
                   level: timer.level,
                   map: mapLabelForTimer(timer),
-                  minutes: state.bossDurationMinutes,
+                  minutes: DEFAULT_BOSS_DURATION_MINUTES,
                 }),
               );
             }
@@ -3284,8 +3415,7 @@
               );
               return;
             }
-            timer.commonExpiresAt =
-              Date.now() + state.commonDurationMinutes * 60_000;
+            timer.commonExpiresAt = Date.now() + COMMON_COOLDOWN_MS;
             timer.commonExpired = false;
             saveState();
             refreshTimerLabel(timer, commonTimerLabel, "common");
@@ -3293,7 +3423,7 @@
               t("logCommonStartedForLevel", {
                 level: timer.level,
                 map: mapLabelForTimer(timer),
-                minutes: state.commonDurationMinutes,
+                minutes: DEFAULT_COMMON_DURATION_MINUTES,
               }),
             );
           });
@@ -3345,7 +3475,7 @@
         const base =
           "min-w-[4.5rem] shrink-0 font-mono text-2xl font-bold leading-none";
         if (state === "expired") return `${base} text-rose-400`;
-        if (state === "waiting") return `${base} text-slate-300`;
+        if (state === "waiting") return `${base} text-emerald-400`;
         return kind === "common"
           ? `${base} text-cyan-300`
           : `${base} text-fuchsia-300`;
@@ -3371,7 +3501,7 @@
         }
 
         if (!expiresAt) {
-          labelElement.textContent = "--:--";
+          labelElement.textContent = t("rowTimerReady");
           labelElement.className = timerDisplayClass(kind, "waiting");
           return;
         }
@@ -3462,8 +3592,6 @@
         state = loadState();
         normalizeState();
         applyLanguage();
-        bossDurationInput.value = String(state.bossDurationMinutes);
-        commonDurationInput.value = String(state.commonDurationMinutes);
         updateAlertVolumeDisplay();
         updateFarmModeUi();
         renderTimers();
@@ -3563,30 +3691,6 @@
           renderTimers();
           appendLog(t("logResetAll"));
         });
-
-      bossDurationInput.addEventListener("change", () => {
-        const parsed = Number(bossDurationInput.value);
-        if (!Number.isFinite(parsed) || parsed < 1 || parsed > 999) {
-          bossDurationInput.value = String(state.bossDurationMinutes);
-          appendLog(t("invalidDuration"));
-          return;
-        }
-        state.bossDurationMinutes = parsed;
-        saveState();
-        appendLog(t("logBossDurationUpdated", { minutes: parsed }));
-      });
-
-      commonDurationInput.addEventListener("change", () => {
-        const parsed = Number(commonDurationInput.value);
-        if (!Number.isFinite(parsed) || parsed < 1 || parsed > 999) {
-          commonDurationInput.value = String(state.commonDurationMinutes);
-          appendLog(t("invalidDuration"));
-          return;
-        }
-        state.commonDurationMinutes = parsed;
-        saveState();
-        appendLog(t("logCommonDurationUpdated", { minutes: parsed }));
-      });
 
       document
         .querySelector("#clearLogsButton")

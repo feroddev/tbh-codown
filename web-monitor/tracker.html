@@ -1,0 +1,1354 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>TBH Live Tracker</title>
+    <link rel="icon" href="./favicon.ico" sizes="any" />
+    <link rel="icon" type="image/png" href="./tbh_monitor.png" />
+    <link rel="apple-touch-icon" href="./tbh_monitor.png" />
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <style type="text/tailwindcss">
+      @keyframes tracker-pulse {
+        0%,
+        100% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0.45;
+        }
+      }
+      .tracker-live-dot {
+        animation: tracker-pulse 1.6s ease-in-out infinite;
+      }
+    </style>
+  </head>
+  <body class="min-h-screen overflow-x-hidden bg-slate-950 text-slate-100">
+    <main
+      class="mx-auto flex w-full max-w-screen-2xl flex-col gap-6 px-4 py-6 sm:px-6 lg:px-8"
+    >
+      <section
+        class="rounded-xl border border-slate-800 bg-slate-900/80 p-5 shadow-lg shadow-slate-950/40"
+      >
+        <h1 class="text-2xl font-semibold tracking-tight">TBH Live Tracker</h1>
+        <p class="mt-2 break-words text-sm text-slate-300">
+          Monitor automatico de drops via Player.log do Taskbar Hero.
+        </p>
+        <a
+          href="./index.html"
+          class="mt-4 inline-flex items-center gap-2 rounded-md bg-slate-700 px-4 py-2 text-sm font-medium text-slate-100 transition hover:bg-slate-600"
+        >
+          Voltar ao timer manual
+        </a>
+      </section>
+
+      <div
+        class="flex flex-col gap-2 rounded-lg border border-amber-500/40 bg-amber-950/30 px-4 py-2.5 text-sm shadow-sm shadow-amber-950/25"
+      >
+        <p
+          class="flex flex-wrap items-center justify-center gap-x-3 gap-y-1.5"
+        >
+          <span class="font-medium text-amber-100">Developed by -Neath</span>
+          <span aria-hidden="true" class="hidden text-amber-600/80 sm:inline"
+            >·</span
+          >
+          <a
+            href="https://www.linkedin.com/in/feroddev/"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="font-medium text-amber-400 transition hover:text-amber-300"
+            >LinkedIn</a
+          >
+          <span aria-hidden="true" class="text-amber-600/80">·</span>
+          <a
+            href="https://github.com/feroddev"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="font-medium text-amber-400 transition hover:text-amber-300"
+            >GitHub</a
+          >
+          <span aria-hidden="true" class="text-amber-600/80">·</span>
+          <a
+            href="https://discord.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="font-medium text-amber-400 transition hover:text-amber-300"
+            >Discord</a
+          >
+          <span class="font-mono text-amber-200">(@.neath)</span>
+        </p>
+      </div>
+
+      <section
+        id="setupScreen"
+        class="mx-auto w-full max-w-2xl rounded-xl border border-slate-800 bg-slate-900/80 p-6 shadow-lg shadow-slate-950/40 sm:p-8"
+      >
+        <div class="text-center">
+          <div
+            class="mx-auto mb-4 inline-flex h-14 w-14 items-center justify-center rounded-2xl border border-indigo-500/30 bg-indigo-500/10 text-2xl"
+            aria-hidden="true"
+          >
+            📄
+          </div>
+          <h2 class="text-xl font-semibold tracking-tight sm:text-2xl">
+            Conecte o Player.log
+          </h2>
+          <p class="mx-auto mt-2 max-w-md text-sm leading-relaxed text-slate-400">
+            Para monitorar drops automaticamente, selecione o arquivo de log do
+            Taskbar Hero. O dashboard sera liberado apos a conexao.
+          </p>
+        </div>
+
+        <div
+          id="setupBrowserWarning"
+          class="mt-6 hidden rounded-md border border-amber-500/40 bg-amber-950/30 px-4 py-3 text-sm text-amber-100"
+        >
+          Seu navegador nao suporta monitoramento ao vivo. Use
+          <strong class="text-amber-50">Chrome</strong> ou
+          <strong class="text-amber-50">Edge</strong>.
+        </div>
+
+        <ol class="mt-8 space-y-5">
+          <li class="flex gap-4">
+            <span
+              class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-indigo-500/20 text-sm font-bold text-indigo-300"
+              >1</span
+            >
+            <div class="min-w-0 flex-1">
+              <p class="text-sm font-medium text-slate-200">Copie a pasta do log</p>
+              <p class="mt-1 text-xs text-slate-500">
+                Cole no Explorer para abrir a pasta rapidamente.
+              </p>
+              <div
+                class="mt-3 flex min-w-0 flex-wrap items-center gap-2 rounded-md border border-slate-800 bg-slate-950/60 px-3 py-2.5"
+              >
+                <input
+                  id="setupLogFolderPath"
+                  type="text"
+                  readonly
+                  value="%USERPROFILE%\AppData\LocalLow\TesseractStudio\TaskbarHero"
+                  class="min-w-0 flex-1 cursor-text rounded-md border border-slate-700 bg-slate-950 px-3 py-1.5 font-mono text-xs text-slate-200 focus:border-indigo-500 focus:outline-none"
+                />
+                <button
+                  id="setupCopyPathButton"
+                  type="button"
+                  class="shrink-0 rounded-md bg-slate-700 px-3 py-1.5 text-xs font-medium text-slate-100 transition hover:bg-slate-600"
+                >
+                  Copiar pasta
+                </button>
+                <span
+                  id="setupCopyPathFeedback"
+                  class="hidden shrink-0 text-xs font-medium text-emerald-400"
+                  >Copiado!</span
+                >
+              </div>
+            </div>
+          </li>
+
+          <li class="flex gap-4">
+            <span
+              class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-indigo-500/20 text-sm font-bold text-indigo-300"
+              >2</span
+            >
+            <div class="min-w-0 flex-1">
+              <p class="text-sm font-medium text-slate-200">
+                Selecione o arquivo Player.log
+              </p>
+              <p class="mt-1 text-xs text-slate-500">
+                Dentro da pasta aberta, escolha o arquivo
+                <span class="font-mono text-slate-400">Player.log</span> (nao a
+                pasta).
+              </p>
+            </div>
+          </li>
+
+          <li class="flex gap-4">
+            <span
+              class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-indigo-500/20 text-sm font-bold text-indigo-300"
+              >3</span
+            >
+            <div class="min-w-0 flex-1">
+              <p class="text-sm font-medium text-slate-200">Mantenha a aba aberta</p>
+              <p class="mt-1 text-xs text-slate-500">
+                O tracker le novas linhas a cada 2 segundos enquanto voce joga.
+              </p>
+            </div>
+          </li>
+        </ol>
+
+        <div class="mt-8 flex flex-col items-center gap-3">
+          <button
+            id="setupConnectButton"
+            type="button"
+            data-action="connect"
+            class="w-full max-w-sm rounded-md bg-indigo-500 px-6 py-3 text-center text-sm font-semibold text-white shadow-lg shadow-indigo-500/20 transition hover:bg-indigo-400 sm:text-base"
+          >
+            Selecionar Player.log
+          </button>
+          <p class="text-center text-xs text-slate-500">
+            Requer Chrome ou Edge · Leitura local, nada e enviado ao servidor
+          </p>
+        </div>
+      </section>
+
+      <section id="dashboardScreen" class="hidden grid min-w-0 gap-6 lg:grid-cols-3">
+        <div
+          class="min-w-0 overflow-hidden rounded-xl border border-slate-800 bg-slate-900/80 p-5 lg:col-span-2"
+        >
+          <div class="flex flex-wrap gap-2 border-b border-slate-800 pb-4">
+            <button
+              type="button"
+              data-tab="monitor"
+              class="tracker-tab rounded-md bg-indigo-500 px-4 py-2 text-sm font-medium text-white transition hover:bg-indigo-400"
+            >
+              Monitoramento
+            </button>
+            <button
+              type="button"
+              data-tab="timers"
+              class="tracker-tab rounded-md bg-slate-700 px-4 py-2 text-sm font-medium text-slate-100 transition hover:bg-slate-600"
+            >
+              Timers
+            </button>
+          </div>
+
+          <div id="monitorTabPanel" class="mt-4">
+            <div
+              id="browserWarning"
+              class="mb-4 hidden rounded-md border border-amber-500/40 bg-amber-950/30 px-4 py-3 text-sm text-amber-100"
+            >
+              Seu navegador nao suporta monitoramento ao vivo. Use Chrome ou Edge.
+            </div>
+
+            <div
+              id="monitorStatusBanner"
+              class="rounded-xl border border-emerald-500/40 bg-emerald-950/25 p-4"
+              data-state="monitoring"
+            >
+              <div class="flex flex-wrap items-start justify-between gap-3">
+                <div class="flex min-w-0 items-start gap-3">
+                  <span
+                    id="monitorStatusDot"
+                    class="tracker-live-dot mt-1.5 inline-flex h-3 w-3 shrink-0 rounded-full bg-emerald-400 shadow-[0_0_10px_rgba(52,211,153,0.65)]"
+                    aria-hidden="true"
+                  ></span>
+                  <div class="min-w-0">
+                    <p
+                      id="monitorStatusTitle"
+                      class="text-sm font-semibold text-emerald-100"
+                    >
+                      Monitorando ao vivo
+                    </p>
+                    <p
+                      id="monitorStatusSubtitle"
+                      class="mt-0.5 break-words text-xs text-emerald-200/80"
+                    >
+                      Leitura ativa a cada 2s. Mantenha esta aba aberta.
+                    </p>
+                  </div>
+                </div>
+                <button
+                  id="stopButton"
+                  type="button"
+                  class="rounded-md bg-slate-700 px-4 py-2 text-sm font-medium text-slate-100 transition hover:bg-slate-600"
+                >
+                  Desconectar
+                </button>
+              </div>
+
+              <div
+                id="monitorStatusMeta"
+                class="mt-3 grid gap-2 border-t border-emerald-500/20 pt-3 text-xs sm:grid-cols-3"
+              >
+                <div class="rounded-md bg-slate-900/70 px-3 py-2">
+                  <p class="text-slate-500">Arquivo</p>
+                  <p
+                    id="connectedFileLabel"
+                    class="mt-0.5 truncate font-mono text-slate-200"
+                  >
+                    Player.log
+                  </p>
+                </div>
+                <div class="rounded-md bg-slate-900/70 px-3 py-2">
+                  <p class="text-slate-500">Ultima leitura</p>
+                  <p
+                    id="lastPollLabel"
+                    class="mt-0.5 font-mono tabular-nums text-slate-200"
+                  >
+                    —
+                  </p>
+                </div>
+                <div class="rounded-md bg-slate-900/70 px-3 py-2">
+                  <p class="text-slate-500">Linhas lidas</p>
+                  <p
+                    id="linesReadLabel"
+                    class="mt-0.5 font-mono tabular-nums text-slate-200"
+                  >
+                    0
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div
+              id="logResetNotice"
+              class="mt-3 hidden rounded-md border border-amber-500/40 bg-amber-950/30 px-4 py-2.5 text-xs text-amber-100"
+            >
+              O Player.log foi reiniciado pelo jogo. O tracker se reajustou
+              automaticamente — novos drops devem aparecer em breve.
+            </div>
+
+            <div class="mt-4 flex min-w-0 flex-wrap items-end gap-4">
+              <label class="min-w-48 text-sm text-slate-300">
+                <span>Volume do alerta</span>
+                <div class="mt-1 flex items-center gap-2">
+                  <input
+                    id="volumeInput"
+                    type="range"
+                    min="0"
+                    max="100"
+                    step="5"
+                    class="h-2 w-full cursor-pointer accent-indigo-500"
+                  />
+                  <span
+                    id="volumeLabel"
+                    class="w-10 shrink-0 text-right font-mono text-xs text-slate-400"
+                    >100%</span
+                  >
+                </div>
+              </label>
+            </div>
+
+            <div
+              id="soundControls"
+              class="mt-3 flex flex-wrap items-center gap-4 text-sm text-slate-300"
+            >
+              <label class="inline-flex cursor-pointer items-center gap-2">
+                <input id="bossSoundToggle" type="checkbox" class="accent-indigo-500" checked />
+                Som bau chefe
+              </label>
+              <label class="inline-flex cursor-pointer items-center gap-2">
+                <input id="commonSoundToggle" type="checkbox" class="accent-indigo-500" checked />
+                Som bau comum
+              </label>
+            </div>
+
+            <div class="mt-6 flex min-w-0 items-center justify-between gap-2">
+              <h2 class="min-w-0 break-words text-base font-semibold">
+                Eventos (<span id="eventsCountLabel">0</span>)
+                <span
+                  id="newEventsBadge"
+                  class="ml-2 hidden rounded-full bg-indigo-500/20 px-2 py-0.5 text-xs font-medium text-indigo-300"
+                >
+                  +<span id="newEventsLabel">0</span> nesta sessao
+                </span>
+              </h2>
+              <div class="flex items-center gap-2">
+                <label class="text-xs text-slate-400">
+                  Filtro
+                  <select
+                    id="eventFilterSelect"
+                    class="ml-1 rounded-md border border-slate-700 bg-slate-950 px-2 py-1 text-xs text-slate-100 focus:border-indigo-500 focus:outline-none"
+                  >
+                    <option value="all">Todos</option>
+                    <option value="boss">Chefe</option>
+                    <option value="common">Comum</option>
+                    <option value="actBoss">Act Boss</option>
+                  </select>
+                </label>
+                <button
+                  id="clearEventsButton"
+                  type="button"
+                  class="rounded-md bg-slate-700 px-3 py-1.5 text-xs font-medium text-slate-100 transition hover:bg-slate-600"
+                >
+                  Limpar
+                </button>
+              </div>
+            </div>
+            <div
+              class="mt-3 overflow-x-auto rounded-md border border-slate-800 bg-slate-950"
+            >
+              <table class="min-w-[520px] w-full text-left text-sm">
+                <thead>
+                  <tr class="border-b border-slate-800 bg-slate-900/80 text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+                    <th class="px-4 py-2.5">Horario</th>
+                    <th class="px-4 py-2.5">Level</th>
+                    <th class="px-4 py-2.5">Bau</th>
+                    <th class="px-4 py-2.5">Tipo</th>
+                  </tr>
+                </thead>
+                <tbody id="eventsBody">
+                  <tr id="eventsEmptyRow">
+                    <td colspan="4" class="px-4 py-8 text-center text-xs text-slate-500">
+                      <span id="eventsEmptyMessage"
+                        >Nenhum evento ainda. Conecte o Player.log para comecar.</span
+                      >
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div id="timersTabPanel" class="mt-4 hidden">
+            <h2 class="text-base font-semibold">Cooldown dos baus</h2>
+            <p class="mt-1 text-xs text-slate-400">
+              Cooldown fixo do jogo: chefe <strong class="text-slate-300">7 min</strong>,
+              comum <strong class="text-slate-300">5 min</strong>. Chefe usa
+              <strong class="text-slate-300">Volta (s)</strong> do timer manual para
+              calcular quando voltar ao mapa.
+            </p>
+
+            <div class="mt-4 flex min-w-0 flex-wrap items-center gap-3">
+              <a
+                href="./index.html"
+                class="rounded-md bg-slate-700 px-4 py-2.5 text-sm font-medium text-slate-100 transition hover:bg-slate-600"
+              >
+                Configurar baus e Volta (s)
+              </a>
+            </div>
+
+            <div class="mt-6 flex items-center justify-between gap-2">
+              <h3 class="text-sm font-semibold text-slate-200">
+                Em cooldown (<span id="activeTimersCountLabel">0</span>)
+              </h3>
+              <p class="text-xs text-slate-500">Chefe: rotacao · Comum: ate dropar</p>
+            </div>
+            <div id="timersContainer" class="mt-3 flex flex-col gap-2">
+              <p id="timersEmptyLabel" class="rounded-md border border-slate-800 bg-slate-950/60 px-4 py-6 text-center text-xs text-slate-500">
+                Nenhum timer ativo. Quando um bau dropar, o countdown aparece aqui.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex min-w-0 flex-col gap-6">
+          <section
+            class="min-w-0 overflow-hidden rounded-xl border border-slate-800 bg-slate-900/80 p-5"
+          >
+            <h2 class="text-base font-semibold">Sessao</h2>
+            <dl class="mt-3 space-y-2 text-sm">
+              <div class="flex justify-between gap-3">
+                <dt class="text-slate-400">Inicio</dt>
+                <dd id="sessionStartLabel" class="font-medium tabular-nums">—</dd>
+              </div>
+              <div class="flex justify-between gap-3">
+                <dt class="text-slate-400">Duracao</dt>
+                <dd id="sessionDurationLabel" class="font-medium tabular-nums text-indigo-300">—</dd>
+              </div>
+              <div class="flex justify-between gap-3">
+                <dt class="text-slate-400">Monitoramento</dt>
+                <dd id="sessionStatusLabel" class="font-medium">Parado</dd>
+              </div>
+              <div class="flex justify-between gap-3">
+                <dt class="text-slate-400">Baus/hora</dt>
+                <dd id="chestsPerHourLabel" class="font-medium tabular-nums">—</dd>
+              </div>
+              <div class="flex justify-between gap-3">
+                <dt class="text-slate-400">Ultimo evento</dt>
+                <dd id="lastEventLabel" class="font-medium tabular-nums">—</dd>
+              </div>
+            </dl>
+          </section>
+
+          <section
+            class="min-w-0 overflow-hidden rounded-xl border border-slate-800 bg-slate-900/80 p-5"
+          >
+            <h2 class="text-base font-semibold">Resumo</h2>
+            <dl class="mt-3 space-y-2 text-sm">
+              <div class="flex justify-between gap-3">
+                <dt class="text-slate-400">Baus chefe</dt>
+                <dd id="bossCountLabel" class="font-mono font-medium text-fuchsia-300">0</dd>
+              </div>
+              <div class="flex justify-between gap-3">
+                <dt class="text-slate-400">Baus comuns</dt>
+                <dd id="commonCountLabel" class="font-mono font-medium text-cyan-300">0</dd>
+              </div>
+              <div class="flex justify-between gap-3">
+                <dt class="text-slate-400">Act Boss</dt>
+                <dd id="actBossCountLabel" class="font-mono font-medium text-amber-300">0</dd>
+              </div>
+            </dl>
+          </section>
+
+          <section
+            class="min-w-0 overflow-hidden rounded-xl border border-emerald-500/40 bg-emerald-950/25 p-5 shadow-lg shadow-emerald-950/30"
+          >
+            <details class="group">
+              <summary
+                class="cursor-pointer select-none list-none marker:content-none [&::-webkit-details-marker]:hidden"
+              >
+                <span class="flex items-center justify-between gap-3">
+                  <span class="flex min-w-0 items-center gap-3">
+                    <span
+                      aria-hidden="true"
+                      class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-emerald-500 text-lg font-extrabold text-emerald-950 shadow-md shadow-emerald-500/40 ring-2 ring-emerald-300/60"
+                      >?</span
+                    >
+                    <span class="break-words text-base font-semibold text-emerald-100"
+                      >Dicas do tracker</span
+                    >
+                  </span>
+                  <span
+                    aria-hidden="true"
+                    class="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md border border-emerald-400/30 bg-emerald-500/10 text-xs text-emerald-200 transition group-open:rotate-180"
+                    >▼</span
+                  >
+                </span>
+              </summary>
+              <div
+                class="mt-4 space-y-3 break-words border-t border-emerald-500/20 pt-4 text-sm leading-relaxed text-slate-300"
+              >
+                <p>
+                  Quando um bau dropar, o evento aparece na tabela e o timer
+                  correspondente e iniciado automaticamente.
+                </p>
+                <p>
+                  Use a aba <strong class="text-slate-100">Timers</strong> para
+                  ver quanto falta para cada bau dropar de novo.
+                </p>
+                <p>
+                  Clique em <strong class="text-slate-100">Desconectar</strong>
+                  para trocar o arquivo ou encerrar o monitoramento.
+                </p>
+              </div>
+            </details>
+          </section>
+        </div>
+      </section>
+    </main>
+
+    <script type="module">
+      import {
+        loadChestCatalog,
+        catalogLabelForKey,
+        bossChestLevelForKey,
+        commonChestLevelForKey,
+        getBossCatalog,
+        buildWebWatchBossKeys,
+        buildWebWatchCommonKeys,
+      } from "./js/chest-catalog.js";
+      import {
+        BrowserLogPoller,
+        isFileSystemAccessSupported,
+        pickPlayerLogFile,
+      } from "./js/log-poller.js";
+
+      const STORAGE_KEY = "tbh-web-monitor-state-v2";
+      const MONITOR_STARTUP_GRACE_MS = 15_000;
+      const ALERT_SOUND_URL = "./sounds/stardew_valley.mp3";
+      const DEFAULT_BOSS_MINUTES = 7;
+      const DEFAULT_COMMON_MINUTES = 5;
+      const BOSS_COOLDOWN_MS = DEFAULT_BOSS_MINUTES * 60_000;
+      const COMMON_COOLDOWN_MS = DEFAULT_COMMON_MINUTES * 60_000;
+
+      const LOG_FOLDER_PATH =
+        "%USERPROFILE%\\AppData\\LocalLow\\TesseractStudio\\TaskbarHero";
+
+      /** @type {Array<{ id: string, itemKey: string, chestType: string, label: string, level: number | null, detectedAt: number, expiresAt: number | null, cooldownMs: number }>} */
+      let sessionEvents = [];
+      /** @type {Map<number, number>} */
+      let lastDropByLevel = new Map();
+      let sessionStartedAt = null;
+      let monitorStartedAt = null;
+      let eventFilter = "all";
+      let activeTab = "monitor";
+      let durationTicker = null;
+      /** @type {ReturnType<typeof setInterval> | null} */
+      let timersTicker = null;
+      /** @type {ReturnType<typeof setTimeout> | null} */
+      let copyFeedbackTimer = null;
+      /** @type {ReturnType<typeof setTimeout> | null} */
+      let logResetNoticeTimer = null;
+      let isMonitoring = false;
+
+      const setupScreen = document.getElementById("setupScreen");
+      const dashboardScreen = document.getElementById("dashboardScreen");
+      const setupBrowserWarning = document.getElementById("setupBrowserWarning");
+      const setupConnectButton = document.getElementById("setupConnectButton");
+      const setupLogFolderPathInput = document.getElementById("setupLogFolderPath");
+      const setupCopyPathButton = document.getElementById("setupCopyPathButton");
+      const setupCopyPathFeedback = document.getElementById("setupCopyPathFeedback");
+      const monitorTabPanel = document.getElementById("monitorTabPanel");
+      const timersTabPanel = document.getElementById("timersTabPanel");
+      const stopButton = document.getElementById("stopButton");
+      const browserWarning = document.getElementById("browserWarning");
+      const monitorStatusBanner = document.getElementById("monitorStatusBanner");
+      const monitorStatusDot = document.getElementById("monitorStatusDot");
+      const monitorStatusTitle = document.getElementById("monitorStatusTitle");
+      const monitorStatusSubtitle = document.getElementById(
+        "monitorStatusSubtitle",
+      );
+      const monitorStatusMeta = document.getElementById("monitorStatusMeta");
+      const connectedFileLabel = document.getElementById("connectedFileLabel");
+      const logResetNotice = document.getElementById("logResetNotice");
+      const linesReadLabel = document.getElementById("linesReadLabel");
+      const eventsEmptyMessage = document.getElementById("eventsEmptyMessage");
+      const newEventsBadge = document.getElementById("newEventsBadge");
+      const soundControls = document.getElementById("soundControls");
+      const lastPollLabel = document.getElementById("lastPollLabel");
+      const newEventsLabel = document.getElementById("newEventsLabel");
+      const bossSoundToggle = document.getElementById("bossSoundToggle");
+      const commonSoundToggle = document.getElementById("commonSoundToggle");
+      const volumeInput = document.getElementById("volumeInput");
+      const volumeLabel = document.getElementById("volumeLabel");
+      const eventsBody = document.getElementById("eventsBody");
+      const eventFilterSelect = document.getElementById("eventFilterSelect");
+      const clearEventsButton = document.getElementById("clearEventsButton");
+      const timersContainer = document.getElementById("timersContainer");
+      const timersEmptyLabel = document.getElementById("timersEmptyLabel");
+      const activeTimersCountLabel = document.getElementById("activeTimersCountLabel");
+      const sessionStartLabel = document.getElementById("sessionStartLabel");
+      const sessionDurationLabel = document.getElementById("sessionDurationLabel");
+      const sessionStatusLabel = document.getElementById("sessionStatusLabel");
+      const chestsPerHourLabel = document.getElementById("chestsPerHourLabel");
+      const lastEventLabel = document.getElementById("lastEventLabel");
+      const commonCountLabel = document.getElementById("commonCountLabel");
+      const bossCountLabel = document.getElementById("bossCountLabel");
+      const actBossCountLabel = document.getElementById("actBossCountLabel");
+      const eventsCountLabel = document.getElementById("eventsCountLabel");
+
+      let alertAudio = null;
+      let newEventsSinceStart = 0;
+
+      function getSharedState() {
+        try {
+          const raw = localStorage.getItem(STORAGE_KEY);
+          if (!raw) {
+            return {
+              bossDurationMinutes: DEFAULT_BOSS_MINUTES,
+              commonDurationMinutes: DEFAULT_COMMON_MINUTES,
+              alertVolume: 100,
+              timers: [],
+            };
+          }
+          return JSON.parse(raw);
+        } catch {
+          return {
+            bossDurationMinutes: DEFAULT_BOSS_MINUTES,
+            commonDurationMinutes: DEFAULT_COMMON_MINUTES,
+            alertVolume: 100,
+            timers: [],
+          };
+        }
+      }
+
+      function saveSharedState(state) {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      }
+
+      function isBossTimerCounting(level) {
+        const state = getSharedState();
+        const timer = state.timers.find((item) => item.level === level);
+        return Boolean(timer?.expiresAt && timer.expiresAt > Date.now());
+      }
+
+      function isCommonTimerCounting(level) {
+        const state = getSharedState();
+        const timer = state.timers.find((item) => item.level === level);
+        return Boolean(
+          timer?.commonExpiresAt && timer.commonExpiresAt > Date.now(),
+        );
+      }
+
+      function shouldAcceptFlatCountDrop(itemKey, chestType) {
+        const state = getSharedState();
+        const now = Date.now();
+
+        if (chestType === "boss") {
+          const level = bossChestLevelForKey(itemKey);
+          if (level === null) return false;
+          if (isBossTimerCounting(level)) return false;
+          const lastDrop = lastDropByLevel.get(level);
+          if (lastDrop === undefined) {
+            return (
+              monitorStartedAt !== null &&
+              now - monitorStartedAt >= MONITOR_STARTUP_GRACE_MS
+            );
+          }
+          return now - lastDrop >= BOSS_COOLDOWN_MS;
+        }
+
+        if (chestType === "common") {
+          const level = commonChestLevelForKey(itemKey);
+          if (level === null) return false;
+          if (isCommonTimerCounting(level)) return false;
+          const timerKey = -Math.abs(level);
+          const lastDrop = lastDropByLevel.get(timerKey);
+          if (lastDrop === undefined) {
+            return (
+              monitorStartedAt !== null &&
+              now - monitorStartedAt >= MONITOR_STARTUP_GRACE_MS
+            );
+          }
+          return now - lastDrop >= COMMON_COOLDOWN_MS;
+        }
+
+        return false;
+      }
+
+      function applyWatchKeysToPoller() {
+        poller.setWatchBossKeys(buildWebWatchBossKeys());
+        poller.setWatchCommonKeys(buildWebWatchCommonKeys());
+      }
+
+      const poller = new BrowserLogPoller({
+        onEvents: (events) => handleDetectedEvents(events),
+        onPoll: (stats) => {
+          lastPollLabel.textContent = formatTime(new Date());
+          linesReadLabel.textContent = String(poller.getTotalLinesRead());
+          if (stats.truncated) {
+            showLogResetNotice();
+          }
+        },
+        onLogReset: () => {
+          showLogResetNotice();
+        },
+        flatCountDropGate: (itemKey) => {
+          const chestType = classifyFromKey(itemKey);
+          return chestType
+            ? shouldAcceptFlatCountDrop(itemKey, chestType)
+            : false;
+        },
+      });
+
+      function classifyFromKey(itemKey) {
+        if (itemKey.startsWith("930")) return "actBoss";
+        if (itemKey.startsWith("92")) return "boss";
+        return "common";
+      }
+
+      function formatTime(date) {
+        return date.toLocaleTimeString("pt-BR", { hour12: false });
+      }
+
+      function formatSessionDate(date) {
+        return date.toLocaleString("pt-BR", {
+          day: "2-digit",
+          month: "2-digit",
+          hour: "2-digit",
+          minute: "2-digit",
+        });
+      }
+
+      function formatDuration(ms) {
+        const totalSeconds = Math.floor(ms / 1000);
+        const hours = Math.floor(totalSeconds / 3600);
+        const minutes = Math.floor((totalSeconds % 3600) / 60);
+        const seconds = totalSeconds % 60;
+        if (hours > 0) {
+          return `${hours}h ${minutes}m ${seconds}s`;
+        }
+        if (minutes > 0) {
+          return `${minutes}m ${seconds}s`;
+        }
+        return `${seconds}s`;
+      }
+
+      function formatCountdown(ms) {
+        const totalSeconds = Math.max(0, Math.floor(ms / 1000));
+        const minutes = Math.floor(totalSeconds / 60);
+        const seconds = totalSeconds % 60;
+        return `${minutes}:${String(seconds).padStart(2, "0")}`;
+      }
+
+      function chestTypeBadgeClass(type) {
+        if (type === "boss") return "text-fuchsia-300";
+        if (type === "common") return "text-cyan-300";
+        return "text-amber-300";
+      }
+
+      function catalogLabelForLevel(level) {
+        const match = getBossCatalog().find(
+          (item) => item.level === level && !item.key.startsWith("930"),
+        );
+        return match?.label ?? `Bau Lv ${level}`;
+      }
+
+      function switchTab(tab) {
+        activeTab = tab;
+        const isMonitor = tab === "monitor";
+        monitorTabPanel.classList.toggle("hidden", !isMonitor);
+        timersTabPanel.classList.toggle("hidden", isMonitor);
+        document.querySelectorAll(".tracker-tab").forEach((button) => {
+          const selected = button.dataset.tab === tab;
+          button.className = selected
+            ? "tracker-tab rounded-md bg-indigo-500 px-4 py-2 text-sm font-medium text-white transition hover:bg-indigo-400"
+            : "tracker-tab rounded-md bg-slate-700 px-4 py-2 text-sm font-medium text-slate-100 transition hover:bg-slate-600";
+        });
+        if (!isMonitor) {
+          renderTimers();
+        }
+      }
+
+      function showSetupScreen() {
+        setupScreen.classList.remove("hidden");
+        dashboardScreen.classList.add("hidden");
+        isMonitoring = false;
+      }
+
+      function showDashboard() {
+        setupScreen.classList.add("hidden");
+        dashboardScreen.classList.remove("hidden");
+        switchTab("monitor");
+        renderEvents();
+        renderTimers();
+        startTimersTicker();
+      }
+
+      function getLogFolderPath() {
+        return setupLogFolderPathInput.value.trim() || LOG_FOLDER_PATH;
+      }
+
+      function showCopyPathFeedback() {
+        setupCopyPathFeedback.classList.remove("hidden");
+        if (copyFeedbackTimer) clearTimeout(copyFeedbackTimer);
+        copyFeedbackTimer = setTimeout(() => {
+          setupCopyPathFeedback.classList.add("hidden");
+        }, 2000);
+      }
+
+      async function copyLogFolderPath() {
+        const path = getLogFolderPath();
+        try {
+          await navigator.clipboard.writeText(path);
+          showCopyPathFeedback();
+        } catch {
+          const helper = document.createElement("textarea");
+          helper.value = path;
+          helper.setAttribute("readonly", "");
+          helper.className = "fixed -left-[9999px]";
+          document.body.appendChild(helper);
+          helper.select();
+          document.execCommand("copy");
+          document.body.removeChild(helper);
+          showCopyPathFeedback();
+        }
+      }
+
+      function normalizeClearTimeSeconds(value) {
+        if (value === null || value === undefined || value === "") {
+          return null;
+        }
+        const parsed = Number(value);
+        if (!Number.isFinite(parsed) || parsed < 0 || parsed > 9999) {
+          return null;
+        }
+        return Math.floor(parsed);
+      }
+
+      function effectiveClearSeconds(timer) {
+        return normalizeClearTimeSeconds(timer?.clearTimeSeconds) ?? 0;
+      }
+
+      function formatTimerSeconds(totalSeconds) {
+        const safeSeconds = Math.max(0, totalSeconds);
+        const minutes = Math.floor(safeSeconds / 60);
+        const seconds = safeSeconds % 60;
+        return `${minutes}:${String(seconds).padStart(2, "0")}`;
+      }
+
+      function computeKindDisplay(timer, kind, now) {
+        const isCommon = kind === "common";
+        const expiresAt = isCommon ? timer.commonExpiresAt : timer.expiresAt;
+        const expired = isCommon ? timer.commonExpired : timer.expired;
+        const clearSeconds = isCommon ? 0 : effectiveClearSeconds(timer);
+
+        if (expired) {
+          return { text: "0:00", state: "expired", inCooldown: true };
+        }
+
+        if (!expiresAt || expiresAt <= now) {
+          return { text: "Pronto", state: "ready", inCooldown: false };
+        }
+
+        const realRemainingMs = expiresAt - now;
+        const displayRemainingMs = realRemainingMs - clearSeconds * 1000;
+
+        if (displayRemainingMs <= 0) {
+          return { text: "0:00", state: "expired", inCooldown: true };
+        }
+
+        return {
+          text: formatTimerSeconds(Math.floor(displayRemainingMs / 1000)),
+          state: "counting",
+          inCooldown: true,
+        };
+      }
+
+      function timerCell(display, kind) {
+        if (display.state === "ready") {
+          return `<span class="font-mono text-sm text-emerald-400">${display.text}</span>`;
+        }
+        if (display.state === "expired") {
+          return `<span class="font-mono text-lg font-bold tabular-nums text-rose-400">${display.text}</span>`;
+        }
+        const color =
+          kind === "common" ? "text-cyan-300" : "text-fuchsia-300";
+        return `<span class="font-mono text-lg font-bold tabular-nums ${color}">${display.text}</span>`;
+      }
+
+      function renderTimers() {
+        const state = getSharedState();
+        const now = Date.now();
+        const timers = [...(state.timers ?? [])].sort(
+          (a, b) => a.level - b.level,
+        );
+
+        const activeTimers = timers.filter((timer) => {
+          const boss = computeKindDisplay(timer, "boss", now);
+          const common = computeKindDisplay(timer, "common", now);
+          return boss.inCooldown || common.inCooldown;
+        });
+        activeTimersCountLabel.textContent = String(activeTimers.length);
+
+        if (timers.length === 0) {
+          timersEmptyLabel.classList.remove("hidden");
+          timersContainer.querySelectorAll("[data-timer-row]").forEach((node) => {
+            node.remove();
+          });
+          return;
+        }
+
+        timersEmptyLabel.classList.add("hidden");
+        timersContainer.querySelectorAll("[data-timer-row]").forEach((node) => {
+          node.remove();
+        });
+
+        for (const timer of timers) {
+          const bossDisplay = computeKindDisplay(timer, "boss", now);
+          const commonDisplay = computeKindDisplay(timer, "common", now);
+          const clearSeconds = effectiveClearSeconds(timer);
+          const clearHint =
+            clearSeconds > 0
+              ? `<p class="mt-0.5 text-[10px] text-slate-600">Volta: ${clearSeconds}s</p>`
+              : "";
+
+          const row = document.createElement("article");
+          row.dataset.timerRow = "true";
+          row.className =
+            "rounded-lg border border-slate-800 bg-slate-950/70 px-4 py-3";
+          row.innerHTML = `
+            <div class="flex flex-wrap items-start justify-between gap-3">
+              <div class="min-w-0">
+                <p class="text-sm font-semibold text-slate-100">${catalogLabelForLevel(timer.level)}</p>
+                <p class="mt-0.5 text-xs text-slate-500">Level ${timer.level}</p>
+                ${clearHint}
+              </div>
+              <div class="flex flex-wrap items-center gap-4">
+                <div class="text-right">
+                  <p class="text-[10px] font-semibold uppercase tracking-wide text-fuchsia-300/90">Chefe</p>
+                  ${timerCell(bossDisplay, "boss")}
+                </div>
+                <div class="text-right">
+                  <p class="text-[10px] font-semibold uppercase tracking-wide text-cyan-300/90">Comum</p>
+                  ${timerCell(commonDisplay, "common")}
+                </div>
+              </div>
+            </div>`;
+          timersContainer.appendChild(row);
+        }
+      }
+
+      function startTimersTicker() {
+        if (timersTicker) clearInterval(timersTicker);
+        timersTicker = setInterval(() => {
+          renderTimers();
+        }, 1000);
+      }
+
+      function playDropSound(chestType) {
+        const shared = getSharedState();
+        const volume = (shared.alertVolume ?? Number(volumeInput.value)) / 100;
+        if (volume <= 0) return;
+        if (chestType === "boss" && !bossSoundToggle.checked) return;
+        if (chestType === "common" && !commonSoundToggle.checked) return;
+        if (chestType === "actBoss" && !bossSoundToggle.checked) return;
+
+        if (!alertAudio) {
+          alertAudio = new Audio(ALERT_SOUND_URL);
+        }
+        alertAudio.volume = volume;
+        alertAudio.currentTime = 0;
+        alertAudio.play().catch(() => {});
+      }
+
+      function startTimerForDrop(event) {
+        const state = getSharedState();
+        const now = Date.now();
+
+        if (event.chestType === "boss") {
+          const level = bossChestLevelForKey(event.itemKey);
+          if (level === null) return;
+          let timer = state.timers.find((item) => item.level === level);
+          if (!timer) {
+            timer = {
+              id: crypto.randomUUID(),
+              level,
+              stageKey: null,
+              expiresAt: null,
+              expired: false,
+              commonExpiresAt: null,
+              commonExpired: false,
+            };
+            state.timers.push(timer);
+          }
+          if (timer.expiresAt && timer.expiresAt > now) return;
+          timer.expiresAt = now + BOSS_COOLDOWN_MS;
+          timer.expired = false;
+          lastDropByLevel.set(level, now);
+          saveSharedState(state);
+          renderTimers();
+          return;
+        }
+
+        if (event.chestType === "common") {
+          const level = commonChestLevelForKey(event.itemKey);
+          if (level === null) return;
+          let timer = state.timers.find((item) => item.level === level);
+          if (!timer) {
+            timer = {
+              id: crypto.randomUUID(),
+              level,
+              stageKey: null,
+              expiresAt: null,
+              expired: false,
+              commonExpiresAt: null,
+              commonExpired: false,
+            };
+            state.timers.push(timer);
+          }
+          if (timer.commonExpiresAt && timer.commonExpiresAt > now) return;
+          timer.commonExpiresAt = now + COMMON_COOLDOWN_MS;
+          timer.commonExpired = false;
+          lastDropByLevel.set(-Math.abs(level), now);
+          saveSharedState(state);
+          renderTimers();
+        }
+      }
+
+      function handleDetectedEvents(events) {
+        const now = Date.now();
+        for (const event of events) {
+          const label = catalogLabelForKey(event.itemKey);
+          const level =
+            event.chestType === "common"
+              ? commonChestLevelForKey(event.itemKey)
+              : bossChestLevelForKey(event.itemKey);
+
+          let expiresAt = null;
+          let cooldownMs = 0;
+          const shared = getSharedState();
+
+          if (event.chestType === "boss") {
+            cooldownMs = BOSS_COOLDOWN_MS;
+            expiresAt = now + cooldownMs;
+            startTimerForDrop(event);
+          } else if (event.chestType === "common") {
+            cooldownMs = COMMON_COOLDOWN_MS;
+            expiresAt = now + cooldownMs;
+            startTimerForDrop(event);
+          }
+
+          sessionEvents.unshift({
+            id: crypto.randomUUID(),
+            itemKey: event.itemKey,
+            chestType: event.chestType,
+            label,
+            level,
+            detectedAt: now,
+            expiresAt,
+            cooldownMs,
+          });
+
+          newEventsSinceStart += 1;
+          playDropSound(event.chestType);
+        }
+
+        updateSummary();
+        renderEvents();
+        renderTimers();
+        newEventsLabel.textContent = String(newEventsSinceStart);
+        if (sessionEvents.length > 0) {
+          lastEventLabel.textContent = formatTime(
+            new Date(sessionEvents[0].detectedAt),
+          );
+        }
+      }
+
+      function updateSummary() {
+        const bossCount = sessionEvents.filter((e) => e.chestType === "boss").length;
+        const commonCount = sessionEvents.filter((e) => e.chestType === "common").length;
+        const actCount = sessionEvents.filter((e) => e.chestType === "actBoss").length;
+        const farmCount = bossCount + commonCount;
+
+        bossCountLabel.textContent = String(bossCount);
+        commonCountLabel.textContent = String(commonCount);
+        actBossCountLabel.textContent = String(actCount);
+        eventsCountLabel.textContent = String(sessionEvents.length);
+
+        if (sessionStartedAt) {
+          const elapsed = Date.now() - sessionStartedAt;
+          const hours = elapsed / 3_600_000;
+          chestsPerHourLabel.textContent =
+            hours > 0.01 ? (farmCount / hours).toFixed(1) : "—";
+        }
+      }
+
+      function renderEvents() {
+        const filtered =
+          eventFilter === "all"
+            ? sessionEvents
+            : sessionEvents.filter((e) => e.chestType === eventFilter);
+
+        if (filtered.length === 0) {
+          eventsBody.innerHTML = `
+            <tr id="eventsEmptyRow">
+              <td colspan="4" class="px-4 py-8 text-center text-xs text-slate-500">
+                ${getEventsEmptyMessage()}
+              </td>
+            </tr>`;
+          return;
+        }
+
+        eventsBody.innerHTML = filtered
+          .map(
+            (event) => `
+          <tr class="border-b border-slate-800/60 last:border-0 hover:bg-slate-900/50">
+            <td class="px-4 py-2.5 tabular-nums text-sm text-slate-300">${formatTime(new Date(event.detectedAt))}</td>
+            <td class="px-4 py-2.5 tabular-nums text-sm font-medium">${event.level ?? "—"}</td>
+            <td class="px-4 py-2.5 text-sm">${event.label}</td>
+            <td class="px-4 py-2.5 text-sm font-medium ${chestTypeBadgeClass(event.chestType)}">${chestTypeLabel(event.chestType)}</td>
+          </tr>`,
+          )
+          .join("");
+      }
+
+      function chestTypeLabel(type) {
+        if (type === "boss") return "Chefe";
+        if (type === "common") return "Comum";
+        if (type === "actBoss") return "Act Boss";
+        return type;
+      }
+
+      function showLogResetNotice() {
+        logResetNotice.classList.remove("hidden");
+        if (logResetNoticeTimer) clearTimeout(logResetNoticeTimer);
+        logResetNoticeTimer = setTimeout(() => {
+          logResetNotice.classList.add("hidden");
+        }, 12_000);
+      }
+
+      function getEventsEmptyMessage() {
+        if (sessionEvents.length === 0) {
+          return "Monitorando ativamente — aguardando o proximo drop de bau no jogo.";
+        }
+        return "Nenhum evento neste filtro.";
+      }
+
+      function updateEventsEmptyMessage() {
+        if (eventsEmptyMessage) {
+          eventsEmptyMessage.textContent = getEventsEmptyMessage();
+        }
+      }
+
+      function setMonitorStatus(state, { title, subtitle, fileName = "" } = {}) {
+        monitorStatusBanner.dataset.state = state;
+        monitorStatusTitle.textContent = title;
+        monitorStatusSubtitle.textContent = subtitle;
+
+        monitorStatusDot.className =
+          "mt-1.5 inline-flex h-3 w-3 shrink-0 rounded-full";
+
+        if (state === "monitoring") {
+          monitorStatusBanner.className =
+            "mt-4 rounded-xl border border-emerald-500/40 bg-emerald-950/25 p-4";
+          monitorStatusDot.classList.add(
+            "tracker-live-dot",
+            "bg-emerald-400",
+            "shadow-[0_0_10px_rgba(52,211,153,0.65)]",
+          );
+          monitorStatusTitle.className = "text-sm font-semibold text-emerald-100";
+          monitorStatusSubtitle.className =
+            "mt-0.5 break-words text-xs text-emerald-200/80";
+          monitorStatusMeta.classList.remove("hidden");
+          connectedFileLabel.textContent = fileName || "Player.log";
+        } else {
+          monitorStatusBanner.className =
+            "mt-4 rounded-xl border border-slate-700/80 bg-slate-950/80 p-4";
+          monitorStatusDot.classList.add("bg-slate-500");
+          monitorStatusTitle.className = "text-sm font-semibold text-slate-200";
+          monitorStatusSubtitle.className =
+            "mt-0.5 break-words text-xs text-slate-400";
+          monitorStatusMeta.classList.add("hidden");
+        }
+      }
+
+      function setConnectedUi(connected) {
+        isMonitoring = connected;
+        if (!connected) {
+          return;
+        }
+
+        setMonitorStatus("monitoring", {
+          title: "Monitorando ao vivo",
+          subtitle:
+            "Leitura ativa a cada 2s. Mantenha esta aba aberta enquanto joga.",
+          fileName: poller.getFileName() || "Player.log",
+        });
+        sessionStatusLabel.textContent = "Ativo";
+        sessionStatusLabel.className = "font-medium text-emerald-300";
+        newEventsBadge.classList.remove("hidden");
+        updateEventsEmptyMessage();
+      }
+
+      function startSession() {
+        sessionStartedAt = Date.now();
+        monitorStartedAt = Date.now();
+        sessionStartLabel.textContent = formatSessionDate(
+          new Date(sessionStartedAt),
+        );
+        newEventsSinceStart = 0;
+        newEventsLabel.textContent = "0";
+
+        if (durationTicker) clearInterval(durationTicker);
+        durationTicker = setInterval(() => {
+          if (!sessionStartedAt) return;
+          sessionDurationLabel.textContent = formatDuration(
+            Date.now() - sessionStartedAt,
+          );
+          updateSummary();
+        }, 1000);
+      }
+
+      function stopSession() {
+        poller.stop();
+        if (durationTicker) {
+          clearInterval(durationTicker);
+          durationTicker = null;
+        }
+        if (timersTicker) {
+          clearInterval(timersTicker);
+          timersTicker = null;
+        }
+        sessionStartedAt = null;
+        monitorStartedAt = null;
+        sessionStartLabel.textContent = "—";
+        sessionDurationLabel.textContent = "—";
+        sessionStatusLabel.textContent = "Parado";
+        sessionStatusLabel.className = "font-medium";
+        newEventsBadge.classList.add("hidden");
+        logResetNotice.classList.add("hidden");
+        showSetupScreen();
+      }
+
+      async function connectPlayerLog() {
+        setupConnectButton.disabled = true;
+        setupConnectButton.textContent = "Abrindo arquivo...";
+        try {
+          if (!isFileSystemAccessSupported()) {
+            setupBrowserWarning.classList.remove("hidden");
+            browserWarning.classList.remove("hidden");
+            return;
+          }
+          const handle = await pickPlayerLogFile();
+          if (!handle) return;
+
+          await poller.connect(handle);
+          applyWatchKeysToPoller();
+          poller.setFlatCountDropGate((itemKey) => {
+            const chestType = classifyFromKey(itemKey);
+            return chestType
+              ? shouldAcceptFlatCountDrop(itemKey, chestType)
+              : false;
+          });
+          poller.start();
+          startSession();
+          showDashboard();
+          setConnectedUi(true);
+        } catch (error) {
+          if (error?.name !== "AbortError") {
+            console.error(error);
+            alert("Nao foi possivel abrir o arquivo. Tente novamente.");
+          }
+        } finally {
+          setupConnectButton.disabled = false;
+          setupConnectButton.textContent = "Selecionar Player.log";
+        }
+      }
+
+      setupConnectButton.addEventListener("click", () => {
+        connectPlayerLog();
+      });
+
+      stopButton.addEventListener("click", () => {
+        stopSession();
+      });
+
+      setupCopyPathButton.addEventListener("click", () => {
+        copyLogFolderPath();
+      });
+
+      setupLogFolderPathInput.addEventListener("focus", () => {
+        setupLogFolderPathInput.select();
+      });
+
+      setupLogFolderPathInput.addEventListener("click", () => {
+        setupLogFolderPathInput.select();
+      });
+
+      document.querySelectorAll(".tracker-tab").forEach((button) => {
+        button.addEventListener("click", () => {
+          switchTab(button.dataset.tab);
+        });
+      });
+
+      eventFilterSelect.addEventListener("change", () => {
+        eventFilter = eventFilterSelect.value;
+        renderEvents();
+      });
+
+      clearEventsButton.addEventListener("click", () => {
+        sessionEvents = [];
+        updateSummary();
+        renderEvents();
+        lastEventLabel.textContent = "—";
+      });
+
+      volumeInput.addEventListener("input", () => {
+        volumeLabel.textContent = `${volumeInput.value}%`;
+        const state = getSharedState();
+        state.alertVolume = Number(volumeInput.value);
+        saveSharedState(state);
+      });
+
+      async function bootstrap() {
+        if (!isFileSystemAccessSupported()) {
+          setupBrowserWarning.classList.remove("hidden");
+          browserWarning.classList.remove("hidden");
+        }
+
+        await loadChestCatalog();
+        applyWatchKeysToPoller();
+
+        setupLogFolderPathInput.value = LOG_FOLDER_PATH;
+
+        const shared = getSharedState();
+        volumeInput.value = String(shared.alertVolume ?? 100);
+        volumeLabel.textContent = `${volumeInput.value}%`;
+        showSetupScreen();
+
+        window.addEventListener("storage", () => {
+          if (isMonitoring) {
+            renderTimers();
+          }
+        });
+      }
+
+      bootstrap().catch((error) => {
+        console.error(error);
+        alert("Erro ao carregar catalogo de baus.");
+      });
+    </script>
+  </body>
+</html>
