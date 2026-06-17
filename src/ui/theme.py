@@ -2,38 +2,38 @@ from __future__ import annotations
 
 import customtkinter as ctk
 
-# Backgrounds (gray theme)
-BG_ROOT = "#3a3a3a"
-BG_SURFACE = "#454545"
-BG_ELEVATED = "#505050"
-BG_INSET = "#3f3f3f"
+# Backgrounds — premium dark palette
+BG_ROOT = "#0B0F19"
+BG_SURFACE = "#111827"
+BG_ELEVATED = "#151B2D"
+BG_INSET = "#0D1220"
 
 # Borders & accents
-BORDER = "#5a5a5a"
-BORDER_SUBTLE = "#4a4a4a"
-BORDER_FOCUS = "#737373"
-HOVER = "#5c5c5c"
-HOVER_STRONG = "#666666"
-ACCENT = "#505050"
-ACCENT_HOVER = "#5c5c5c"
-BTN_NEUTRAL = "#505050"
-BTN_NEUTRAL_HOVER = "#5c5c5c"
+BORDER = "#1F2937"
+BORDER_SUBTLE = "#1A2234"
+BORDER_FOCUS = "#8B5CF6"
+HOVER = "#1E293B"
+HOVER_STRONG = "#253045"
+ACCENT = "#8B5CF6"
+ACCENT_HOVER = "#A78BFA"
+BTN_NEUTRAL = "#8B5CF6"
+BTN_NEUTRAL_HOVER = "#A78BFA"
 
 # Text
-TEXT_PRIMARY = "#f5f5f5"
-TEXT_SECONDARY = "#c4c4c4"
-TEXT_MUTED = "#9ca3af"
+TEXT_PRIMARY = "#FFFFFF"
+TEXT_SECONDARY = "#E5E7EB"
+TEXT_MUTED = "#9CA3AF"
 
 # Status
-SUCCESS = "#4ade80"
-DANGER = "#ef4444"
-DANGER_HOVER = "#dc2626"
-WARNING = "#fbbf24"
-TIMER_ACTIVE = "#22d3ee"
-TIMER_WAITING = "#67e8f9"
-COMMON_TIMER_ACTIVE = "#2dd4bf"
-NEXT_TARGET_BORDER = "#4ade80"
-SWITCH_PROGRESS = "#22d3ee"
+SUCCESS = "#14B8A6"
+DANGER = "#F87171"
+DANGER_HOVER = "#EF4444"
+WARNING = "#FBBF24"
+TIMER_ACTIVE = "#8B5CF6"
+TIMER_WAITING = "#A78BFA"
+COMMON_TIMER_ACTIVE = "#14B8A6"
+NEXT_TARGET_BORDER = "#14B8A6"
+SWITCH_PROGRESS = "#8B5CF6"
 
 # Layout
 RADIUS_PANEL = 14
@@ -116,8 +116,8 @@ def primary_button(master, **kwargs) -> ctk.CTkButton:
         "font": ctk.CTkFont(family="Segoe UI", size=13, weight="bold"),
         "fg_color": BTN_NEUTRAL,
         "hover_color": BTN_NEUTRAL_HOVER,
-        "border_width": 1,
-        "border_color": BORDER,
+        "border_width": 0,
+        "text_color": TEXT_PRIMARY,
     }
     defaults.update(kwargs)
     return ctk.CTkButton(master, **defaults)
@@ -132,6 +132,7 @@ def secondary_button(master, **kwargs) -> ctk.CTkButton:
         "hover_color": HOVER,
         "border_width": 1,
         "border_color": BORDER,
+        "text_color": TEXT_SECONDARY,
     }
     defaults.update(kwargs)
     return ctk.CTkButton(master, **defaults)
@@ -148,6 +149,38 @@ def option_menu(master, **kwargs) -> ctk.CTkOptionMenu:
         "dropdown_fg_color": BG_SURFACE,
         "dropdown_hover_color": HOVER,
         "dropdown_text_color": TEXT_PRIMARY,
+        "text_color": TEXT_SECONDARY,
+    }
+    defaults.update(kwargs)
+    return ctk.CTkOptionMenu(master, **defaults)
+
+
+def header_nav_cluster(master, **kwargs) -> ctk.CTkFrame:
+    """Compact header control cluster matching web `.tbh-nav`."""
+    defaults = {
+        "fg_color": BG_ELEVATED,
+        "corner_radius": RADIUS_SMALL,
+        "border_width": 1,
+        "border_color": BORDER_SUBTLE,
+    }
+    defaults.update(kwargs)
+    return ctk.CTkFrame(master, **defaults)
+
+
+def nav_option_menu(master, **kwargs) -> ctk.CTkOptionMenu:
+    """Inline language/menu control for header nav clusters."""
+    defaults = {
+        "height": 30,
+        "width": 132,
+        "corner_radius": RADIUS_SMALL - 2,
+        "font": ctk.CTkFont(family="Segoe UI", size=12),
+        "fg_color": BG_ELEVATED,
+        "button_color": BG_ELEVATED,
+        "button_hover_color": HOVER,
+        "dropdown_fg_color": BG_SURFACE,
+        "dropdown_hover_color": HOVER,
+        "dropdown_text_color": TEXT_PRIMARY,
+        "text_color": TEXT_SECONDARY,
     }
     defaults.update(kwargs)
     return ctk.CTkOptionMenu(master, **defaults)
@@ -160,6 +193,7 @@ def log_textbox(master, **kwargs) -> ctk.CTkTextbox:
         "border_color": BORDER_SUBTLE,
         "fg_color": BG_INSET,
         "font": ctk.CTkFont(family="Segoe UI", size=LOG_FONT_SIZE),
+        "text_color": TEXT_MUTED,
         "wrap": "word",
     }
     defaults.update(kwargs)

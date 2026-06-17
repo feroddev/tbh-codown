@@ -28,9 +28,12 @@ from src.ui.i18n import (
 from src.ui.theme import (
     BG_INSET,
     BG_ROOT,
+    BG_SURFACE,
     BORDER,
     BTN_NEUTRAL,
     BTN_NEUTRAL_HOVER,
+    ACCENT,
+    ACCENT_HOVER,
     DANGER,
     DANGER_HOVER,
     DEFAULT_WINDOW_HEIGHT,
@@ -44,9 +47,13 @@ from src.ui.theme import (
     PAD_WINDOW,
     SUCCESS,
     SWITCH_PROGRESS,
+    TEXT_MUTED,
     TEXT_SECONDARY,
+    header_nav_cluster,
     apply_root_window,
+    hint_label,
     log_textbox,
+    nav_option_menu,
     option_menu,
     panel_frame,
     primary_button,
@@ -189,27 +196,42 @@ class MonitorApp(ctk.CTk):
         pad = PAD_WINDOW
         gap = GAP_PANEL
 
-        header = ctk.CTkFrame(root, fg_color="transparent")
+        header = panel_frame(root, fg_color=BG_SURFACE)
         header.grid(row=0, column=0, sticky="ew", padx=pad, pady=(pad, gap))
+        header.grid_columnconfigure(0, weight=1)
+
+        header_inner = ctk.CTkFrame(header, fg_color="transparent")
+        header_inner.pack(fill="x", padx=PAD_INNER, pady=PAD_SECTION)
+
+        title_block = ctk.CTkFrame(header_inner, fg_color="transparent")
+        title_block.pack(side="left")
 
         self.sidebar_title_label = section_label(
-            header,
+            title_block,
             text=t("app_title"),
-            font=ctk.CTkFont(family="Segoe UI", size=20, weight="bold"),
+            font=ctk.CTkFont(family="Segoe UI", size=18, weight="bold"),
         )
-        self.sidebar_title_label.pack(side="left")
+        self.sidebar_title_label.pack(anchor="w")
 
-        header_tools = ctk.CTkFrame(header, fg_color="transparent")
+        self.header_subtitle_label = hint_label(
+            title_block,
+            text=t("tab_monitor"),
+        )
+        self.header_subtitle_label.pack(anchor="w", pady=(2, 0))
+
+        header_tools = ctk.CTkFrame(header_inner, fg_color="transparent")
         header_tools.pack(side="right")
 
-        self.language_menu = option_menu(
-            header_tools,
+        language_cluster = header_nav_cluster(header_tools)
+        language_cluster.pack(side="right")
+
+        self.language_menu = nav_option_menu(
+            language_cluster,
             values=list(LANGUAGE_OPTIONS.keys()),
             command=self._on_language_changed,
-            width=128,
         )
         self.language_menu.set(self._language_display_name(self._language))
-        self.language_menu.pack(side="right")
+        self.language_menu.pack(padx=4, pady=4)
 
         tab_bar_frame = ctk.CTkFrame(root, fg_color="transparent")
         tab_bar_frame.grid(row=1, column=0, sticky="ew", padx=pad, pady=(0, gap))
@@ -220,10 +242,12 @@ class MonitorApp(ctk.CTk):
             command=self._on_tab_selected,
             font=ctk.CTkFont(family="Segoe UI", size=13, weight="bold"),
             fg_color=BG_INSET,
-            selected_color=BTN_NEUTRAL,
-            selected_hover_color=BTN_NEUTRAL_HOVER,
+            selected_color=ACCENT,
+            selected_hover_color=ACCENT_HOVER,
             unselected_color=BG_INSET,
             unselected_hover_color=HOVER,
+            text_color=TEXT_SECONDARY,
+            text_color_disabled=TEXT_MUTED,
         )
         self.tab_bar.set(self._tab_monitor_label)
         self.tab_bar.pack(fill="x")
@@ -401,6 +425,9 @@ class MonitorApp(ctk.CTk):
             self._show_tab("monitor")
         else:
             self._show_tab("config")
+        self.header_subtitle_label.configure(
+            text=t("tab_monitor") if self._current_tab == "monitor" else t("tab_config")
+        )
 
     @staticmethod
     def _language_display_name(language: Language) -> str:
@@ -421,6 +448,9 @@ class MonitorApp(ctk.CTk):
     def _apply_language(self) -> None:
         self.title(t("app_title"))
         self.sidebar_title_label.configure(text=t("app_title"))
+        self.header_subtitle_label.configure(
+            text=t("tab_monitor") if self._current_tab == "monitor" else t("tab_config")
+        )
         self.language_menu.set(self._language_display_name(self._language))
         self.consider_common_switch.configure(text=t("consider_common_chest"))
         self.events_title_label.configure(text=t("events"))
