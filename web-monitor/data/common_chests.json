@@ -1,0 +1,52 @@
+[
+  {
+    "key": "910011",
+    "label": "Normal Monster Box 1",
+    "level": 4
+  },
+  {
+    "key": "910051",
+    "label": "Normal Monster Box 2",
+    "level": 5
+  },
+  {
+    "key": "910101",
+    "label": "Normal Monster Box 3",
+    "level": 7
+  },
+  {
+    "key": "910151",
+    "label": "Normal Monster Box Lv15",
+    "level": 15
+  },
+  {
+    "key": "910201",
+    "label": "Normal Monster Box Lv20",
+    "level": 20
+  },
+  {
+    "key": "910301",
+    "label": "Normal Monster Box Lv30",
+    "level": 30
+  },
+  {
+    "key": "910401",
+    "label": "Normal Monster Box Lv40",
+    "level": 40
+  },
+  {
+    "key": "910501",
+    "label": "Normal Monster Box Lv50",
+    "level": 50
+  },
+  {
+    "key": "910651",
+    "label": "Normal Monster Box Lv65",
+    "level": 65
+  },
+  {
+    "key": "910801",
+    "label": "Normal Monster Box Lv80",
+    "level": 80
+  }
+]

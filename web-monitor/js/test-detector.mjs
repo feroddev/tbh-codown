@@ -12,7 +12,10 @@ const root = dirname(fileURLToPath(import.meta.url));
 const catalog = JSON.parse(
   readFileSync(join(root, "../data/boss_chests.json"), "utf8"),
 );
-loadChestCatalogFromData(catalog);
+const commonCatalog = JSON.parse(
+  readFileSync(join(root, "../data/common_chests.json"), "utf8"),
+);
+loadChestCatalogFromData(catalog, commonCatalog);
 
 function assert(condition, message) {
   if (!condition) {
@@ -91,8 +94,26 @@ function testPollBatchCollectsEvents() {
   assert(filtered.length === 1, "expected one event in poll batch");
 }
 
+function testActBossLv70Drop() {
+  const detector = new ChestDetector({
+    considerCommonChest: true,
+    watchBossKeys: buildWebWatchBossKeys(),
+    watchCommonKeys: buildWebWatchCommonKeys(),
+    flatCountDropGate: () => true,
+  });
+  detector.enableCountTracking(true);
+
+  const event = detector.processLine(
+    "GetBoxCount Success Count : 1 // ItemKey : 930701",
+  );
+  assert(event !== null, "expected act boss Lv70 drop");
+  assert(event.chestType === "actBoss", "expected actBoss chest type");
+  assert(event.itemKey === "930701", "unexpected act boss item key");
+}
+
 testFreshDropAfterLogReset();
 testCountIncreaseWhenSeeded();
 testFirstSeenDropWithoutSeed();
 testPollBatchCollectsEvents();
+testActBossLv70Drop();
 console.log("detector tests passed");

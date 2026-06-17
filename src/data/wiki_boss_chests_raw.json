@@ -588,6 +588,19 @@
     "stages": []
   },
   {
+    "key": "930701",
+    "name": "Act Boss Box Lv70",
+    "level": 70,
+    "level_label": 70,
+    "stages": [
+      {
+        "act": 3,
+        "stage": 10,
+        "difficulty": "Hell"
+      }
+    ]
+  },
+  {
     "key": "920751",
     "name": "Stage Boss Box Lv75",
     "level": 75,

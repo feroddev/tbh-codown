@@ -1,10 +1,5 @@
 [
   {
-    "key": "920001",
-    "label": "Stage Boss Box 1",
-    "level": 1
-  },
-  {
     "key": "930101",
     "label": "Act Boss Box 1",
     "level": 1
@@ -35,19 +30,9 @@
     "level": 20
   },
   {
-    "key": "920251",
-    "label": "Stage Boss Box Lv25",
-    "level": 25
-  },
-  {
     "key": "920301",
     "label": "Stage Boss Box Lv30",
     "level": 30
-  },
-  {
-    "key": "920351",
-    "label": "Stage Boss Box Lv35",
-    "level": 35
   },
   {
     "key": "920401",
@@ -60,11 +45,6 @@
     "level": 40
   },
   {
-    "key": "920451",
-    "label": "Stage Boss Box Lv45",
-    "level": 45
-  },
-  {
     "key": "920501",
     "label": "Stage Boss Box Lv50",
     "level": 50
@@ -73,16 +53,6 @@
     "key": "930501",
     "label": "Act Boss Box Lv50",
     "level": 50
-  },
-  {
-    "key": "920551",
-    "label": "Stage Boss Box Lv55",
-    "level": 55
-  },
-  {
-    "key": "920601",
-    "label": "Stage Boss Box Lv60",
-    "level": 60
   },
   {
     "key": "920651",
@@ -95,14 +65,9 @@
     "level": 65
   },
   {
-    "key": "920701",
-    "label": "Stage Boss Box Lv70",
+    "key": "930701",
+    "label": "Act Boss Box Lv70",
     "level": 70
-  },
-  {
-    "key": "920751",
-    "label": "Stage Boss Box Lv75",
-    "level": 75
   },
   {
     "key": "920801",
@@ -110,19 +75,9 @@
     "level": 80
   },
   {
-    "key": "920851",
-    "label": "Stage Boss Box Lv85",
-    "level": 85
-  },
-  {
     "key": "930851",
     "label": "Act Boss Box Lv85",
     "level": 85
-  },
-  {
-    "key": "920901",
-    "label": "Stage Boss Box Lv90",
-    "level": 90
   },
   {
     "key": "930901",

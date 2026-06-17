@@ -11,6 +11,7 @@ from src.data.stage_codec import Difficulty, encode_stage_key
 ROOT = Path(__file__).resolve().parents[1]
 WIKI_RAW = ROOT / "src/data/wiki_boss_chests_raw.json"
 STAGES_JSON = ROOT / "src/data/stages.json"
+WEB_STAGES_JSON = ROOT / "web-monitor/data/stages.json"
 CHESTS_JSON = ROOT / "src/data/boss_chests.json"
 
 DIFF_ORDER = ["Normal", "Nightmare", "Hell", "Torment"]
@@ -81,6 +82,8 @@ def build_boss_chest_catalog(wiki_raw: list[dict]) -> list[dict]:
     catalog: list[dict] = []
     seen: set[str] = set()
     for chest in wiki_raw:
+        if not chest.get("stages"):
+            continue
         if chest["key"] in seen:
             continue
         seen.add(chest["key"])
@@ -112,13 +115,20 @@ def main() -> None:
         entry["boss_chest_level"] = chest["boss_chest_level"]
         entry["boss_chest_name"] = chest["boss_chest_name"]
 
-    STAGES_JSON.write_text(json.dumps(stages, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    stages_payload = json.dumps(stages, indent=2, ensure_ascii=False) + "\n"
+    STAGES_JSON.write_text(stages_payload, encoding="utf-8")
+    WEB_STAGES_JSON.write_text(stages_payload, encoding="utf-8")
     CHESTS_JSON.write_text(
         json.dumps(build_boss_chest_catalog(wiki_raw), indent=2, ensure_ascii=False) + "\n",
         encoding="utf-8",
     )
+    WEB_CHESTS_JSON = ROOT / "web-monitor/data/boss_chests.json"
+    WEB_CHESTS_JSON.write_text(
+        json.dumps(build_boss_chest_catalog(wiki_raw), indent=2, ensure_ascii=False) + "\n",
+        encoding="utf-8",
+    )
 
-    print(f"Updated {STAGES_JSON.name} ({len(stages)} stages)")
+    print(f"Updated {STAGES_JSON.name} and {WEB_STAGES_JSON.name} ({len(stages)} stages)")
     print(f"Unmapped: {len(unmapped)}")
     if unmapped:
         print("  ", ", ".join(unmapped[:20]))

@@ -10,6 +10,7 @@ from src.domain.rotation_engine import MapConfig
 from src.ui.i18n import Language, format_chest_level_label
 
 CHESTS_JSON = Path(__file__).with_name("boss_chests.json")
+COMMON_CHESTS_JSON = Path(__file__).with_name("common_chests.json")
 
 
 @dataclass(frozen=True)
@@ -18,6 +19,19 @@ class BossChestDefinition:
     label: str
     level: int
     obtainable: bool = True
+
+
+@lru_cache(maxsize=1)
+def load_common_chest_catalog() -> tuple[BossChestDefinition, ...]:
+    raw = json.loads(COMMON_CHESTS_JSON.read_text(encoding="utf-8"))
+    return tuple(
+        BossChestDefinition(
+            key=str(entry["key"]),
+            label=str(entry["label"]),
+            level=int(entry["level"]),
+        )
+        for entry in raw
+    )
 
 
 @lru_cache(maxsize=1)
@@ -41,19 +55,12 @@ BOSS_CHEST_CATALOG: list[BossChestDefinition] = []  # populated on import below
 
 
 def _init_catalog() -> None:
-    global BOSS_CHEST_CATALOG
+    global BOSS_CHEST_CATALOG, NORMAL_CHEST_CATALOG
     BOSS_CHEST_CATALOG = list(load_boss_chest_catalog())
+    NORMAL_CHEST_CATALOG = list(load_common_chest_catalog())
 
 
-NORMAL_CHEST_CATALOG: list[BossChestDefinition] = [
-    BossChestDefinition("910301", "Normal Monster Box Lv1", 1),
-    BossChestDefinition("910351", "Normal Monster Box Lv2", 2),
-    BossChestDefinition("920301", "Normal Monster Box Lv1", 1),
-    BossChestDefinition("920351", "Normal Monster Box Lv2", 2),
-    BossChestDefinition("920371", "Normal Monster Box Lv3", 3),
-    BossChestDefinition("920381", "Normal Monster Box Lv4", 4),
-    BossChestDefinition("920391", "Normal Monster Box Lv5", 5),
-]
+NORMAL_CHEST_CATALOG: list[BossChestDefinition] = []
 
 RECOMMENDED_FARM_PRESET: dict[int, dict[str, object]] = {
     4: {
@@ -151,10 +158,7 @@ def catalog_label_for_key(key: str) -> str:
 
 
 def normal_brown_item_keys() -> frozenset[str]:
-    boss_keys = {item.key for item in load_boss_chest_catalog()}
-    return frozenset(
-        item.key for item in NORMAL_CHEST_CATALOG if item.key not in boss_keys
-    )
+    return frozenset(item.key for item in load_common_chest_catalog())
 
 
 def common_chest_key_for_boss_key(boss_key: str) -> str | None:
@@ -173,7 +177,7 @@ def common_chest_key_for_level(level: int) -> str | None:
 def common_chest_level_for_key(item_key: str) -> int | None:
     if item_key == "normal_box_data":
         return None
-    for item in NORMAL_CHEST_CATALOG:
+    for item in load_common_chest_catalog():
         if item.key == item_key:
             return item.level
     if item_key.startswith("910") and len(item_key) >= 6:

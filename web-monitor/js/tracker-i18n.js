@@ -235,6 +235,13 @@ const TRACKER_KEYS = {
     chestLevelLabel: "Bau Lv {level}",
     alertOpenFileFailed: "Nao foi possivel abrir o arquivo. Tente novamente.",
     alertCatalogLoadFailed: "Erro ao carregar catalogo de baus.",
+    alertSavedFileNotFound:
+      "Nao foi possivel encontrar o Player.log salvo. Selecione o arquivo novamente.",
+    setupReconnectButton: "Reconectar ao {fileName}",
+    setupConnectReconnecting: "Reconectando...",
+    setupPickOtherFile: "Escolher outro arquivo",
+    setupSavedFileMissing:
+      "O arquivo salvo nao foi encontrado. Selecione o Player.log novamente.",
   },
   en: {
     pageTitle: "TBH Live Tracker",
@@ -313,6 +320,13 @@ const TRACKER_KEYS = {
     chestLevelLabel: "Chest Lv {level}",
     alertOpenFileFailed: "Could not open the file. Please try again.",
     alertCatalogLoadFailed: "Error loading chest catalog.",
+    alertSavedFileNotFound:
+      "Could not find the saved Player.log. Please select the file again.",
+    setupReconnectButton: "Reconnect to {fileName}",
+    setupConnectReconnecting: "Reconnecting...",
+    setupPickOtherFile: "Choose another file",
+    setupSavedFileMissing:
+      "The saved file could not be found. Please select Player.log again.",
   },
   es: {
     pageTitle: "TBH Live Tracker",
@@ -391,6 +405,13 @@ const TRACKER_KEYS = {
     chestLevelLabel: "Cofre Lv {level}",
     alertOpenFileFailed: "No se pudo abrir el archivo. Intenta de nuevo.",
     alertCatalogLoadFailed: "Error al cargar el catalogo de cofres.",
+    alertSavedFileNotFound:
+      "No se encontro el Player.log guardado. Selecciona el archivo de nuevo.",
+    setupReconnectButton: "Reconectar a {fileName}",
+    setupConnectReconnecting: "Reconectando...",
+    setupPickOtherFile: "Elegir otro archivo",
+    setupSavedFileMissing:
+      "No se encontro el archivo guardado. Selecciona Player.log de nuevo.",
   },
   fr: {
     pageTitle: "TBH Live Tracker",
@@ -469,6 +490,13 @@ const TRACKER_KEYS = {
     chestLevelLabel: "Coffre Lv {level}",
     alertOpenFileFailed: "Impossible d'ouvrir le fichier. Reessayez.",
     alertCatalogLoadFailed: "Erreur lors du chargement du catalogue de coffres.",
+    alertSavedFileNotFound:
+      "Impossible de trouver le Player.log enregistre. Selectionnez le fichier a nouveau.",
+    setupReconnectButton: "Reconnecter a {fileName}",
+    setupConnectReconnecting: "Reconnexion...",
+    setupPickOtherFile: "Choisir un autre fichier",
+    setupSavedFileMissing:
+      "Le fichier enregistre est introuvable. Selectionnez Player.log a nouveau.",
   },
   zh: {
     pageTitle: "TBH Live Tracker",
@@ -541,6 +569,11 @@ const TRACKER_KEYS = {
     chestLevelLabel: "宝箱 Lv {level}",
     alertOpenFileFailed: "无法打开文件。请重试。",
     alertCatalogLoadFailed: "加载宝箱目录时出错。",
+    alertSavedFileNotFound: "找不到已保存的 Player.log。请重新选择文件。",
+    setupReconnectButton: "重新连接到 {fileName}",
+    setupConnectReconnecting: "正在重新连接...",
+    setupPickOtherFile: "选择其他文件",
+    setupSavedFileMissing: "找不到已保存的文件。请重新选择 Player.log。",
   },
   ja: {
     pageTitle: "TBH Live Tracker",
@@ -619,6 +652,13 @@ const TRACKER_KEYS = {
     chestLevelLabel: "宝箱 Lv {level}",
     alertOpenFileFailed: "ファイルを開けませんでした。もう一度お試しください。",
     alertCatalogLoadFailed: "宝箱カタログの読み込みエラー。",
+    alertSavedFileNotFound:
+      "保存された Player.log が見つかりません。ファイルを再度選択してください。",
+    setupReconnectButton: "{fileName} に再接続",
+    setupConnectReconnecting: "再接続中...",
+    setupPickOtherFile: "別のファイルを選択",
+    setupSavedFileMissing:
+      "保存されたファイルが見つかりません。Player.log を再度選択してください。",
   },
 };
 

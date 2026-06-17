@@ -160,6 +160,14 @@
             <strong class="text-amber-50">Edge</strong>.
           </div>
 
+          <div
+            id="setupSavedFileMissingNotice"
+            class="tbh-card tbh-card-warning mt-6 hidden px-4 py-3 text-left text-sm"
+            data-i18n="setupSavedFileMissing"
+          >
+            O arquivo salvo nao foi encontrado. Selecione o Player.log novamente.
+          </div>
+
           <ol class="mt-8 space-y-5 text-left">
             <li class="flex gap-4">
               <span class="tbh-step-number">1</span>
@@ -245,11 +253,18 @@
             <button
               id="setupConnectButton"
               type="button"
-              data-action="connect"
               class="tbh-btn tbh-btn-primary tbh-btn-lg w-full max-w-sm"
               data-i18n="setupConnectButton"
             >
               Selecionar Player.log
+            </button>
+            <button
+              id="setupPickOtherButton"
+              type="button"
+              class="hidden text-sm text-[#9CA3AF] underline decoration-[rgba(156,163,175,0.4)] underline-offset-2 transition hover:text-[#E5E7EB]"
+              data-i18n="setupPickOtherFile"
+            >
+              Escolher outro arquivo
             </button>
             <p
               class="text-center text-xs text-[#9CA3AF]"
@@ -698,6 +713,13 @@
         pickPlayerLogFile,
       } from "./js/log-poller.js";
       import {
+        savePlayerLogHandle,
+        loadPlayerLogHandle,
+        clearPlayerLogHandle,
+        inspectPlayerLogHandle,
+        grantReadAccess,
+      } from "./js/file-handle-store.js";
+      import {
         createTrackerI18n,
         LANGUAGE_STORAGE_KEY,
       } from "./js/tracker-i18n.js";
@@ -745,6 +767,12 @@
         "setupBrowserWarning",
       );
       const setupConnectButton = document.getElementById("setupConnectButton");
+      const setupPickOtherButton = document.getElementById(
+        "setupPickOtherButton",
+      );
+      const setupSavedFileMissingNotice = document.getElementById(
+        "setupSavedFileMissingNotice",
+      );
       const setupLogFolderPathInput =
         document.getElementById("setupLogFolderPath");
       const setupCopyPathButton = document.getElementById(
@@ -806,6 +834,7 @@
           setConnectedUi(true);
         } else {
           setMonitorStatus(false);
+          updateSetupConnectUi();
         }
         updateEventsEmptyMessage();
         renderEvents();
@@ -814,6 +843,104 @@
 
       let alertAudio = null;
       let newEventsSinceStart = 0;
+      /** @type {FileSystemFileHandle | null} */
+      let pendingReconnectHandle = null;
+
+      function updateSetupConnectUi() {
+        if (pendingReconnectHandle) {
+          setupConnectButton.textContent = t("setupReconnectButton", {
+            fileName: pendingReconnectHandle.name,
+          });
+          setupPickOtherButton.classList.remove("hidden");
+          return;
+        }
+
+        setupConnectButton.textContent = t("setupConnectButton");
+        setupPickOtherButton.classList.add("hidden");
+      }
+
+      function showSavedFileMissingNotice(show) {
+        setupSavedFileMissingNotice.classList.toggle("hidden", !show);
+      }
+
+      async function startMonitoringWithHandle(handle) {
+        await poller.connect(handle);
+        await savePlayerLogHandle(handle);
+        pendingReconnectHandle = null;
+        showSavedFileMissingNotice(false);
+        applyWatchKeysToPoller();
+        poller.setFlatCountDropGate((itemKey) => {
+          const chestType = classifyFromKey(itemKey);
+          return chestType
+            ? shouldAcceptFlatCountDrop(itemKey, chestType)
+            : false;
+        });
+        poller.start();
+        startSession();
+        showDashboard();
+        setConnectedUi(true);
+        updateSetupConnectUi();
+      }
+
+      async function resolveSavedHandleForConnect(forcePicker) {
+        if (forcePicker || !pendingReconnectHandle) {
+          return pickPlayerLogFile();
+        }
+
+        const granted = await grantReadAccess(pendingReconnectHandle);
+        if (granted) {
+          return granted;
+        }
+
+        await clearPlayerLogHandle();
+        pendingReconnectHandle = null;
+        showSavedFileMissingNotice(true);
+        updateSetupConnectUi();
+        alert(t("alertSavedFileNotFound"));
+        return null;
+      }
+
+      async function tryAutoReconnect() {
+        if (!isFileSystemAccessSupported()) {
+          return false;
+        }
+
+        let handle;
+        try {
+          handle = await loadPlayerLogHandle();
+        } catch (error) {
+          console.error(error);
+          return false;
+        }
+
+        if (!handle) {
+          return false;
+        }
+
+        const inspection = await inspectPlayerLogHandle(handle);
+        if (inspection.status === "ok") {
+          try {
+            await startMonitoringWithHandle(inspection.handle);
+            return true;
+          } catch (error) {
+            console.error(error);
+            await clearPlayerLogHandle();
+            return false;
+          }
+        }
+
+        if (inspection.status === "needs_permission") {
+          pendingReconnectHandle = inspection.handle;
+          updateSetupConnectUi();
+          return false;
+        }
+
+        await clearPlayerLogHandle();
+        pendingReconnectHandle = null;
+        showSavedFileMissingNotice(true);
+        updateSetupConnectUi();
+        return false;
+      }
 
       function getSharedState() {
         try {
@@ -887,7 +1014,20 @@
         const state = getSharedState();
         const now = Date.now();
 
-        if (chestType === "boss" || chestType === "actBoss") {
+        if (chestType === "actBoss") {
+          const level = bossChestLevelForKey(itemKey);
+          if (level === null) return false;
+          const lastDrop = lastDropByLevel.get(`act:${itemKey}`);
+          if (lastDrop === undefined) {
+            return (
+              monitorStartedAt !== null &&
+              now - monitorStartedAt >= MONITOR_STARTUP_GRACE_MS
+            );
+          }
+          return true;
+        }
+
+        if (chestType === "boss") {
           const level = bossChestLevelForKey(itemKey);
           if (level === null) return false;
           if (isBossTimerCounting(level)) return false;
@@ -1365,7 +1505,7 @@
         const state = getTrackerState();
         const now = Date.now();
 
-        if (event.chestType === "boss" || event.chestType === "actBoss") {
+        if (event.chestType === "boss") {
           const level = bossChestLevelForKey(event.itemKey);
           if (level === null) return;
           const timer = ensureTimerRowForLevel(level, state);
@@ -1406,10 +1546,12 @@
           let expiresAt = null;
           let cooldownMs = 0;
 
-          if (event.chestType === "boss" || event.chestType === "actBoss") {
+          if (event.chestType === "boss") {
             cooldownMs = BOSS_COOLDOWN_MS;
             expiresAt = now + cooldownMs;
             startTimerForDrop(event);
+          } else if (event.chestType === "actBoss") {
+            lastDropByLevel.set(`act:${event.itemKey}`, now);
           } else if (event.chestType === "common") {
             cooldownMs = COMMON_COOLDOWN_MS;
             expiresAt = now + cooldownMs;
@@ -1601,30 +1743,24 @@
         showSetupScreen();
       }
 
-      async function connectPlayerLog() {
+      async function connectPlayerLog({ forcePicker = false } = {}) {
         setupConnectButton.disabled = true;
-        setupConnectButton.textContent = t("setupConnectOpening");
+        setupPickOtherButton.disabled = true;
+        const openingLabel = pendingReconnectHandle && !forcePicker
+          ? t("setupConnectReconnecting")
+          : t("setupConnectOpening");
+        setupConnectButton.textContent = openingLabel;
         try {
           if (!isFileSystemAccessSupported()) {
             setupBrowserWarning.classList.remove("hidden");
             browserWarning.classList.remove("hidden");
             return;
           }
-          const handle = await pickPlayerLogFile();
+
+          const handle = await resolveSavedHandleForConnect(forcePicker);
           if (!handle) return;
 
-          await poller.connect(handle);
-          applyWatchKeysToPoller();
-          poller.setFlatCountDropGate((itemKey) => {
-            const chestType = classifyFromKey(itemKey);
-            return chestType
-              ? shouldAcceptFlatCountDrop(itemKey, chestType)
-              : false;
-          });
-          poller.start();
-          startSession();
-          showDashboard();
-          setConnectedUi(true);
+          await startMonitoringWithHandle(handle);
         } catch (error) {
           if (error?.name !== "AbortError") {
             console.error(error);
@@ -1632,12 +1768,17 @@
           }
         } finally {
           setupConnectButton.disabled = false;
-          setupConnectButton.textContent = t("setupConnectButton");
+          setupPickOtherButton.disabled = false;
+          updateSetupConnectUi();
         }
       }
 
       setupConnectButton.addEventListener("click", () => {
         connectPlayerLog();
+      });
+
+      setupPickOtherButton.addEventListener("click", () => {
+        connectPlayerLog({ forcePicker: true });
       });
 
       stopButton.addEventListener("click", () => {
@@ -1699,7 +1840,12 @@
         ensureTrackerTimers(getTrackerState());
         refreshDynamicTranslations();
         renderTimers();
-        showSetupScreen();
+        updateSetupConnectUi();
+
+        const reconnected = await tryAutoReconnect();
+        if (!reconnected) {
+          showSetupScreen();
+        }
 
         window.addEventListener("storage", (event) => {
           if (event.key === LANGUAGE_STORAGE_KEY && event.newValue) {

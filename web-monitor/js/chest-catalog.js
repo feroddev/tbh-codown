@@ -4,29 +4,29 @@
 let bossCatalog = [];
 
 /** @type {BossChestDefinition[]} */
-const NORMAL_CHEST_CATALOG = [
-  { key: "910301", label: "Normal Monster Box Lv1", level: 1 },
-  { key: "910351", label: "Normal Monster Box Lv2", level: 2 },
-  { key: "920301", label: "Normal Monster Box Lv1", level: 1 },
-  { key: "920351", label: "Normal Monster Box Lv2", level: 2 },
-  { key: "920371", label: "Normal Monster Box Lv3", level: 3 },
-  { key: "920381", label: "Normal Monster Box Lv4", level: 4 },
-  { key: "920391", label: "Normal Monster Box Lv5", level: 5 },
-];
+let commonCatalog = [];
 
 const ACT_BOSS_KEY_PREFIX = "930";
 
 export async function loadChestCatalog() {
-  const response = await fetch("./data/boss_chests.json");
-  if (!response.ok) {
+  const [bossResponse, commonResponse] = await Promise.all([
+    fetch("./data/boss_chests.json"),
+    fetch("./data/common_chests.json"),
+  ]);
+  if (!bossResponse.ok) {
     throw new Error("Failed to load boss_chests.json");
   }
-  bossCatalog = await response.json();
+  if (!commonResponse.ok) {
+    throw new Error("Failed to load common_chests.json");
+  }
+  bossCatalog = await bossResponse.json();
+  commonCatalog = await commonResponse.json();
   return bossCatalog;
 }
 
-export function loadChestCatalogFromData(data) {
+export function loadChestCatalogFromData(data, commonData = []) {
   bossCatalog = data;
+  commonCatalog = commonData;
   return bossCatalog;
 }
 
@@ -34,8 +34,16 @@ export function getBossCatalog() {
   return bossCatalog;
 }
 
+export function getCommonCatalog() {
+  return commonCatalog;
+}
+
 export function stageBossItemKeys() {
-  return new Set(bossCatalog.map((item) => item.key));
+  return new Set(
+    bossCatalog
+      .filter((item) => !isActBossItemKey(item.key))
+      .map((item) => item.key),
+  );
 }
 
 export function isActBossItemKey(itemKey) {
@@ -43,16 +51,11 @@ export function isActBossItemKey(itemKey) {
 }
 
 export function isStageBossItemKey(itemKey) {
-  return stageBossItemKeys().has(itemKey) && !isActBossItemKey(itemKey);
+  return stageBossItemKeys().has(itemKey);
 }
 
 export function normalBrownItemKeys() {
-  const bossKeys = stageBossItemKeys();
-  return new Set(
-    NORMAL_CHEST_CATALOG.filter((item) => !bossKeys.has(item.key)).map(
-      (item) => item.key,
-    ),
-  );
+  return new Set(commonCatalog.map((item) => item.key));
 }
 
 export function isCommonChestItemKey(itemKey) {
@@ -84,7 +87,7 @@ export function bossChestLevelForKey(itemKey) {
 }
 
 export function catalogLabelForKey(itemKey) {
-  for (const item of [...bossCatalog, ...NORMAL_CHEST_CATALOG]) {
+  for (const item of [...bossCatalog, ...commonCatalog]) {
     if (item.key === itemKey) {
       return item.label;
     }
@@ -93,7 +96,7 @@ export function catalogLabelForKey(itemKey) {
 }
 
 export function commonChestLevelForKey(itemKey) {
-  for (const item of NORMAL_CHEST_CATALOG) {
+  for (const item of commonCatalog) {
     if (item.key === itemKey) {
       return item.level;
     }
@@ -116,11 +119,5 @@ export function buildWebWatchBossKeys() {
 }
 
 export function buildWebWatchCommonKeys() {
-  const keys = new Set(NORMAL_CHEST_CATALOG.map((item) => item.key));
-  for (const item of bossCatalog) {
-    if (item.key.startsWith("92") && item.key.length >= 6) {
-      keys.add(`91${item.key.slice(2)}`);
-    }
-  }
-  return keys;
+  return new Set(commonCatalog.map((item) => item.key));
 }
