@@ -95,21 +95,26 @@ function testSecondChestWithCountTwo() {
   const result = detector.processContent(
     `${baseline}\nGetBoxCount Success Count : 2 // ItemKey : 920501`,
   );
-  assert(result.events.length === 1, "expected second chest when count rises to 2");
+  assert(result.events.length === 1, "expected second chest on new log line");
   assert(result.events[0].itemKey === "920501", "unexpected item key");
   assert(result.events[0].count === 2, "expected count 2 on event");
 }
 
-function testFlatResyncLineIsIgnored() {
+function testAutoOpenCommonDropRepeatsCountOne() {
   const detector = new LineDropDetector({ considerCommonChest: true });
-  const baseline = "GetBoxCount Success Count : 1 // ItemKey : 920501";
+  const baseline = "GetBoxCount Success Count : 1 // ItemKey : 910651";
   detector.seedFromContent(baseline);
   detector.processContent(baseline);
 
   const result = detector.processContent(
-    `${baseline}\nGetBoxCount Success Count : 1 // ItemKey : 920501`,
+    `${baseline}\nGetBoxCount Success Count : 1 // ItemKey : 910651`,
   );
-  assert(result.events.length === 0, "flat count line must not emit another drop");
+  assert(
+    result.events.length === 1,
+    "expected common drop when a new line still reports count 1",
+  );
+  assert(result.events[0].itemKey === "910651", "unexpected item key");
+  assert(result.events[0].chestType === "common", "expected common chest type");
 }
 
 testSeedIgnoresExistingLines();
@@ -117,5 +122,5 @@ testInventoryBurstAtConnectIsIgnored();
 testLogTruncationReseedsSignatures();
 testLineSignatureFormat();
 testSecondChestWithCountTwo();
-testFlatResyncLineIsIgnored();
+testAutoOpenCommonDropRepeatsCountOne();
 console.log("line-drop tests passed");

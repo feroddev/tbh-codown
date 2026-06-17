@@ -1,8 +1,8 @@
 import { classifyChestItemKey } from "./chest-catalog.js";
 
 /**
- * Any GetBoxCount line is a candidate; new physical lines are deduplicated by
- * line number + item key, and only count increases are treated as drops.
+ * Each new physical GetBoxCount line is a drop candidate. Deduplication uses
+ * line number + item key only (same approach as the community tracker).
  */
 export const DROP_LINE_PATTERN =
   /GetBoxCount Success Count\s*:\s*(\d+)\s*\/\/\s*ItemKey\s*:\s*(\d+)/i;
@@ -55,24 +55,6 @@ export function collectLineSignatures(content) {
   return signatures;
 }
 
-/**
- * @param {string} content
- * @returns {Record<string, number>}
- */
-export function collectLastCounts(content) {
-  const lines = content.split(/\r?\n/);
-  /** @type {Record<string, number>} */
-  const lastCounts = {};
-  for (const line of lines) {
-    const parsed = parseDropLine(line);
-    if (!parsed) {
-      continue;
-    }
-    lastCounts[parsed.itemKey] = parsed.count;
-  }
-  return lastCounts;
-}
-
 export class LineDropDetector {
   /**
    * @param {{ considerCommonChest?: boolean }} options
@@ -81,8 +63,6 @@ export class LineDropDetector {
     this.considerCommonChest = considerCommonChest;
     /** @type {Set<string>} */
     this.seenSignatures = new Set();
-    /** @type {Record<string, number>} */
-    this.lastCounts = {};
     this.lastContentLength = 0;
   }
 
@@ -92,7 +72,6 @@ export class LineDropDetector {
 
   resetState() {
     this.seenSignatures = new Set();
-    this.lastCounts = {};
     this.lastContentLength = 0;
   }
 
@@ -102,7 +81,6 @@ export class LineDropDetector {
    */
   seedFromContent(content) {
     this.seenSignatures = collectLineSignatures(content);
-    this.lastCounts = collectLastCounts(content);
     this.lastContentLength = content.length;
   }
 
@@ -116,7 +94,6 @@ export class LineDropDetector {
       this.lastContentLength > 0 && content.length < this.lastContentLength;
     if (truncated) {
       this.seenSignatures = collectLineSignatures(content);
-      this.lastCounts = collectLastCounts(content);
     }
 
     const lines = content.split(/\r?\n/);
@@ -137,12 +114,6 @@ export class LineDropDetector {
       }
 
       this.seenSignatures.add(signature);
-
-      const previousCount = this.lastCounts[itemKey];
-      this.lastCounts[itemKey] = count;
-      if (previousCount !== undefined && count <= previousCount) {
-        continue;
-      }
 
       const chestType = classifyChestItemKey(itemKey, {
         considerCommonChest: this.considerCommonChest,

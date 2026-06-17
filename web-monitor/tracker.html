@@ -1248,6 +1248,7 @@
         const state = getTrackerState();
         ensureTrackerTimers(state);
         const now = Date.now();
+        processTimerExpiries(state, now);
         const timers = [...state.timers].sort((a, b) => a.level - b.level);
 
         const activeCount = timers.filter((timer) => {
@@ -1383,15 +1384,73 @@
         }, 1000);
       }
 
+      function shouldPlayChestSound(chestType) {
+        if (chestType === "boss" && !bossSoundToggle.checked) return false;
+        if (chestType === "common" && !commonSoundToggle.checked) return false;
+        if (chestType === "actBoss" && !bossSoundToggle.checked) return false;
+        return true;
+      }
+
       function playDropSound(chestType) {
         const shared = getSharedState();
         const volume = (shared.alertVolume ?? Number(volumeInput.value)) / 100;
         if (volume <= 0) return;
-        if (chestType === "boss" && !bossSoundToggle.checked) return;
-        if (chestType === "common" && !commonSoundToggle.checked) return;
-        if (chestType === "actBoss" && !bossSoundToggle.checked) return;
+        if (!shouldPlayChestSound(chestType)) return;
 
         playAlertSound(volume);
+      }
+
+      function playExpiredSound(kind) {
+        const shared = getSharedState();
+        const volume = (shared.alertVolume ?? Number(volumeInput.value)) / 100;
+        if (volume <= 0) return;
+        if (!shouldPlayChestSound(kind)) return;
+
+        playAlertSound(volume);
+      }
+
+      function processTimerExpiry(timer, kind, now) {
+        const isCommon = kind === "common";
+        const alreadyExpired = isCommon ? timer.commonExpired : timer.expired;
+        if (alreadyExpired) return false;
+
+        const expiresAt = isCommon ? timer.commonExpiresAt : timer.expiresAt;
+        if (!expiresAt) return false;
+
+        const clearSeconds = isCommon ? 0 : effectiveClearSeconds(timer);
+        const realRemainingMs = expiresAt - now;
+        const displayRemainingMs = realRemainingMs - clearSeconds * 1000;
+
+        if (displayRemainingMs > 0) return false;
+
+        if (isCommon) {
+          timer.commonExpired = true;
+        } else {
+          timer.expired = true;
+        }
+
+        playExpiredSound(kind);
+
+        if (realRemainingMs <= 0) {
+          if (isCommon) {
+            timer.commonExpiresAt = null;
+          } else {
+            timer.expiresAt = null;
+          }
+        }
+
+        return true;
+      }
+
+      function processTimerExpiries(state, now) {
+        let changed = false;
+        for (const timer of state.timers) {
+          if (processTimerExpiry(timer, "boss", now)) changed = true;
+          if (processTimerExpiry(timer, "common", now)) changed = true;
+        }
+        if (changed) {
+          saveTrackerState(state);
+        }
       }
 
       function playTestAlert() {
@@ -1418,7 +1477,6 @@
           const level = bossChestLevelForKey(event.itemKey);
           if (level === null) return;
           const timer = ensureTimerRowForLevel(level, state);
-          if (timer.expiresAt && timer.expiresAt > now) return;
           timer.expiresAt = now + BOSS_COOLDOWN_MS;
           timer.expired = false;
           lastDropByLevel.set(level, now);
@@ -1431,7 +1489,6 @@
           const level = commonChestLevelForKey(event.itemKey);
           if (level === null) return;
           const timer = ensureTimerRowForLevel(level, state);
-          if (timer.commonExpiresAt && timer.commonExpiresAt > now) return;
           timer.commonExpiresAt = now + COMMON_COOLDOWN_MS;
           timer.commonExpired = false;
           lastDropByLevel.set(-Math.abs(level), now);
