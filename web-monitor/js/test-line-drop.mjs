@@ -86,8 +86,36 @@ function testLineSignatureFormat() {
   assert(signatures.has("2:920501"), "expected 1-based line signature");
 }
 
+function testSecondChestWithCountTwo() {
+  const detector = new LineDropDetector({ considerCommonChest: true });
+  const baseline = "GetBoxCount Success Count : 1 // ItemKey : 920501";
+  detector.seedFromContent(baseline);
+  detector.processContent(baseline);
+
+  const result = detector.processContent(
+    `${baseline}\nGetBoxCount Success Count : 2 // ItemKey : 920501`,
+  );
+  assert(result.events.length === 1, "expected second chest when count rises to 2");
+  assert(result.events[0].itemKey === "920501", "unexpected item key");
+  assert(result.events[0].count === 2, "expected count 2 on event");
+}
+
+function testFlatResyncLineIsIgnored() {
+  const detector = new LineDropDetector({ considerCommonChest: true });
+  const baseline = "GetBoxCount Success Count : 1 // ItemKey : 920501";
+  detector.seedFromContent(baseline);
+  detector.processContent(baseline);
+
+  const result = detector.processContent(
+    `${baseline}\nGetBoxCount Success Count : 1 // ItemKey : 920501`,
+  );
+  assert(result.events.length === 0, "flat count line must not emit another drop");
+}
+
 testSeedIgnoresExistingLines();
 testInventoryBurstAtConnectIsIgnored();
 testLogTruncationReseedsSignatures();
 testLineSignatureFormat();
+testSecondChestWithCountTwo();
+testFlatResyncLineIsIgnored();
 console.log("line-drop tests passed");
