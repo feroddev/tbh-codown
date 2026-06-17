@@ -7,45 +7,77 @@
     <link rel="icon" href="./favicon.ico" sizes="any" />
     <link rel="icon" type="image/png" href="./tbh_monitor.png" />
     <link rel="apple-touch-icon" href="./tbh_monitor.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./css/tbh-design-system.css" />
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <style type="text/tailwindcss">
+      @theme {
+        --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+        --font-mono: "JetBrains Mono", ui-monospace, monospace;
+      }
+    </style>
   </head>
-  <body class="min-h-screen overflow-x-hidden bg-slate-950 text-slate-100">
-    <main
-      class="mx-auto flex w-full max-w-screen-2xl flex-col gap-6 px-4 py-6 sm:px-6 lg:px-8"
-    >
-      <section
-        class="rounded-xl border border-slate-800 bg-slate-900/80 p-5 shadow-lg shadow-slate-950/40"
-      >
-        <h1 id="pageTitle" class="text-2xl font-semibold tracking-tight">
-          TBH Web Chest Timer
-        </h1>
-        <p id="subtitleText" class="mt-2 break-words text-sm text-slate-300">
-          Clique em "Bau dropou" para iniciar o cronometro. Veja o guia de rota
-          na barra lateral.
-        </p>
-      </section>
+  <body class="tbh-app min-h-screen overflow-x-hidden antialiased">
+    <header class="tbh-header">
+      <div class="tbh-header-inner">
+        <a href="./index.html" class="tbh-brand">
+          <span class="tbh-brand-mark">
+            <img src="./tbh_monitor.png" alt="" width="22" height="22" />
+          </span>
+          <span class="min-w-0">
+            <span id="pageTitle" class="tbh-brand-title block">TBH Web Chest Timer</span>
+            <span id="subtitleText" class="tbh-brand-subtitle block">Timer manual de baus</span>
+          </span>
+        </a>
+        <div class="tbh-header-controls">
+          <nav class="tbh-nav" aria-label="Navegacao principal">
+            <a href="./index.html" class="tbh-nav-link" aria-current="page">Timer manual</a>
+            <a href="./tracker.html" class="tbh-nav-link">
+              Live Tracker
+              <span class="tbh-nav-badge">Auto</span>
+            </a>
+            <span class="tbh-nav-divider" aria-hidden="true"></span>
+            <label class="tbh-nav-lang">
+              <span id="languageLabel" class="sr-only">Idioma</span>
+              <select id="languageSelect" class="tbh-nav-lang-select" aria-labelledby="languageLabel">
+                <option value="pt-BR">PT · BR</option>
+                <option value="en">EN · US</option>
+                <option value="es">ES</option>
+                <option value="fr">FR</option>
+                <option value="zh">中文</option>
+                <option value="ja">日本語</option>
+              </select>
+            </label>
+          </nav>
+        </div>
+      </div>
+    </header>
 
-      <section
-        class="overflow-hidden rounded-xl border border-indigo-500/40 bg-gradient-to-br from-indigo-950/60 via-slate-900/90 to-slate-900/80 p-5 shadow-lg shadow-indigo-950/30 sm:p-6"
-      >
+    <main class="tbh-main">
+      <section class="tbh-card tbh-card-highlight tbh-card-body">
         <div
           class="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between"
         >
           <div class="min-w-0 flex-1">
             <span
               id="liveTrackerBadge"
-              class="inline-flex items-center rounded-full border border-indigo-400/40 bg-indigo-500/15 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-indigo-200"
+              class="tbh-badge tbh-badge-purple uppercase tracking-wider text-[10px]"
               >Recomendado</span
             >
             <h2
               id="liveTrackerTitle"
-              class="mt-2 text-lg font-semibold tracking-tight text-indigo-50 sm:text-xl"
+              class="tbh-section-title mt-2 sm:text-lg"
             >
               Tracker automatico — sem instalar nada
             </h2>
             <p
               id="liveTrackerDescription"
-              class="mt-2 max-w-2xl text-sm leading-relaxed text-slate-300"
+              class="tbh-section-desc max-w-2xl"
             >
               Conecte o Player.log no navegador. Drops sao detectados
               automaticamente e os timers iniciam sozinhos — a mesma funcao do
@@ -53,7 +85,7 @@
             </p>
             <p
               id="liveTrackerSunsetNote"
-              class="mt-3 rounded-md border border-amber-500/30 bg-amber-950/25 px-3 py-2 text-xs leading-relaxed text-amber-100/90"
+              class="tbh-card tbh-card-warning mt-3 px-3 py-2 text-xs leading-relaxed"
             >
               O TBH Monitor (desktop) sera descontinuado. Manteremos apenas a
               versao web, com foco no Live Tracker.
@@ -63,7 +95,7 @@
             <a
               id="liveTrackerCta"
               href="./tracker.html"
-              class="inline-flex items-center justify-center rounded-md bg-indigo-500 px-5 py-3 text-center text-sm font-semibold text-white shadow-lg shadow-indigo-500/25 transition hover:bg-indigo-400"
+              class="tbh-btn tbh-btn-primary tbh-btn-lg"
             >
               Abrir Live Tracker
             </a>
@@ -78,7 +110,7 @@
       </section>
 
       <div
-        class="flex flex-col gap-2 rounded-lg border border-amber-500/40 bg-amber-950/30 px-4 py-2.5 text-sm shadow-sm shadow-amber-950/25"
+        class="tbh-credit-bar flex-col gap-2 text-sm"
       >
         <p
           class="flex flex-wrap items-center justify-center gap-x-3 gap-y-1.5"
@@ -123,37 +155,37 @@
         >
           Send recommendations via Discord (@.neath).
         </p>
+        <p
+          id="footerWikiData"
+          class="text-center text-xs text-amber-200/75"
+        ></p>
       </div>
 
       <section class="grid min-w-0 gap-6 lg:grid-cols-3">
         <div
-          class="min-w-0 overflow-hidden rounded-xl border border-slate-800 bg-slate-900/80 p-5 pb-5 lg:col-span-2"
+          class="tbh-card tbh-card-body min-w-0 overflow-hidden lg:col-span-2"
         >
-          <div class="flex min-w-0 flex-wrap items-end gap-3">
-            <label class="text-sm text-slate-300">
-              <span id="languageLabel">Idioma</span>
-              <select
-                id="languageSelect"
-                class="mt-1 block w-56 rounded-md border border-slate-700 bg-slate-950 px-3 py-2.5 text-base text-slate-100 focus:border-indigo-500 focus:outline-none"
+          <div class="tbh-toolbar">
+            <div class="flex min-w-0 flex-col gap-1 self-center">
+              <p
+                id="fixedCooldownHint"
+                class="text-xs leading-snug text-[#9CA3AF]"
               >
-                <option value="pt-BR">Portugues (BR)</option>
-                <option value="en">English</option>
-                <option value="es">Espanol</option>
-                <option value="fr">Francais</option>
-                <option value="zh">中文</option>
-                <option value="ja">日本語</option>
-              </select>
-            </label>
+                Cooldown fixo: chefe 7 min · comum 5 min
+              </p>
+              <p
+                id="fixedCooldownNote"
+                class="max-w-md text-[11px] leading-snug text-slate-500"
+              >
+                Recomendamos 2 niveis de bau (max. 3 para tryhard). Os tempos serao
+                sincronizados com o servidor do jogo.
+              </p>
+            </div>
 
-            <p
-              id="fixedCooldownHint"
-              class="self-end text-xs leading-snug text-slate-500"
-            >
-              Cooldown fixo: chefe 7 min · comum 5 min
-            </p>
+            <span class="tbh-toolbar-divider" aria-hidden="true"></span>
 
-            <label class="min-w-48 text-sm text-slate-300">
-              <span id="alertVolumeLabel">Volume do alerta</span>
+            <label class="min-w-48">
+              <span id="alertVolumeLabel" class="tbh-field-label">Volume do alerta</span>
               <div class="mt-1 flex items-center gap-2">
                 <input
                   id="alertVolumeInput"
@@ -161,7 +193,7 @@
                   min="0"
                   max="100"
                   step="5"
-                  class="h-2 w-full cursor-pointer accent-indigo-500"
+                  class="tbh-range mt-1"
                 />
                 <span
                   id="alertVolumeValue"
@@ -174,7 +206,7 @@
             <button
               id="testAlertButton"
               type="button"
-              class="max-w-full rounded-md bg-slate-700 px-4 py-2 text-center text-sm font-medium text-slate-100 transition hover:bg-slate-600"
+              class="tbh-btn tbh-btn-secondary max-w-full"
             >
               Testar alerta
             </button>
@@ -182,14 +214,14 @@
             <button
               id="addTimerButton"
               type="button"
-              class="max-w-full rounded-md bg-indigo-500 px-4 py-2 text-center text-sm font-medium text-white transition hover:bg-indigo-400"
+              class="tbh-btn tbh-btn-primary max-w-full"
             >
               Adicionar bau
             </button>
             <button
               id="resetAllButton"
               type="button"
-              class="max-w-full rounded-md bg-slate-700 px-4 py-2 text-center text-sm font-medium text-slate-100 transition hover:bg-slate-600"
+              class="tbh-btn tbh-btn-secondary max-w-full"
             >
               Resetar todos
             </button>
@@ -208,7 +240,7 @@
         <div class="flex min-w-0 flex-col gap-6">
           <section
             id="tutorialSection"
-            class="min-w-0 overflow-hidden rounded-xl border border-emerald-500/40 bg-emerald-950/25 p-5 shadow-lg shadow-emerald-950/30"
+            class="tbh-card tbh-card-body min-w-0 overflow-hidden"
           >
             <details id="tutorialDetails" class="group">
               <summary
@@ -244,7 +276,7 @@
 
           <section
             id="farmRecommendationSection"
-            class="min-w-0 overflow-x-hidden rounded-xl border border-indigo-500/30 bg-slate-900/80 p-5"
+            class="tbh-card tbh-card-body min-w-0 overflow-hidden"
           >
             <details id="farmRecommendationDetails" class="group/farm">
               <summary
@@ -380,7 +412,7 @@
           </section>
 
           <section
-            class="min-w-0 overflow-hidden rounded-xl border border-slate-800 bg-slate-900/80 p-5"
+            class="tbh-card tbh-card-body min-w-0 overflow-hidden"
           >
             <p
               id="downloadSunsetNotice"
@@ -441,14 +473,14 @@
               <button
                 id="clearLogsButton"
                 type="button"
-                class="rounded-md bg-slate-700 px-3 py-1.5 text-xs font-medium text-slate-100 transition hover:bg-slate-600"
+                class="tbh-btn tbh-btn-secondary tbh-btn-sm"
               >
                 Limpar
               </button>
             </div>
             <div
               id="logsContainer"
-              class="mt-3 h-64 overflow-x-hidden overflow-y-auto break-words rounded-md border border-slate-800 bg-slate-950 p-3 font-mono text-xs text-slate-300"
+              class="tbh-log-panel mt-3"
             ></div>
           </section>
         </div>
@@ -460,7 +492,7 @@
       >
         <section
           id="releaseNotesSection"
-          class="min-w-0 overflow-hidden rounded-xl border border-sky-500/35 bg-sky-950/20 p-5 shadow-lg shadow-sky-950/20"
+          class="tbh-card tbh-card-body min-w-0 overflow-hidden"
         >
           <details id="releaseNotesDetails" class="group/notes">
             <summary
@@ -505,11 +537,11 @@
 
     <template id="timerRowTemplate">
       <article
-        class="flex min-w-0 overflow-hidden rounded-lg border border-slate-800 bg-slate-950/70"
+        class="tbh-card flex min-w-0 overflow-hidden rounded-xl transition-shadow"
       >
         <div
           data-role="drag-handle"
-          class="flex w-8 shrink-0 cursor-grab select-none items-center justify-center self-stretch border-r border-slate-800/80 bg-slate-900/30 text-lg leading-none text-slate-500/70 transition-colors hover:text-slate-300 active:cursor-grabbing"
+          class="flex w-8 shrink-0 cursor-grab select-none items-center justify-center self-stretch border-r border-[rgba(255,255,255,0.06)] bg-[#0d1220] text-lg leading-none text-[#9CA3AF] transition-colors hover:text-[#E5E7EB] active:cursor-grabbing"
           aria-label="Arrastar para reordenar"
         >
           ⠿
@@ -527,57 +559,55 @@
             >
               #1
             </p>
-            <label class="min-w-0 flex-1 text-[11px] text-slate-400">
-              <span data-role="label-level">Bau Lv</span>
+            <label class="min-w-0 flex-1 text-[11px] text-[#9CA3AF]">
+              <span data-role="label-level" class="tbh-field-label">Bau Lv</span>
               <select
                 data-role="level"
-                class="mt-0.5 block w-full rounded-md border border-slate-700 bg-slate-900 px-2 py-1.5 text-sm text-slate-100 focus:border-indigo-500 focus:outline-none"
+                class="tbh-select mt-0.5 text-sm"
               ></select>
             </label>
           </div>
 
-          <label class="col-start-1 row-start-2 min-w-0 text-[11px] text-slate-400">
-            <span data-role="label-map">Mapa</span>
+          <label class="col-start-1 row-start-2 min-w-0 text-[11px] text-[#9CA3AF]">
+            <span data-role="label-map" class="tbh-field-label">Mapa</span>
             <select
               data-role="map"
-              class="mt-0.5 block w-full rounded-md border border-slate-700 bg-slate-900 px-2 py-1.5 text-sm text-slate-100 focus:border-indigo-500 focus:outline-none"
+              class="tbh-select mt-0.5 text-sm"
             ></select>
           </label>
 
           <label
-            class="col-start-1 row-start-3 max-w-[8rem] text-[11px] text-slate-400"
+            class="col-start-1 row-start-3 max-w-[8rem] text-[11px] text-[#9CA3AF]"
           >
-            <span data-role="label-clear-time">Volta (s)</span>
+            <span data-role="label-clear-time" class="tbh-field-label">Volta (s)</span>
             <input
               data-role="clear-time"
               type="number"
               min="0"
               step="1"
               placeholder="opcional"
-              class="mt-0.5 block w-full rounded-md border border-slate-700 bg-slate-900 px-2 py-1.5 text-sm text-slate-100 placeholder:text-slate-600 focus:border-indigo-500 focus:outline-none"
+              class="tbh-input mt-0.5 text-sm"
             />
           </label>
 
           <div
-            class="col-start-2 row-start-1 row-span-3 flex min-w-[16rem] flex-col justify-center gap-2 border-l border-slate-800/80 pl-3 sm:min-w-[18rem]"
+            class="col-start-2 row-start-1 row-span-3 flex min-w-[16rem] flex-col justify-center gap-2 border-l border-[rgba(255,255,255,0.06)] pl-3 sm:min-w-[18rem]"
           >
-            <div
-              class="rounded-lg border border-teal-500/25 bg-gradient-to-br from-slate-900/90 to-teal-950/20 p-3"
-            >
+            <div class="tbh-timer-common-panel">
               <div class="flex min-w-0 items-center gap-3">
                 <span
                   data-role="label-common-timer"
-                  class="shrink-0 text-xs font-semibold uppercase tracking-wide text-teal-300/90"
+                  class="tbh-timer-kind-common shrink-0"
                   >Comum</span
                 >
                 <span
                   data-role="common-level"
-                  class="shrink-0 rounded-md bg-teal-500/15 px-2 py-0.5 font-mono text-sm font-bold text-teal-200"
+                  class="shrink-0 rounded-md bg-[rgba(20,184,166,0.12)] px-2 py-0.5 font-mono text-sm font-bold text-[#14B8A6]"
                   >Lv 50</span
                 >
                 <p
                   data-role="common-timer"
-                  class="min-w-[4.5rem] shrink-0 font-mono text-2xl font-bold leading-none text-slate-100"
+                  class="tbh-timer-display tbh-timer-waiting min-w-[4.5rem] shrink-0"
                 >
                   --:--
                 </p>
@@ -586,37 +616,35 @@
                 <button
                   data-role="common-drop"
                   type="button"
-                  class="min-w-0 flex-1 rounded-md bg-gradient-to-r from-cyan-500 to-teal-500 px-3 py-2 text-center text-xs font-bold text-white shadow-md shadow-teal-900/30 transition hover:from-cyan-400 hover:to-teal-400"
+                  class="tbh-btn tbh-btn-teal min-w-0 flex-1 text-xs font-bold"
                 >
                   Comum dropou
                 </button>
                 <button
                   data-role="common-reset"
                   type="button"
-                  class="shrink-0 rounded-md border border-slate-600 bg-slate-800/80 px-3 py-2 text-center text-xs font-semibold text-slate-200 transition hover:bg-slate-700"
+                  class="tbh-btn tbh-btn-secondary tbh-btn-sm shrink-0 text-xs"
                 >
                   Reset
                 </button>
               </div>
             </div>
 
-            <div
-              class="rounded-lg border border-fuchsia-500/25 bg-gradient-to-br from-slate-900/90 to-fuchsia-950/20 p-3"
-            >
+            <div class="tbh-timer-boss-panel">
               <div class="flex min-w-0 items-center gap-3">
                 <span
                   data-role="label-boss-timer"
-                  class="shrink-0 text-xs font-semibold uppercase tracking-wide text-fuchsia-300/90"
+                  class="tbh-timer-kind-boss shrink-0"
                   >Chefe</span
                 >
                 <span
                   data-role="boss-level"
-                  class="shrink-0 rounded-md bg-fuchsia-500/15 px-2 py-0.5 font-mono text-sm font-bold text-fuchsia-200"
+                  class="shrink-0 rounded-md bg-[rgba(139,92,246,0.12)] px-2 py-0.5 font-mono text-sm font-bold text-[#A78BFA]"
                   >Lv 50</span
                 >
                 <p
                   data-role="boss-timer"
-                  class="min-w-[4.5rem] shrink-0 font-mono text-2xl font-bold leading-none text-slate-100"
+                  class="tbh-timer-display tbh-timer-waiting min-w-[4.5rem] shrink-0"
                 >
                   --:--
                 </p>
@@ -625,14 +653,14 @@
                 <button
                   data-role="boss-drop"
                   type="button"
-                  class="min-w-0 flex-1 rounded-md bg-gradient-to-r from-fuchsia-500 to-indigo-500 px-3 py-2 text-center text-xs font-bold text-white shadow-md shadow-indigo-900/30 transition hover:from-fuchsia-400 hover:to-indigo-400"
+                  class="tbh-btn tbh-btn-purple-gradient min-w-0 flex-1 text-xs font-bold"
                 >
                   Chefe dropou
                 </button>
                 <button
                   data-role="boss-reset"
                   type="button"
-                  class="shrink-0 rounded-md border border-slate-600 bg-slate-800/80 px-3 py-2 text-center text-xs font-semibold text-slate-200 transition hover:bg-slate-700"
+                  class="tbh-btn tbh-btn-secondary tbh-btn-sm shrink-0 text-xs"
                 >
                   Reset
                 </button>
@@ -643,7 +671,7 @@
           <button
             data-role="remove"
             type="button"
-            class="col-start-3 row-start-1 row-span-3 inline-flex h-8 w-8 shrink-0 items-center justify-center self-center rounded-md border border-rose-400/40 bg-rose-500/20 text-rose-300 transition hover:bg-rose-500/30"
+            class="tbh-btn tbh-btn-danger tbh-btn-icon col-start-3 row-start-1 row-span-3 self-center"
           >
             <svg
               viewBox="0 0 24 24"
@@ -694,7 +722,6 @@
         65: 3205,
         80: 4103,
       };
-      const DEFAULT_TIMER_LEVELS = [50, 40];
 
       const MAP_NAMES_PT_BR = {
         "Bug Nest": "Ninho de Insetos",
@@ -887,6 +914,8 @@
           durationLabel: "Duracao padrao (min)",
           fixedCooldownHint:
             "Cooldown fixo: chefe 7 min · comum 5 min",
+          fixedCooldownNote:
+            "Recomendamos 2 niveis de bau (max. 3 para tryhard). Os tempos serao sincronizados com o servidor do jogo.",
           rowTimerReady: "Pronto",
           commonTimerTitle: "Bau comum",
           commonTimerHint: "Pode deixar auto-abrir ligado no jogo",
@@ -1033,6 +1062,8 @@
           footerDevelopedBy: "Desenvolvido por -Neath",
           footerRecommendations:
             "Envie recomendacoes pelo Discord (@.neath).",
+          footerWikiData:
+            'Dados de baus, fases e drop rates com base na <a href="https://taskbarherowiki.com" target="_blank" rel="noopener noreferrer" class="font-medium text-amber-400 transition hover:text-amber-300">TaskBar Hero Wiki</a> (fan-made, nao oficial).',
           farmRecommendationTitle: "Farm Recommendation",
           farmRecommendationHint:
             "Sugestoes de mapa com base no seu nivel. Clique para adicionar ao tracker.",
@@ -1081,6 +1112,8 @@
               heading: "Tempo do cronometro",
               items: [
                 "Baú comum e baú de chefe usam o <strong>mesmo nível</strong> (ex.: Lv 40 no mesmo mapa). Cooldown: chefe <strong>7 min</strong>, comum <strong>5 min</strong> — cada nível tem timer separado.",
+                "Recomendamos farmar apenas <strong>2 níveis</strong> de baú (no máximo <strong>3</strong> para jogadores tryhard).",
+                "Os valores de cooldown serão atualizados automaticamente conforme o <strong>servidor do jogo</strong>.",
                 "Ajuste <strong>Chefe (min)</strong> e <strong>Comum (min)</strong> no topo se quiser farm mais agressivo.",
                 "Baús comuns podem ficar com <strong>auto-abrir</strong> ligado — o cooldown é por nível, igual ao de chefe.",
               ],
@@ -1107,7 +1140,7 @@
             {
               heading: "Exemplo — baús Lv 50 e 40",
               items: [
-                "O site ja vem com 2 baús (Lv 50 e Lv 40); adicione mais com <strong>Adicionar bau</strong> se quiser.",
+                'Adicione os niveis de bau que deseja farmar com <strong>Adicionar bau</strong>.',
                 "Entre em um mapa (ex.: Lv 50) e farme ate dropar o bau.",
                 "Quando dropar, clique em <strong>Bau dropou</strong> — o cronometro daquele nivel comeca a contar.",
                 "Enquanto o cronometro estiver ativo, ha <strong>0% de chance</strong> de dropar outro bau daquele nivel.",
@@ -1125,6 +1158,8 @@
           languageLabel: "Language",
           durationLabel: "Default duration (min)",
           fixedCooldownHint: "Fixed cooldown: boss 7 min · common 5 min",
+          fixedCooldownNote:
+            "We recommend 2 chest levels (max 3 for tryhard). Cooldown times will sync with the game server.",
           rowTimerReady: "Ready",
           commonTimerTitle: "Common chest",
           commonTimerHint: "Auto-open in game is fine",
@@ -1263,6 +1298,8 @@
           unknownMap: "Map not selected",
           footerDevelopedBy: "Developed by -Neath",
           footerRecommendations: "Send recommendations via Discord (@.neath).",
+          footerWikiData:
+            'Chest, stage and drop rate data based on the <a href="https://taskbarherowiki.com" target="_blank" rel="noopener noreferrer" class="font-medium text-amber-400 transition hover:text-amber-300">TaskBar Hero Wiki</a> (fan-made, unofficial).',
           farmRecommendationTitle: "Farm Recommendation",
           farmRecommendationHint:
             "Map suggestions based on your level. Click to add to the tracker.",
@@ -1312,6 +1349,8 @@
               heading: "Timer duration",
               items: [
                 "Common and boss chests share the <strong>same level</strong> (e.g. Lv 40 on the same map). Cooldown: boss <strong>7 min</strong>, common <strong>5 min</strong> — separate timer per level.",
+                "We recommend farming only <strong>2 chest levels</strong> (max <strong>3</strong> for tryhard players).",
+                "Cooldown values will be updated automatically from the <strong>game server</strong>.",
                 "Adjust <strong>Boss (min)</strong> and <strong>Common (min)</strong> at the top for more aggressive farming.",
                 "Common chests can stay on <strong>auto-open</strong> — cooldown is per level, like boss chests.",
               ],
@@ -1338,7 +1377,7 @@
             {
               heading: "Example — Lv 50 and 40 chests",
               items: [
-                "The site starts with 2 chests (Lv 50 and Lv 40); use <strong>Add chest</strong> if you want more.",
+                'Add the chest levels you want to farm with <strong>Add chest</strong>.',
                 "Enter a map (e.g. Lv 50) and farm until a chest drops.",
                 "When it drops, click <strong>Chest dropped</strong> — the timer for that level starts.",
                 "While the timer is running, there is <strong>0% chance</strong> to drop another chest of that level.",
@@ -1356,6 +1395,8 @@
           languageLabel: "Idioma",
           durationLabel: "Duracion predeterminada (min)",
           fixedCooldownHint: "Cooldown fijo: jefe 7 min · comun 5 min",
+          fixedCooldownNote:
+            "Recomendamos 2 niveles de cofre (max. 3 para tryhard). Los tiempos se sincronizaran con el servidor del juego.",
           rowTimerReady: "Listo",
           testAlertButton: "Probar alerta",
           addTimerButton: "Agregar cofre",
@@ -1490,6 +1531,8 @@
           footerDevelopedBy: "Desarrollado por -Neath",
           footerRecommendations:
             "Envia recomendaciones por Discord (@.neath).",
+          footerWikiData:
+            'Datos de cofres, fases y tasas de drop segun la <a href="https://taskbarherowiki.com" target="_blank" rel="noopener noreferrer" class="font-medium text-amber-400 transition hover:text-amber-300">TaskBar Hero Wiki</a> (fan-made, no oficial).',
           farmRecommendationTitle: "Farm Recommendation",
           farmRecommendationHint:
             "Sugerencias de mapa segun tu nivel. Haz clic para agregar al tracker.",
@@ -1539,6 +1582,8 @@
               heading: "Duracion del cronometro",
               items: [
                 "Cofre comum y de jefe comparten el <strong>mismo nivel</strong> (ej. Lv 40 en el mismo mapa). Cooldown: jefe <strong>7 min</strong>, comum <strong>5 min</strong> — timer separado por nivel.",
+                "Recomendamos farmear solo <strong>2 niveles</strong> de cofre (maximo <strong>3</strong> para jugadores tryhard).",
+                "Los valores de cooldown se actualizaran automaticamente segun el <strong>servidor del juego</strong>.",
                 "Ajusta <strong>Jefe (min)</strong> y <strong>Comun (min)</strong> arriba para farm mas agresivo.",
                 "Los cofres comunes pueden quedar con <strong>auto-abrir</strong> — el cooldown es por nivel.",
               ],
@@ -1565,7 +1610,7 @@
             {
               heading: "Ejemplo — cofres Nv 50 y 40",
               items: [
-                "El sitio ya incluye 2 cofres (Nv 50 y Nv 40); usa <strong>Agregar cofre</strong> si quieres mas.",
+                'Agrega los niveles de cofre que quieras farmear con <strong>Agregar cofre</strong>.',
                 "Entra a un mapa (ej.: Nv 50) y farmea hasta que caiga el cofre.",
                 "Cuando caiga, haz clic en <strong>Cofre caido</strong> — el cronometro de ese nivel comienza.",
                 "Mientras el cronometro este activo, hay <strong>0% de probabilidad</strong> de dropear otro cofre de ese nivel.",
@@ -1583,6 +1628,8 @@
           languageLabel: "Langue",
           durationLabel: "Duree par defaut (min)",
           fixedCooldownHint: "Cooldown fixe : boss 7 min · commun 5 min",
+          fixedCooldownNote:
+            "Nous recommandons 2 niveaux de coffre (max. 3 pour tryhard). Les temps seront synchronises avec le serveur du jeu.",
           rowTimerReady: "Pret",
           alertVolumeLabel: "Volume de l'alerte",
           testAlertButton: "Tester l'alerte",
@@ -1719,6 +1766,8 @@
           footerDevelopedBy: "Developpe par -Neath",
           footerRecommendations:
             "Envoyez vos recommandations sur Discord (@.neath).",
+          footerWikiData:
+            'Donnees de coffres, stages et taux de drop basees sur la <a href="https://taskbarherowiki.com" target="_blank" rel="noopener noreferrer" class="font-medium text-amber-400 transition hover:text-amber-300">TaskBar Hero Wiki</a> (fan-made, non officielle).',
           farmRecommendationTitle: "Farm Recommendation",
           farmRecommendationHint:
             "Suggestions de carte selon votre niveau. Cliquez pour ajouter au tracker.",
@@ -1768,6 +1817,8 @@
               heading: "Duree du chrono",
               items: [
                 "Coffre commun et boss partagent le <strong>meme niveau</strong> (ex. Lv 40 sur le meme map). Cooldown : boss <strong>7 min</strong>, commun <strong>5 min</strong> — chrono separe par niveau.",
+                "Nous recommandons de farmer seulement <strong>2 niveaux</strong> de coffre (max <strong>3</strong> pour les joueurs tryhard).",
+                "Les valeurs de cooldown seront mises a jour automatiquement depuis le <strong>serveur du jeu</strong>.",
                 "Reglez <strong>Boss (min)</strong> et <strong>Commun (min)</strong> en haut pour un farm plus agressif.",
                 "Les coffres communs peuvent rester en <strong>ouverture auto</strong> — cooldown par niveau.",
               ],
@@ -1794,7 +1845,7 @@
             {
               heading: "Exemple — coffres Nv 50 et 40",
               items: [
-                "Le site demarre avec 2 coffres (Nv 50 et Nv 40) ; utilisez <strong>Ajouter un coffre</strong> pour en ajouter.",
+                'Ajoutez les niveaux de coffre a farmer avec <strong>Ajouter un coffre</strong>.',
                 "Entrez dans une carte (ex. : Nv 50) et farmez jusqu'au drop du coffre.",
                 "Quand il drop, cliquez sur <strong>Coffre obtenu</strong> — le chrono de ce niveau demarre.",
                 "Pendant que le chrono tourne, il y a <strong>0% de chance</strong> de dropper un autre coffre de ce niveau.",
@@ -1812,6 +1863,8 @@
           languageLabel: "语言",
           durationLabel: "默认时长 (分钟)",
           fixedCooldownHint: "固定冷却：首领 7 分钟 · 普通 5 分钟",
+          fixedCooldownNote:
+            "建议追踪 2 个宝箱等级（硬核玩家最多 3 个）。冷却时间将与游戏服务器同步。",
           rowTimerReady: "就绪",
           alertVolumeLabel: "提示音量",
           testAlertButton: "测试提示",
@@ -1934,6 +1987,8 @@
           unknownMap: "未选择地图",
           footerDevelopedBy: "由 -Neath 开发",
           footerRecommendations: "请通过 Discord (@.neath) 发送建议。",
+          footerWikiData:
+            '宝箱、关卡与掉落率数据来自 <a href="https://taskbarherowiki.com" target="_blank" rel="noopener noreferrer" class="font-medium text-amber-400 transition hover:text-amber-300">TaskBar Hero Wiki</a>（粉丝 wiki，非官方）。',
           farmRecommendationTitle: "Farm Recommendation",
           farmRecommendationHint:
             "根据等级推荐地图。点击即可添加到追踪器。",
@@ -2001,7 +2056,7 @@
             {
               heading: "示例 — Lv 50、40 宝箱",
               items: [
-                "网站默认包含 2 个宝箱（Lv 50 和 Lv 40）；需要更多可点击「添加宝箱」。",
+                '使用<strong>添加宝箱</strong>添加要刷的宝箱等级。',
                 "进入地图（如 Lv 50）刷到宝箱掉落。",
                 "掉落后点击 <strong>宝箱掉落</strong> — 该等级计时开始。",
                 "计时进行中，该等级宝箱 <strong>0% 概率</strong> 再次掉落。",
@@ -2019,6 +2074,8 @@
           languageLabel: "言語",
           durationLabel: "標準時間 (分)",
           fixedCooldownHint: "固定クールダウン：ボス 7分 · 通常 5分",
+          fixedCooldownNote:
+            "宝箱は2レベルを推奨（tryhardは最大3）。クールダウン時間はゲームサーバーと同期されます。",
           rowTimerReady: "準備完了",
           alertVolumeLabel: "アラート音量",
           testAlertButton: "アラートをテスト",
@@ -2146,6 +2203,8 @@
           footerDevelopedBy: "開発: -Neath",
           footerRecommendations:
             "Discord (@.neath) でご提案をお送りください。",
+          footerWikiData:
+            '宝箱・ステージ・ドロップ率のデータは <a href="https://taskbarherowiki.com" target="_blank" rel="noopener noreferrer" class="font-medium text-amber-400 transition hover:text-amber-300">TaskBar Hero Wiki</a>（ファン wiki、非公式）に基づきます。',
           farmRecommendationTitle: "Farm Recommendation",
           farmRecommendationHint:
             "レベルに基づくマップ提案。クリックでトラッカーに追加します。",
@@ -2220,7 +2279,7 @@
             {
               heading: "例 — Lv 50・40 の宝箱",
               items: [
-                "サイトは Lv 50 と Lv 40 の2つの宝箱で始まります。追加する場合は<strong>宝箱を追加</strong>を使います。",
+                '<strong>宝箱を追加</strong>で周回したい宝箱レベルを追加してください。',
                 "マップに入り（例: Lv 50）、宝箱がドロップするまで周回します。",
                 "ドロップしたら<strong>宝箱ドロップ</strong>を押すと、そのレベルのタイマーが開始します。",
                 "タイマーが動いている間、そのレベルの宝箱は<strong>0%の確率</strong>でしか落ちません。",
@@ -2239,6 +2298,7 @@
       const ALERT_SOUND_URL = "./sounds/stardew_valley.mp3";
 
       const fixedCooldownHint = document.querySelector("#fixedCooldownHint");
+      const fixedCooldownNote = document.querySelector("#fixedCooldownNote");
       const alertVolumeInput = document.querySelector("#alertVolumeInput");
       const alertVolumeValue = document.querySelector("#alertVolumeValue");
       const testAlertButton = document.querySelector("#testAlertButton");
@@ -2295,6 +2355,7 @@
       const footerRecommendations = document.querySelector(
         "#footerRecommendations",
       );
+      const footerWikiData = document.querySelector("#footerWikiData");
       const farmRecommendationTitle = document.querySelector(
         "#farmRecommendationTitle",
       );
@@ -2438,7 +2499,7 @@
           playerLevel: 50,
           cubeLevel: 50,
           runeBonusPercent: 0,
-          timers: DEFAULT_TIMER_LEVELS.map(createDefaultTimer),
+          timers: [],
         };
       }
 
@@ -2809,8 +2870,8 @@
           state.runeBonusPercent = Number(state.runeBonusPercent);
         }
 
-        if (!Array.isArray(state.timers) || !state.timers.length) {
-          state.timers = createDefaultState().timers;
+        if (!Array.isArray(state.timers)) {
+          state.timers = [];
         }
 
         state.timers = state.timers.map((timer) => {
@@ -2977,8 +3038,11 @@
         liveTrackerSunsetNote.textContent = t("liveTrackerSunsetNote");
         liveTrackerCta.textContent = t("liveTrackerCta");
         liveTrackerCtaHint.textContent = t("liveTrackerCtaHint");
-        languageLabel.textContent = t("languageLabel");
+        if (languageLabel) {
+          languageLabel.textContent = t("languageLabel");
+        }
         fixedCooldownHint.textContent = t("fixedCooldownHint");
+        fixedCooldownNote.textContent = t("fixedCooldownNote");
         alertVolumeLabel.textContent = t("alertVolumeLabel");
         testAlertButton.textContent = t("testAlertButton");
         addTimerButton.textContent = t("addTimerButton");
@@ -2993,9 +3057,12 @@
         downloadReleaseNotesHint.innerHTML = t("downloadReleaseNotesHint");
         eventsTitle.textContent = t("eventsTitle");
         clearLogsButton.textContent = t("clearLogsButton");
-        languageSelect.value = state.language;
+        if (languageSelect) {
+          languageSelect.value = state.language;
+        }
         footerDevelopedBy.textContent = t("footerDevelopedBy");
         footerRecommendations.textContent = t("footerRecommendations");
+        footerWikiData.innerHTML = t("footerWikiData");
         farmRecommendationTitle.textContent = t("farmRecommendationTitle");
         farmRecommendationHint.textContent = t("farmRecommendationHint");
         farmModePlayerButton.textContent = t("farmModePlayer");
@@ -3026,17 +3093,11 @@
         farmCubeLevelInput.value = String(state.cubeLevel);
         farmRuneBonusInput.value = String(state.runeBonusPercent);
 
-        const activeClass =
-          "bg-indigo-500 text-white hover:bg-indigo-400";
-        const inactiveClass =
-          "border border-slate-700 bg-slate-950 text-slate-300 hover:bg-slate-800";
+        const activeClass = "tbh-btn tbh-btn-primary tbh-btn-sm";
+        const inactiveClass = "tbh-btn tbh-btn-secondary tbh-btn-sm";
 
-        farmModePlayerButton.className = `rounded-md px-3 py-1.5 text-xs font-medium transition ${
-          isPlayerMode ? activeClass : inactiveClass
-        }`;
-        farmModeCubeButton.className = `rounded-md px-3 py-1.5 text-xs font-medium transition ${
-          isPlayerMode ? inactiveClass : activeClass
-        }`;
+        farmModePlayerButton.className = isPlayerMode ? activeClass : inactiveClass;
+        farmModeCubeButton.className = isPlayerMode ? inactiveClass : activeClass;
       }
 
       function addTimerFromRecommendation(level, stageKey) {
@@ -3102,8 +3163,7 @@
 
         for (const { entry, reason } of result.items) {
           const card = document.createElement("article");
-          card.className =
-            "min-w-0 shrink-0 rounded-md border border-slate-800 bg-slate-950/70 p-3 text-xs text-slate-300 break-words";
+          card.className = "tbh-card min-w-0 shrink-0 p-3 text-xs break-words";
 
           const effectiveDrop = effectiveDropPercent(
             entry.bossChestDropPercent,
@@ -3117,7 +3177,7 @@
               <button
                 type="button"
                 data-role="add-recommendation"
-                class="max-w-full shrink-0 rounded-md bg-indigo-500 px-2.5 py-1 text-center text-[11px] font-semibold text-white transition hover:bg-indigo-400"
+                class="tbh-btn tbh-btn-primary tbh-btn-sm max-w-full shrink-0 text-[11px]"
               >${t("farmAddToTracker")}</button>
             </div>
             <p class="mt-1"><span class="text-slate-500">${t("farmRecStage")}:</span> ${stageText}</p>
@@ -3201,7 +3261,7 @@
 
       function clearTimerDragHighlights() {
         timersContainer.querySelectorAll("article").forEach((element) => {
-          element.classList.remove("ring-2", "ring-indigo-400/70");
+          element.classList.remove("tbh-drag-active");
         });
       }
 
@@ -3217,7 +3277,7 @@
           event.preventDefault();
 
           draggedTimerId = timer.id;
-          node.classList.add("ring-2", "ring-indigo-500/60", "opacity-80");
+          node.classList.add("tbh-drag-active");
           document.body.style.userSelect = "none";
 
           const onMouseMove = (moveEvent) => {
@@ -3233,7 +3293,7 @@
 
             draggedTimerId = null;
             clearTimerDragHighlights();
-            node.classList.remove("ring-2", "ring-indigo-500/60", "opacity-80");
+            node.classList.remove("tbh-drag-active");
             saveState();
           };
 
@@ -3247,8 +3307,7 @@
 
         if (!state.timers.length) {
           const empty = document.createElement("p");
-          empty.className =
-            "rounded-md border border-slate-800 bg-slate-950 p-3 text-sm text-slate-400";
+          empty.className = "tbh-empty text-sm";
           empty.textContent = t("emptyTimers");
           timersContainer.appendChild(empty);
           timersDragHint.classList.add("hidden");
@@ -3472,13 +3531,12 @@
       }
 
       function timerDisplayClass(kind, state) {
-        const base =
-          "min-w-[4.5rem] shrink-0 font-mono text-2xl font-bold leading-none";
-        if (state === "expired") return `${base} text-rose-400`;
-        if (state === "waiting") return `${base} text-emerald-400`;
+        const base = "tbh-timer-display";
+        if (state === "expired") return `${base} tbh-timer-expired`;
+        if (state === "waiting") return `${base} tbh-timer-ready`;
         return kind === "common"
-          ? `${base} text-cyan-300`
-          : `${base} text-fuchsia-300`;
+          ? `${base} tbh-timer-active-common`
+          : `${base} tbh-timer-active-boss`;
       }
 
       function refreshTimerLabel(timer, labelElement, kind = "boss") {
@@ -3708,8 +3766,8 @@
         playExpiredSound();
       });
 
-      languageSelect.addEventListener("change", () => {
-        state.language = languageSelect.value;
+      function handleLanguageChange(nextLanguage) {
+        state.language = nextLanguage;
         if (!isSupportedLanguage(state.language)) {
           state.language = loadLanguagePreference();
         }
@@ -3718,6 +3776,10 @@
         renderTimers();
         renderFarmRecommendations();
         saveState(true);
+      }
+
+      languageSelect.addEventListener("change", () => {
+        handleLanguageChange(languageSelect.value);
       });
 
       setInterval(() => {
