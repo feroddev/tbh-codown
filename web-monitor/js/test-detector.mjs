@@ -117,6 +117,7 @@ testFirstSeenDropWithoutSeed();
 testPollBatchCollectsEvents();
 testActBossLv70Drop();
 testInventoryBurstPreservesCountIncrease();
+testInventoryBurstPreservesFirstSightDrop();
 console.log("detector tests passed");
 
 function testInventoryBurstPreservesCountIncrease() {
@@ -145,7 +146,40 @@ function testInventoryBurstPreservesCountIncrease() {
   }
 
   const filtered = filterInventorySyncBurst(batchEvents);
-  assert(filtered.length === 1, "expected real increment to survive inventory burst");
-  assert(filtered[0].itemKey === "910501", "unexpected preserved item key");
-  assert(filtered[0].countIncreased, "expected countIncreased flag");
+  assert(filtered.length === 2, "expected real increments to survive inventory burst");
+  const preservedKeys = new Set(filtered.map((event) => event.itemKey));
+  assert(preservedKeys.has("910501"), "expected common chest increment");
+  assert(preservedKeys.has("920501"), "expected first-sight boss drop");
+}
+
+function testInventoryBurstPreservesFirstSightDrop() {
+  const detector = new ChestDetector({
+    considerCommonChest: true,
+    watchBossKeys: buildWebWatchBossKeys(),
+    watchCommonKeys: buildWebWatchCommonKeys(),
+    flatCountDropGate: () => true,
+  });
+  detector.enableCountTracking(true);
+  detector.seedLine("GetBoxCount Success Count : 1 // ItemKey : 920301");
+  detector.seedLine("GetBoxCount Success Count : 1 // ItemKey : 920401");
+
+  const batchEvents = [];
+  for (const line of [
+    "GetBoxCount Success Count : 1 // ItemKey : 920301",
+    "GetBoxCount Success Count : 1 // ItemKey : 920401",
+    "GetBoxCount Success Count : 1 // ItemKey : 920501",
+  ]) {
+    const event = detector.processLine(line);
+    if (event) {
+      batchEvents.push(event);
+    }
+  }
+
+  const filtered = filterInventorySyncBurst(
+    batchEvents,
+    new Set(["920501"]),
+  );
+  assert(filtered.length === 1, "expected first-sight drop to survive burst");
+  assert(filtered[0].itemKey === "920501", "unexpected preserved item key");
+  assert(filtered[0].countIncreased, "expected count rise on first sight");
 }

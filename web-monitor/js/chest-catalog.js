@@ -121,3 +121,26 @@ export function buildWebWatchBossKeys() {
 export function buildWebWatchCommonKeys() {
   return new Set(commonCatalog.map((item) => item.key));
 }
+
+export function bossItemKeyForLevel(level) {
+  const match = bossCatalog.find((item) => item.level === level);
+  return match?.key ?? null;
+}
+
+export function commonItemKeyForLevel(level) {
+  const match = commonCatalog.find((item) => item.level === level);
+  return match?.key ?? null;
+}
+
+export function itemKeysForTimerLevel(level) {
+  const keys = [];
+  const bossKey = bossItemKeyForLevel(level);
+  if (bossKey) {
+    keys.push(bossKey);
+  }
+  const commonKey = commonItemKeyForLevel(level);
+  if (commonKey) {
+    keys.push(commonKey);
+  }
+  return keys;
+}

@@ -704,8 +704,6 @@
         catalogLabelForKey,
         bossChestLevelForKey,
         commonChestLevelForKey,
-        buildWebWatchBossKeys,
-        buildWebWatchCommonKeys,
       } from "./js/chest-catalog.js";
       import {
         BrowserLogPoller,
@@ -736,8 +734,6 @@
 
       const STORAGE_KEY = "tbh-web-monitor-state-v2";
       const TRACKER_STORAGE_KEY = "tbh-tracker-state-v1";
-      const MONITOR_STARTUP_GRACE_MS = 15_000;
-      const COOLDOWN_TOLERANCE_MS = 15_000;
       const ALERT_SOUND_URL = "./sounds/stardew_valley.mp3";
       const DEFAULT_BOSS_MINUTES = 7;
       const DEFAULT_COMMON_MINUTES = 5;
@@ -751,7 +747,6 @@
       /** @type {Map<number, number>} */
       let lastDropByLevel = new Map();
       let sessionStartedAt = null;
-      let monitorStartedAt = null;
       let eventFilter = "all";
       let durationTicker = null;
       /** @type {ReturnType<typeof setInterval> | null} */
@@ -869,13 +864,6 @@
         await savePlayerLogHandle(handle);
         pendingReconnectHandle = null;
         showSavedFileMissingNotice(false);
-        applyWatchKeysToPoller();
-        poller.setFlatCountDropGate((itemKey) => {
-          const chestType = classifyFromKey(itemKey);
-          return chestType
-            ? shouldAcceptFlatCountDrop(itemKey, chestType)
-            : false;
-        });
         poller.start();
         startSession();
         showDashboard();
@@ -997,74 +985,6 @@
         localStorage.setItem(TRACKER_STORAGE_KEY, JSON.stringify(state));
       }
 
-      function isBossTimerCounting(level) {
-        const state = getTrackerState();
-        const timer = state.timers.find((item) => item.level === level);
-        return Boolean(timer?.expiresAt && timer.expiresAt > Date.now());
-      }
-
-      function isCommonTimerCounting(level) {
-        const state = getTrackerState();
-        const timer = state.timers.find((item) => item.level === level);
-        return Boolean(
-          timer?.commonExpiresAt && timer.commonExpiresAt > Date.now(),
-        );
-      }
-
-      function shouldAcceptFlatCountDrop(itemKey, chestType) {
-        const state = getSharedState();
-        const now = Date.now();
-
-        if (chestType === "actBoss") {
-          const level = bossChestLevelForKey(itemKey);
-          if (level === null) return false;
-          const lastDrop = lastDropByLevel.get(`act:${itemKey}`);
-          if (lastDrop === undefined) {
-            return (
-              monitorStartedAt !== null &&
-              now - monitorStartedAt >= MONITOR_STARTUP_GRACE_MS
-            );
-          }
-          return true;
-        }
-
-        if (chestType === "boss") {
-          const level = bossChestLevelForKey(itemKey);
-          if (level === null) return false;
-          if (isBossTimerCounting(level)) return false;
-          const lastDrop = lastDropByLevel.get(level);
-          if (lastDrop === undefined) {
-            return (
-              monitorStartedAt !== null &&
-              now - monitorStartedAt >= MONITOR_STARTUP_GRACE_MS
-            );
-          }
-          return now - lastDrop >= BOSS_COOLDOWN_MS - COOLDOWN_TOLERANCE_MS;
-        }
-
-        if (chestType === "common") {
-          const level = commonChestLevelForKey(itemKey);
-          if (level === null) return false;
-          if (isCommonTimerCounting(level)) return false;
-          const timerKey = -Math.abs(level);
-          const lastDrop = lastDropByLevel.get(timerKey);
-          if (lastDrop === undefined) {
-            return (
-              monitorStartedAt !== null &&
-              now - monitorStartedAt >= MONITOR_STARTUP_GRACE_MS
-            );
-          }
-          return now - lastDrop >= COMMON_COOLDOWN_MS - COOLDOWN_TOLERANCE_MS;
-        }
-
-        return false;
-      }
-
-      function applyWatchKeysToPoller() {
-        poller.setWatchBossKeys(buildWebWatchBossKeys());
-        poller.setWatchCommonKeys(buildWebWatchCommonKeys());
-      }
-
       const poller = new BrowserLogPoller({
         onEvents: (events) => handleDetectedEvents(events),
         onPoll: (stats) => {
@@ -1076,19 +996,7 @@
         onLogReset: () => {
           showLogResetNotice();
         },
-        flatCountDropGate: (itemKey) => {
-          const chestType = classifyFromKey(itemKey);
-          return chestType
-            ? shouldAcceptFlatCountDrop(itemKey, chestType)
-            : false;
-        },
       });
-
-      function classifyFromKey(itemKey) {
-        if (itemKey.startsWith("930")) return "actBoss";
-        if (itemKey.startsWith("92")) return "boss";
-        return "common";
-      }
 
       function formatTime(date) {
         return date.toLocaleTimeString(getLocale(), { hour12: false });
@@ -1722,7 +1630,6 @@
 
       function startSession() {
         sessionStartedAt = Date.now();
-        monitorStartedAt = Date.now();
         hydrateLastDropFromTimers();
         sessionStartLabel.textContent = formatSessionDate(
           new Date(sessionStartedAt),
@@ -1751,7 +1658,6 @@
           timersTicker = null;
         }
         sessionStartedAt = null;
-        monitorStartedAt = null;
         sessionStartLabel.textContent = "—";
         sessionDurationLabel.textContent = "—";
         setMonitorStatus(false);
@@ -1845,7 +1751,6 @@
 
         await loadChestCatalog();
         await loadStages();
-        applyWatchKeysToPoller();
 
         setupLogFolderPathInput.value = LOG_FOLDER_PATH;
 

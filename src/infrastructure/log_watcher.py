@@ -129,7 +129,7 @@ class ChestDetector:
                 else:
                     return None
 
-            count_increased = had_known_count and count > previous_count
+            count_increased = count > previous_count
 
             if count <= previous_count:
                 if not self._should_accept_flat_count_drop(item_key):

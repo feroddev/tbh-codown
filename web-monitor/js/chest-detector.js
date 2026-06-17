@@ -143,7 +143,7 @@ export class ChestDetector {
         }
       }
 
-      countIncreased = hadKnownCount && count > previousCount;
+      countIncreased = count > previousCount;
 
       if (count <= previousCount) {
         if (!this.shouldAcceptFlatCountDrop(itemKey)) {

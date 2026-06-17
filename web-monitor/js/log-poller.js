@@ -1,16 +1,14 @@
-import { ChestDetector, filterInventorySyncBurst } from "./chest-detector.js";
+import { LineDropDetector } from "./line-drop-detector.js";
 
-const LOG_SEED_TAIL_LINES = 400;
-const DEFAULT_POLL_INTERVAL_MS = 2000;
+const DEFAULT_POLL_INTERVAL_MS = 5000;
 
 export class BrowserLogPoller {
   /**
    * @param {{
-   *   onEvents?: (events: import("./chest-detector.js").ChestEvent[]) => void,
+   *   onEvents?: (events: import("./line-drop-detector.js").LineDropEvent[]) => void,
    *   onPoll?: (stats: { linesRead: number, fileSize: number, truncated: boolean }) => void,
    *   onLogReset?: () => void,
    *   considerCommonChest?: boolean,
-   *   flatCountDropGate?: (itemKey: string) => boolean,
    *   pollIntervalMs?: number,
    * }} options
    */
@@ -19,7 +17,6 @@ export class BrowserLogPoller {
     onPoll = () => {},
     onLogReset = () => {},
     considerCommonChest = true,
-    flatCountDropGate = null,
     pollIntervalMs = DEFAULT_POLL_INTERVAL_MS,
   } = {}) {
     this.onEvents = onEvents;
@@ -29,33 +26,15 @@ export class BrowserLogPoller {
     /** @type {FileSystemFileHandle | null} */
     this.fileHandle = null;
     this.fileName = "";
-    this.byteOffset = 0;
     this.running = false;
     /** @type {ReturnType<typeof setInterval> | null} */
     this.intervalId = null;
-    this.detector = new ChestDetector({
-      considerCommonChest,
-      flatCountDropGate,
-    });
-    this.detector.enableCountTracking(true);
-    this.partialLine = "";
-    this.totalLinesRead = 0;
+    this.detector = new LineDropDetector({ considerCommonChest });
+    this.totalEventsDetected = 0;
   }
 
   setConsiderCommonChest(enabled) {
     this.detector.setConsiderCommonChest(enabled);
-  }
-
-  setFlatCountDropGate(gate) {
-    this.detector.setFlatCountDropGate(gate);
-  }
-
-  setWatchBossKeys(keys) {
-    this.detector.setWatchBossKeys(keys);
-  }
-
-  setWatchCommonKeys(keys) {
-    this.detector.setWatchCommonKeys(keys);
   }
 
   /**
@@ -64,12 +43,11 @@ export class BrowserLogPoller {
   async connect(handle) {
     this.fileHandle = handle;
     this.fileName = handle.name;
-    this.totalLinesRead = 0;
+    this.totalEventsDetected = 0;
     const file = await handle.getFile();
+    const content = await file.text();
     this.detector.resetState();
-    await this.seedFromFile(file);
-    this.byteOffset = file.size;
-    this.partialLine = "";
+    this.detector.seedFromContent(content);
   }
 
   /**
@@ -78,34 +56,10 @@ export class BrowserLogPoller {
   async connectFromFile(file) {
     this.fileHandle = null;
     this.fileName = file.name;
-    this.totalLinesRead = 0;
+    this.totalEventsDetected = 0;
+    const content = await file.text();
     this.detector.resetState();
-    await this.seedFromFile(file);
-    this.byteOffset = file.size;
-    this.partialLine = "";
-  }
-
-  /**
-   * @param {File} file
-   */
-  async seedFromFile(file) {
-    const tailBytes = 512 * 1024;
-    const start = Math.max(0, file.size - tailBytes);
-    const chunk = file.slice(start, file.size);
-    const text = await chunk.text();
-    const lines = text.split(/\r?\n/).slice(-LOG_SEED_TAIL_LINES);
-    for (const line of lines) {
-      this.detector.seedLine(line);
-    }
-  }
-
-  async handleLogTruncation(file) {
-    this.byteOffset = 0;
-    this.partialLine = "";
-    this.detector.resetState();
-    await this.seedFromFile(file);
-    this.byteOffset = file.size;
-    this.onLogReset();
+    this.detector.seedFromContent(content);
   }
 
   start() {
@@ -142,49 +96,24 @@ export class BrowserLogPoller {
       return;
     }
 
-    let truncated = false;
-    if (file.size < this.byteOffset) {
-      truncated = true;
-      await this.handleLogTruncation(file);
-    }
-
-    if (file.size === this.byteOffset) {
-      this.onPoll({
-        linesRead: 0,
-        fileSize: file.size,
-        truncated,
-      });
+    let content;
+    try {
+      content = await file.text();
+    } catch {
       return;
     }
 
-    const chunk = file.slice(this.byteOffset, file.size);
-    this.byteOffset = file.size;
-    const text = this.partialLine + (await chunk.text());
-    const parts = text.split(/\r?\n/);
-    this.partialLine = parts.pop() ?? "";
-
-    let linesThisPoll = 0;
-    /** @type {import("./chest-detector.js").ChestEvent[]} */
-    const batchEvents = [];
-    for (const line of parts) {
-      if (!line) {
-        continue;
-      }
-      linesThisPoll += 1;
-      this.totalLinesRead += 1;
-      const event = this.detector.processLine(line);
-      if (event) {
-        batchEvents.push(event);
-      }
+    const { events, truncated } = this.detector.processContent(content);
+    if (truncated) {
+      this.onLogReset();
     }
-
-    const filtered = filterInventorySyncBurst(batchEvents);
-    if (filtered.length > 0) {
-      this.onEvents(filtered);
+    if (events.length > 0) {
+      this.totalEventsDetected += events.length;
+      this.onEvents(events);
     }
 
     this.onPoll({
-      linesRead: linesThisPoll,
+      linesRead: events.length,
       fileSize: file.size,
       truncated,
     });
@@ -199,7 +128,7 @@ export class BrowserLogPoller {
   }
 
   getTotalLinesRead() {
-    return this.totalLinesRead;
+    return this.totalEventsDetected;
   }
 }
 
