@@ -7,514 +7,677 @@
     <link rel="icon" href="./favicon.ico" sizes="any" />
     <link rel="icon" type="image/png" href="./tbh_monitor.png" />
     <link rel="apple-touch-icon" href="./tbh_monitor.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./css/tbh-design-system.css" />
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <style type="text/tailwindcss">
-      @keyframes tracker-pulse {
-        0%,
-        100% {
-          opacity: 1;
-        }
-        50% {
-          opacity: 0.45;
-        }
-      }
-      .tracker-live-dot {
-        animation: tracker-pulse 1.6s ease-in-out infinite;
+      @theme {
+        --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+        --font-mono: "JetBrains Mono", ui-monospace, monospace;
+        --color-tbh-bg: #0b0f19;
+        --color-tbh-surface: #111827;
+        --color-tbh-elevated: #151b2d;
+        --color-tbh-purple: #8b5cf6;
+        --color-tbh-blue: #3b82f6;
+        --color-tbh-teal: #14b8a6;
+        --color-tbh-lime: #a3e635;
       }
     </style>
   </head>
-  <body class="min-h-screen overflow-x-hidden bg-slate-950 text-slate-100">
-    <main
-      class="mx-auto flex w-full max-w-screen-2xl flex-col gap-6 px-4 py-6 sm:px-6 lg:px-8"
-    >
-      <section
-        class="rounded-xl border border-slate-800 bg-slate-900/80 p-5 shadow-lg shadow-slate-950/40"
-      >
-        <h1 class="text-2xl font-semibold tracking-tight">TBH Live Tracker</h1>
-        <p class="mt-2 break-words text-sm text-slate-300">
-          Monitor automatico de drops via Player.log do Taskbar Hero.
-        </p>
-        <a
-          href="./index.html"
-          class="mt-4 inline-flex items-center gap-2 rounded-md bg-slate-700 px-4 py-2 text-sm font-medium text-slate-100 transition hover:bg-slate-600"
-        >
-          Voltar ao timer manual
+  <body class="tbh-app min-h-screen overflow-x-hidden antialiased">
+    <header class="tbh-header">
+      <div class="tbh-header-inner">
+        <a href="./index.html" class="tbh-brand">
+          <span class="tbh-brand-mark">
+            <img src="./tbh_monitor.png" alt="" width="22" height="22" />
+          </span>
+          <span class="min-w-0">
+            <span class="tbh-brand-title block">TBH Monitor</span>
+            <span class="tbh-brand-subtitle block" data-i18n="brandSubtitle"
+              >Live Tracker</span
+            >
+          </span>
         </a>
-      </section>
+        <div class="tbh-header-controls">
+          <nav class="tbh-nav" aria-label="Navegacao principal">
+            <a
+              href="./index.html"
+              class="tbh-nav-link"
+              data-i18n="navManualTimer"
+              >Timer manual</a
+            >
+            <a href="./tracker.html" class="tbh-nav-link" aria-current="page">
+              <span data-i18n="navLiveTracker">Live Tracker</span>
+              <span class="tbh-nav-badge" data-i18n="navAutoBadge">Auto</span>
+            </a>
+            <span class="tbh-nav-divider" aria-hidden="true"></span>
+            <label class="tbh-nav-lang">
+              <span class="sr-only" data-i18n="languageLabel">Idioma</span>
+              <select
+                id="languageSelect"
+                class="tbh-nav-lang-select"
+                data-i18n-aria="languageLabel"
+              >
+                <option value="pt-BR">PT · BR</option>
+                <option value="en">EN · US</option>
+                <option value="es">ES</option>
+                <option value="fr">FR</option>
+                <option value="zh">中文</option>
+                <option value="ja">日本語</option>
+              </select>
+            </label>
+          </nav>
+        </div>
+      </div>
+    </header>
 
-      <div
-        class="flex flex-col gap-2 rounded-lg border border-amber-500/40 bg-amber-950/30 px-4 py-2.5 text-sm shadow-sm shadow-amber-950/25"
-      >
-        <p
-          class="flex flex-wrap items-center justify-center gap-x-3 gap-y-1.5"
-        >
-          <span class="font-medium text-amber-100">Developed by -Neath</span>
-          <span aria-hidden="true" class="hidden text-amber-600/80 sm:inline"
+    <main class="tbh-main">
+      <div class="tbh-credit-bar flex-col gap-2">
+        <p class="flex flex-wrap items-center justify-center gap-x-3 gap-y-1.5">
+          <span
+            class="font-medium text-amber-100/90"
+            data-i18n="footerDevelopedBy"
+            >Developed by -Neath</span
+          >
+          <span aria-hidden="true" class="hidden text-amber-600/60 sm:inline"
             >·</span
           >
           <a
             href="https://www.linkedin.com/in/feroddev/"
             target="_blank"
             rel="noopener noreferrer"
-            class="font-medium text-amber-400 transition hover:text-amber-300"
             >LinkedIn</a
           >
-          <span aria-hidden="true" class="text-amber-600/80">·</span>
+          <span aria-hidden="true" class="text-amber-600/60">·</span>
           <a
             href="https://github.com/feroddev"
             target="_blank"
             rel="noopener noreferrer"
-            class="font-medium text-amber-400 transition hover:text-amber-300"
             >GitHub</a
           >
-          <span aria-hidden="true" class="text-amber-600/80">·</span>
+          <span aria-hidden="true" class="text-amber-600/60">·</span>
           <a
             href="https://discord.com"
             target="_blank"
             rel="noopener noreferrer"
-            class="font-medium text-amber-400 transition hover:text-amber-300"
             >Discord</a
           >
-          <span class="font-mono text-amber-200">(@.neath)</span>
+          <span class="font-mono text-xs text-amber-200/80">(@.neath)</span>
+        </p>
+        <p
+          class="text-center text-xs text-amber-200/75"
+          data-i18n-html="footerWikiData"
+        >
+          Dados de baus e fases com base na
+          <a
+            href="https://taskbarherowiki.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="font-medium text-amber-400 transition hover:text-amber-300"
+            >TaskBar Hero Wiki</a
+          >
+          (fan-made, nao oficial).
         </p>
       </div>
 
       <section
         id="setupScreen"
-        class="mx-auto w-full max-w-2xl rounded-xl border border-slate-800 bg-slate-900/80 p-6 shadow-lg shadow-slate-950/40 sm:p-8"
+        class="tbh-card tbh-card-glass mx-auto w-full max-w-2xl"
       >
-        <div class="text-center">
+        <div class="tbh-card-body text-center">
           <div
-            class="mx-auto mb-4 inline-flex h-14 w-14 items-center justify-center rounded-2xl border border-indigo-500/30 bg-indigo-500/10 text-2xl"
+            class="mx-auto mb-5 inline-flex h-14 w-14 items-center justify-center rounded-2xl border border-[rgba(139,92,246,0.25)] bg-[rgba(139,92,246,0.1)] text-2xl"
             aria-hidden="true"
           >
             📄
           </div>
-          <h2 class="text-xl font-semibold tracking-tight sm:text-2xl">
-            Conecte o Player.log
-          </h2>
-          <p class="mx-auto mt-2 max-w-md text-sm leading-relaxed text-slate-400">
-            Para monitorar drops automaticamente, selecione o arquivo de log do
-            Taskbar Hero. O dashboard sera liberado apos a conexao.
-          </p>
-        </div>
-
-        <div
-          id="setupBrowserWarning"
-          class="mt-6 hidden rounded-md border border-amber-500/40 bg-amber-950/30 px-4 py-3 text-sm text-amber-100"
-        >
-          Seu navegador nao suporta monitoramento ao vivo. Use
-          <strong class="text-amber-50">Chrome</strong> ou
-          <strong class="text-amber-50">Edge</strong>.
-        </div>
-
-        <ol class="mt-8 space-y-5">
-          <li class="flex gap-4">
-            <span
-              class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-indigo-500/20 text-sm font-bold text-indigo-300"
-              >1</span
-            >
-            <div class="min-w-0 flex-1">
-              <p class="text-sm font-medium text-slate-200">Copie a pasta do log</p>
-              <p class="mt-1 text-xs text-slate-500">
-                Cole no Explorer para abrir a pasta rapidamente.
-              </p>
-              <div
-                class="mt-3 flex min-w-0 flex-wrap items-center gap-2 rounded-md border border-slate-800 bg-slate-950/60 px-3 py-2.5"
-              >
-                <input
-                  id="setupLogFolderPath"
-                  type="text"
-                  readonly
-                  value="%USERPROFILE%\AppData\LocalLow\TesseractStudio\TaskbarHero"
-                  class="min-w-0 flex-1 cursor-text rounded-md border border-slate-700 bg-slate-950 px-3 py-1.5 font-mono text-xs text-slate-200 focus:border-indigo-500 focus:outline-none"
-                />
-                <button
-                  id="setupCopyPathButton"
-                  type="button"
-                  class="shrink-0 rounded-md bg-slate-700 px-3 py-1.5 text-xs font-medium text-slate-100 transition hover:bg-slate-600"
-                >
-                  Copiar pasta
-                </button>
-                <span
-                  id="setupCopyPathFeedback"
-                  class="hidden shrink-0 text-xs font-medium text-emerald-400"
-                  >Copiado!</span
-                >
-              </div>
-            </div>
-          </li>
-
-          <li class="flex gap-4">
-            <span
-              class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-indigo-500/20 text-sm font-bold text-indigo-300"
-              >2</span
-            >
-            <div class="min-w-0 flex-1">
-              <p class="text-sm font-medium text-slate-200">
-                Selecione o arquivo Player.log
-              </p>
-              <p class="mt-1 text-xs text-slate-500">
-                Dentro da pasta aberta, escolha o arquivo
-                <span class="font-mono text-slate-400">Player.log</span> (nao a
-                pasta).
-              </p>
-            </div>
-          </li>
-
-          <li class="flex gap-4">
-            <span
-              class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-indigo-500/20 text-sm font-bold text-indigo-300"
-              >3</span
-            >
-            <div class="min-w-0 flex-1">
-              <p class="text-sm font-medium text-slate-200">Mantenha a aba aberta</p>
-              <p class="mt-1 text-xs text-slate-500">
-                O tracker le novas linhas a cada 2 segundos enquanto voce joga.
-              </p>
-            </div>
-          </li>
-        </ol>
-
-        <div class="mt-8 flex flex-col items-center gap-3">
-          <button
-            id="setupConnectButton"
-            type="button"
-            data-action="connect"
-            class="w-full max-w-sm rounded-md bg-indigo-500 px-6 py-3 text-center text-sm font-semibold text-white shadow-lg shadow-indigo-500/20 transition hover:bg-indigo-400 sm:text-base"
+          <h1
+            class="text-xl font-semibold tracking-tight text-white sm:text-2xl"
+            data-i18n="setupTitle"
           >
-            Selecionar Player.log
-          </button>
-          <p class="text-center text-xs text-slate-500">
-            Requer Chrome ou Edge · Leitura local, nada e enviado ao servidor
+            Conecte o Player.log
+          </h1>
+          <p
+            class="mx-auto mt-2 max-w-md text-sm leading-relaxed text-[#9CA3AF]"
+            data-i18n="setupDescription"
+          >
+            Selecione o log do Taskbar Hero. Drops sao detectados
+            automaticamente.
           </p>
+
+          <div
+            id="setupBrowserWarning"
+            class="tbh-card tbh-card-warning mt-6 hidden px-4 py-3 text-left text-sm"
+            data-i18n-html="setupBrowserWarning"
+          >
+            Seu navegador nao suporta monitoramento ao vivo. Use
+            <strong class="text-amber-50">Chrome</strong> ou
+            <strong class="text-amber-50">Edge</strong>.
+          </div>
+
+          <ol class="mt-8 space-y-5 text-left">
+            <li class="flex gap-4">
+              <span class="tbh-step-number">1</span>
+              <div class="min-w-0 flex-1">
+                <p
+                  class="text-sm font-medium text-[#E5E7EB]"
+                  data-i18n="setupStep1Title"
+                >
+                  Copie a pasta do log
+                </p>
+                <p
+                  class="mt-1 text-xs text-[#9CA3AF]"
+                  data-i18n="setupStep1Hint"
+                >
+                  Cole no Explorer para abrir rapidamente.
+                </p>
+                <div
+                  class="mt-3 flex min-w-0 flex-wrap items-center gap-2 rounded-lg border border-[rgba(255,255,255,0.08)] bg-[#0d1220] px-3 py-2.5"
+                >
+                  <input
+                    id="setupLogFolderPath"
+                    type="text"
+                    readonly
+                    value="%USERPROFILE%\AppData\LocalLow\TesseractStudio\TaskbarHero"
+                    class="tbh-input min-w-0 flex-1 cursor-text font-mono text-xs"
+                  />
+                  <button
+                    id="setupCopyPathButton"
+                    type="button"
+                    class="tbh-btn tbh-btn-secondary tbh-btn-sm shrink-0"
+                    data-i18n="setupCopyButton"
+                  >
+                    Copiar
+                  </button>
+                  <span
+                    id="setupCopyPathFeedback"
+                    class="hidden shrink-0 text-xs font-medium text-[#14B8A6]"
+                    data-i18n="setupCopied"
+                    >Copiado!</span
+                  >
+                </div>
+              </div>
+            </li>
+            <li class="flex gap-4">
+              <span class="tbh-step-number">2</span>
+              <div class="min-w-0 flex-1">
+                <p
+                  class="text-sm font-medium text-[#E5E7EB]"
+                  data-i18n="setupStep2Title"
+                >
+                  Selecione o Player.log
+                </p>
+                <p
+                  class="mt-1 text-xs text-[#9CA3AF]"
+                  data-i18n-html="setupStep2Hint"
+                >
+                  Escolha o arquivo
+                  <span class="font-mono text-[#E5E7EB]">Player.log</span>, nao
+                  a pasta.
+                </p>
+              </div>
+            </li>
+            <li class="flex gap-4">
+              <span class="tbh-step-number">3</span>
+              <div class="min-w-0 flex-1">
+                <p
+                  class="text-sm font-medium text-[#E5E7EB]"
+                  data-i18n="setupStep3Title"
+                >
+                  Mantenha a aba aberta
+                </p>
+                <p
+                  class="mt-1 text-xs text-[#9CA3AF]"
+                  data-i18n="setupStep3Hint"
+                >
+                  Leitura a cada 2s enquanto voce joga.
+                </p>
+              </div>
+            </li>
+          </ol>
+
+          <div class="mt-8 flex flex-col items-center gap-3">
+            <button
+              id="setupConnectButton"
+              type="button"
+              data-action="connect"
+              class="tbh-btn tbh-btn-primary tbh-btn-lg w-full max-w-sm"
+              data-i18n="setupConnectButton"
+            >
+              Selecionar Player.log
+            </button>
+            <p
+              class="text-center text-xs text-[#9CA3AF]"
+              data-i18n="setupFooterHint"
+            >
+              Chrome ou Edge · Leitura local, nada e enviado ao servidor
+            </p>
+          </div>
         </div>
       </section>
 
-      <section id="dashboardScreen" class="hidden grid min-w-0 gap-6 lg:grid-cols-3">
-        <div
-          class="min-w-0 overflow-hidden rounded-xl border border-slate-800 bg-slate-900/80 p-5 lg:col-span-2"
-        >
-          <div class="flex flex-wrap gap-2 border-b border-slate-800 pb-4">
-            <button
-              type="button"
-              data-tab="monitor"
-              class="tracker-tab rounded-md bg-indigo-500 px-4 py-2 text-sm font-medium text-white transition hover:bg-indigo-400"
-            >
-              Monitoramento
-            </button>
-            <button
-              type="button"
-              data-tab="timers"
-              class="tracker-tab rounded-md bg-slate-700 px-4 py-2 text-sm font-medium text-slate-100 transition hover:bg-slate-600"
-            >
-              Timers
-            </button>
+      <section
+        id="dashboardScreen"
+        class="hidden grid min-w-0 gap-6 lg:grid-cols-3"
+      >
+        <div class="tbh-card min-w-0 lg:col-span-2">
+          <div class="tbh-card-body">
+            <div id="monitorTabPanel">
+              <div
+                id="logResetNotice"
+                class="tbh-card tbh-card-warning mb-4 hidden px-4 py-2.5 text-xs"
+                data-i18n="logResetNotice"
+              >
+                O Player.log foi reiniciado pelo jogo. O tracker se reajustou
+                automaticamente.
+              </div>
+
+              <div class="mb-6">
+                <h2 class="tbh-section-title" data-i18n="timersSectionTitle">
+                  Cooldown dos baus
+                </h2>
+                <p
+                  class="tbh-section-desc mt-1"
+                  data-i18n-html="timersSectionDesc"
+                >
+                  Chefe <strong class="text-[#E5E7EB]">7 min</strong> · Comum
+                  <strong class="text-[#E5E7EB]">5 min</strong>. Defina a
+                  <strong class="text-[#E5E7EB]">Volta (s)</strong> — tempo de
+                  conclusao do mapa — para cada nivel.
+                </p>
+                <p
+                  class="tbh-section-desc mt-2 text-xs leading-relaxed"
+                  data-i18n-html="timersSectionNote"
+                >
+                  Os baus aparecem aqui
+                  <strong class="text-[#E5E7EB]">automaticamente ao dropar</strong>
+                  no jogo. Os tempos de cooldown serao sincronizados com o
+                  <strong class="text-[#E5E7EB]">servidor do jogo</strong>.
+                </p>
+
+                <div
+                  class="mt-4 flex flex-wrap items-center justify-between gap-2"
+                >
+                  <h3 class="text-sm font-semibold text-[#E5E7EB]">
+                    <span data-i18n="timersActiveTitle">Em cooldown</span>
+                    (<span id="activeTimersCountLabel">0</span>)
+                  </h3>
+                  <p
+                    class="text-xs text-[#9CA3AF]"
+                    data-i18n="timersActiveHint"
+                  >
+                    Chefe: rotacao · Comum: ate dropar
+                  </p>
+                </div>
+                <div
+                  id="timersContainer"
+                  class="mt-3 flex flex-col gap-2"
+                ></div>
+              </div>
+
+              <div
+                class="relative z-10 flex min-w-0 flex-wrap items-center justify-between gap-x-3 gap-y-2"
+              >
+                <h2
+                  class="min-w-0 break-words text-base font-semibold text-white"
+                >
+                  <span data-i18n="eventsTitle">Eventos</span> (<span
+                    id="eventsCountLabel"
+                    >0</span
+                  >)
+                  <span
+                    id="newEventsBadge"
+                    class="tbh-badge tbh-badge-purple ml-2 hidden"
+                  >
+                    +<span id="newEventsLabel">0</span>
+                    <span data-i18n="newEventsInSessionSuffix"
+                      >nesta sessao</span
+                    >
+                  </span>
+                </h2>
+                <div class="flex flex-wrap items-center gap-2">
+                  <label
+                    class="inline-flex items-center gap-2 text-xs text-[#9CA3AF]"
+                  >
+                    <span class="shrink-0" data-i18n="filterLabel">Filtro</span>
+                    <select
+                      id="eventFilterSelect"
+                      class="tbh-select tbh-select-sm min-w-[7.5rem] shrink-0"
+                    >
+                      <option value="all" data-i18n-option="filterAll">
+                        Todos
+                      </option>
+                      <option value="boss" data-i18n-option="rowBossTimer">
+                        Chefe
+                      </option>
+                      <option value="common" data-i18n-option="rowCommonTimer">
+                        Comum
+                      </option>
+                      <option
+                        value="actBoss"
+                        data-i18n-option="chestTypeActBoss"
+                      >
+                        Act Boss
+                      </option>
+                    </select>
+                  </label>
+                  <button
+                    id="clearEventsButton"
+                    type="button"
+                    class="tbh-btn tbh-btn-secondary tbh-btn-sm shrink-0"
+                    data-i18n="clearLogsButton"
+                  >
+                    Limpar
+                  </button>
+                </div>
+              </div>
+
+              <div class="tbh-table-wrap relative z-0 mt-4">
+                <table class="tbh-table">
+                  <thead>
+                    <tr>
+                      <th data-i18n="colTime">Horario</th>
+                      <th data-i18n="colLevel">Level</th>
+                      <th data-i18n="colChest">Bau</th>
+                      <th data-i18n="colType">Tipo</th>
+                    </tr>
+                  </thead>
+                  <tbody id="eventsBody">
+                    <tr id="eventsEmptyRow">
+                      <td colspan="4">
+                        <div class="tbh-empty py-8">
+                          <span class="tbh-empty-icon" aria-hidden="true"
+                            >📡</span
+                          >
+                          <p id="eventsEmptyMessage" class="tbh-empty-desc">
+                            Nenhum evento ainda. Conecte o Player.log para
+                            comecar.
+                          </p>
+                        </div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <aside class="flex min-w-0 flex-col gap-5">
+          <div
+            id="browserWarning"
+            class="tbh-card tbh-card-warning hidden px-4 py-3 text-sm"
+            data-i18n="browserWarning"
+          >
+            Seu navegador nao suporta monitoramento ao vivo. Use Chrome ou Edge.
           </div>
 
-          <div id="monitorTabPanel" class="mt-4">
-            <div
-              id="browserWarning"
-              class="mb-4 hidden rounded-md border border-amber-500/40 bg-amber-950/30 px-4 py-3 text-sm text-amber-100"
-            >
-              Seu navegador nao suporta monitoramento ao vivo. Use Chrome ou Edge.
-            </div>
-
-            <div
-              id="monitorStatusBanner"
-              class="rounded-xl border border-emerald-500/40 bg-emerald-950/25 p-4"
-              data-state="monitoring"
-            >
+          <section
+            id="monitorStatusBanner"
+            class="tbh-card tbh-card-success"
+            data-state="monitoring"
+          >
+            <div class="tbh-card-body">
               <div class="flex flex-wrap items-start justify-between gap-3">
                 <div class="flex min-w-0 items-start gap-3">
                   <span
                     id="monitorStatusDot"
-                    class="tracker-live-dot mt-1.5 inline-flex h-3 w-3 shrink-0 rounded-full bg-emerald-400 shadow-[0_0_10px_rgba(52,211,153,0.65)]"
+                    class="tbh-status-dot tbh-status-dot-live mt-1.5"
                     aria-hidden="true"
                   ></span>
                   <div class="min-w-0">
+                    <h2 class="tbh-section-title" data-i18n="sessionMonitoring">
+                      Monitoramento
+                    </h2>
                     <p
                       id="monitorStatusTitle"
-                      class="text-sm font-semibold text-emerald-100"
+                      class="mt-1 text-sm font-medium text-[#E5E7EB]"
                     >
-                      Monitorando ao vivo
-                    </p>
-                    <p
-                      id="monitorStatusSubtitle"
-                      class="mt-0.5 break-words text-xs text-emerald-200/80"
-                    >
-                      Leitura ativa a cada 2s. Mantenha esta aba aberta.
+                      Monitoramento ativo
                     </p>
                   </div>
                 </div>
                 <button
                   id="stopButton"
                   type="button"
-                  class="rounded-md bg-slate-700 px-4 py-2 text-sm font-medium text-slate-100 transition hover:bg-slate-600"
+                  class="tbh-btn tbh-btn-secondary tbh-btn-sm shrink-0"
+                  data-i18n="disconnectButton"
                 >
                   Desconectar
                 </button>
               </div>
 
-              <div
+              <dl
                 id="monitorStatusMeta"
-                class="mt-3 grid gap-2 border-t border-emerald-500/20 pt-3 text-xs sm:grid-cols-3"
+                class="mt-3 space-y-2.5 border-t border-[rgba(20,184,166,0.15)] pt-3 text-sm"
               >
-                <div class="rounded-md bg-slate-900/70 px-3 py-2">
-                  <p class="text-slate-500">Arquivo</p>
-                  <p
-                    id="connectedFileLabel"
-                    class="mt-0.5 truncate font-mono text-slate-200"
-                  >
-                    Player.log
-                  </p>
-                </div>
-                <div class="rounded-md bg-slate-900/70 px-3 py-2">
-                  <p class="text-slate-500">Ultima leitura</p>
-                  <p
+                <div class="flex justify-between gap-3">
+                  <dt class="text-[#9CA3AF]" data-i18n="metaLastPoll">
+                    Ultima leitura
+                  </dt>
+                  <dd
                     id="lastPollLabel"
-                    class="mt-0.5 font-mono tabular-nums text-slate-200"
+                    class="font-mono tabular-nums text-[#E5E7EB]"
                   >
                     —
-                  </p>
+                  </dd>
                 </div>
-                <div class="rounded-md bg-slate-900/70 px-3 py-2">
-                  <p class="text-slate-500">Linhas lidas</p>
-                  <p
-                    id="linesReadLabel"
-                    class="mt-0.5 font-mono tabular-nums text-slate-200"
-                  >
-                    0
-                  </p>
-                </div>
-              </div>
+              </dl>
             </div>
+          </section>
 
-            <div
-              id="logResetNotice"
-              class="mt-3 hidden rounded-md border border-amber-500/40 bg-amber-950/30 px-4 py-2.5 text-xs text-amber-100"
-            >
-              O Player.log foi reiniciado pelo jogo. O tracker se reajustou
-              automaticamente — novos drops devem aparecer em breve.
-            </div>
-
-            <div class="mt-4 flex min-w-0 flex-wrap items-end gap-4">
-              <label class="min-w-48 text-sm text-slate-300">
-                <span>Volume do alerta</span>
-                <div class="mt-1 flex items-center gap-2">
+          <section class="tbh-card">
+            <div class="tbh-card-body">
+              <h2 class="tbh-section-title" data-i18n="alertVolumeLabel">
+                Volume do alerta
+              </h2>
+              <label class="mt-3 block">
+                <div class="flex items-center gap-2">
                   <input
                     id="volumeInput"
                     type="range"
                     min="0"
                     max="100"
                     step="5"
-                    class="h-2 w-full cursor-pointer accent-indigo-500"
+                    class="tbh-range min-w-0 flex-1"
                   />
                   <span
                     id="volumeLabel"
-                    class="w-10 shrink-0 text-right font-mono text-xs text-slate-400"
+                    class="w-10 shrink-0 text-right font-mono text-xs text-[#9CA3AF]"
                     >100%</span
                   >
                 </div>
               </label>
-            </div>
-
-            <div
-              id="soundControls"
-              class="mt-3 flex flex-wrap items-center gap-4 text-sm text-slate-300"
-            >
-              <label class="inline-flex cursor-pointer items-center gap-2">
-                <input id="bossSoundToggle" type="checkbox" class="accent-indigo-500" checked />
-                Som bau chefe
-              </label>
-              <label class="inline-flex cursor-pointer items-center gap-2">
-                <input id="commonSoundToggle" type="checkbox" class="accent-indigo-500" checked />
-                Som bau comum
-              </label>
-            </div>
-
-            <div class="mt-6 flex min-w-0 items-center justify-between gap-2">
-              <h2 class="min-w-0 break-words text-base font-semibold">
-                Eventos (<span id="eventsCountLabel">0</span>)
-                <span
-                  id="newEventsBadge"
-                  class="ml-2 hidden rounded-full bg-indigo-500/20 px-2 py-0.5 text-xs font-medium text-indigo-300"
-                >
-                  +<span id="newEventsLabel">0</span> nesta sessao
-                </span>
-              </h2>
-              <div class="flex items-center gap-2">
-                <label class="text-xs text-slate-400">
-                  Filtro
-                  <select
-                    id="eventFilterSelect"
-                    class="ml-1 rounded-md border border-slate-700 bg-slate-950 px-2 py-1 text-xs text-slate-100 focus:border-indigo-500 focus:outline-none"
-                  >
-                    <option value="all">Todos</option>
-                    <option value="boss">Chefe</option>
-                    <option value="common">Comum</option>
-                    <option value="actBoss">Act Boss</option>
-                  </select>
+              <button
+                id="testAlertButton"
+                type="button"
+                class="tbh-btn tbh-btn-secondary tbh-btn-sm mt-3"
+                data-i18n="testAlertButton"
+              >
+                Testar alerta
+              </button>
+              <div
+                id="soundControls"
+                class="mt-3 flex flex-col gap-2 text-sm text-[#9CA3AF]"
+              >
+                <label class="inline-flex cursor-pointer items-center gap-2">
+                  <input
+                    id="bossSoundToggle"
+                    type="checkbox"
+                    class="tbh-checkbox"
+                    checked
+                  />
+                  <span data-i18n="bossSoundLabel">Som bau chefe</span>
                 </label>
-                <button
-                  id="clearEventsButton"
-                  type="button"
-                  class="rounded-md bg-slate-700 px-3 py-1.5 text-xs font-medium text-slate-100 transition hover:bg-slate-600"
-                >
-                  Limpar
-                </button>
+                <label class="inline-flex cursor-pointer items-center gap-2">
+                  <input
+                    id="commonSoundToggle"
+                    type="checkbox"
+                    class="tbh-checkbox"
+                    checked
+                  />
+                  <span data-i18n="commonSoundLabel">Som bau comum</span>
+                </label>
               </div>
             </div>
-            <div
-              class="mt-3 overflow-x-auto rounded-md border border-slate-800 bg-slate-950"
-            >
-              <table class="min-w-[520px] w-full text-left text-sm">
-                <thead>
-                  <tr class="border-b border-slate-800 bg-slate-900/80 text-[11px] font-semibold uppercase tracking-wide text-slate-500">
-                    <th class="px-4 py-2.5">Horario</th>
-                    <th class="px-4 py-2.5">Level</th>
-                    <th class="px-4 py-2.5">Bau</th>
-                    <th class="px-4 py-2.5">Tipo</th>
-                  </tr>
-                </thead>
-                <tbody id="eventsBody">
-                  <tr id="eventsEmptyRow">
-                    <td colspan="4" class="px-4 py-8 text-center text-xs text-slate-500">
-                      <span id="eventsEmptyMessage"
-                        >Nenhum evento ainda. Conecte o Player.log para comecar.</span
-                      >
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          <div id="timersTabPanel" class="mt-4 hidden">
-            <h2 class="text-base font-semibold">Cooldown dos baus</h2>
-            <p class="mt-1 text-xs text-slate-400">
-              Cooldown fixo do jogo: chefe <strong class="text-slate-300">7 min</strong>,
-              comum <strong class="text-slate-300">5 min</strong>. Chefe usa
-              <strong class="text-slate-300">Volta (s)</strong> do timer manual para
-              calcular quando voltar ao mapa.
-            </p>
-
-            <div class="mt-4 flex min-w-0 flex-wrap items-center gap-3">
-              <a
-                href="./index.html"
-                class="rounded-md bg-slate-700 px-4 py-2.5 text-sm font-medium text-slate-100 transition hover:bg-slate-600"
-              >
-                Configurar baus e Volta (s)
-              </a>
-            </div>
-
-            <div class="mt-6 flex items-center justify-between gap-2">
-              <h3 class="text-sm font-semibold text-slate-200">
-                Em cooldown (<span id="activeTimersCountLabel">0</span>)
-              </h3>
-              <p class="text-xs text-slate-500">Chefe: rotacao · Comum: ate dropar</p>
-            </div>
-            <div id="timersContainer" class="mt-3 flex flex-col gap-2">
-              <p id="timersEmptyLabel" class="rounded-md border border-slate-800 bg-slate-950/60 px-4 py-6 text-center text-xs text-slate-500">
-                Nenhum timer ativo. Quando um bau dropar, o countdown aparece aqui.
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <div class="flex min-w-0 flex-col gap-6">
-          <section
-            class="min-w-0 overflow-hidden rounded-xl border border-slate-800 bg-slate-900/80 p-5"
-          >
-            <h2 class="text-base font-semibold">Sessao</h2>
-            <dl class="mt-3 space-y-2 text-sm">
-              <div class="flex justify-between gap-3">
-                <dt class="text-slate-400">Inicio</dt>
-                <dd id="sessionStartLabel" class="font-medium tabular-nums">—</dd>
-              </div>
-              <div class="flex justify-between gap-3">
-                <dt class="text-slate-400">Duracao</dt>
-                <dd id="sessionDurationLabel" class="font-medium tabular-nums text-indigo-300">—</dd>
-              </div>
-              <div class="flex justify-between gap-3">
-                <dt class="text-slate-400">Monitoramento</dt>
-                <dd id="sessionStatusLabel" class="font-medium">Parado</dd>
-              </div>
-              <div class="flex justify-between gap-3">
-                <dt class="text-slate-400">Baus/hora</dt>
-                <dd id="chestsPerHourLabel" class="font-medium tabular-nums">—</dd>
-              </div>
-              <div class="flex justify-between gap-3">
-                <dt class="text-slate-400">Ultimo evento</dt>
-                <dd id="lastEventLabel" class="font-medium tabular-nums">—</dd>
-              </div>
-            </dl>
           </section>
 
-          <section
-            class="min-w-0 overflow-hidden rounded-xl border border-slate-800 bg-slate-900/80 p-5"
-          >
-            <h2 class="text-base font-semibold">Resumo</h2>
-            <dl class="mt-3 space-y-2 text-sm">
-              <div class="flex justify-between gap-3">
-                <dt class="text-slate-400">Baus chefe</dt>
-                <dd id="bossCountLabel" class="font-mono font-medium text-fuchsia-300">0</dd>
-              </div>
-              <div class="flex justify-between gap-3">
-                <dt class="text-slate-400">Baus comuns</dt>
-                <dd id="commonCountLabel" class="font-mono font-medium text-cyan-300">0</dd>
-              </div>
-              <div class="flex justify-between gap-3">
-                <dt class="text-slate-400">Act Boss</dt>
-                <dd id="actBossCountLabel" class="font-mono font-medium text-amber-300">0</dd>
-              </div>
-            </dl>
+          <section class="tbh-card">
+            <div class="tbh-card-body">
+              <h2 class="tbh-section-title" data-i18n="sessionTitle">Sessao</h2>
+              <dl class="mt-3 space-y-2.5 text-sm">
+                <div class="flex justify-between gap-3">
+                  <dt class="text-[#9CA3AF]" data-i18n="sessionStart">
+                    Inicio
+                  </dt>
+                  <dd
+                    id="sessionStartLabel"
+                    class="font-medium tabular-nums text-[#E5E7EB]"
+                  >
+                    —
+                  </dd>
+                </div>
+                <div class="flex justify-between gap-3">
+                  <dt class="text-[#9CA3AF]" data-i18n="sessionDuration">
+                    Duracao
+                  </dt>
+                  <dd
+                    id="sessionDurationLabel"
+                    class="font-medium tabular-nums text-[#8B5CF6]"
+                  >
+                    —
+                  </dd>
+                </div>
+                <div class="flex justify-between gap-3">
+                  <dt class="text-[#9CA3AF]" data-i18n="sessionChestsCollected">
+                    Baus pegos
+                  </dt>
+                  <dd
+                    id="totalChestsLabel"
+                    class="font-medium tabular-nums text-[#E5E7EB]"
+                  >
+                    0
+                  </dd>
+                </div>
+                <div class="flex justify-between gap-3">
+                  <dt class="text-[#9CA3AF]" data-i18n="chestsPerHour">
+                    Baus/hora
+                  </dt>
+                  <dd
+                    id="chestsPerHourLabel"
+                    class="font-medium tabular-nums text-[#E5E7EB]"
+                  >
+                    —
+                  </dd>
+                </div>
+                <div class="flex justify-between gap-3">
+                  <dt class="text-[#9CA3AF]" data-i18n="lastEvent">
+                    Ultimo evento
+                  </dt>
+                  <dd
+                    id="lastEventLabel"
+                    class="font-medium tabular-nums text-[#E5E7EB]"
+                  >
+                    —
+                  </dd>
+                </div>
+              </dl>
+            </div>
           </section>
 
-          <section
-            class="min-w-0 overflow-hidden rounded-xl border border-emerald-500/40 bg-emerald-950/25 p-5 shadow-lg shadow-emerald-950/30"
-          >
-            <details class="group">
-              <summary
-                class="cursor-pointer select-none list-none marker:content-none [&::-webkit-details-marker]:hidden"
-              >
-                <span class="flex items-center justify-between gap-3">
+          <section class="tbh-card">
+            <div class="tbh-card-body">
+              <h2 class="tbh-section-title" data-i18n="summaryTitle">Resumo</h2>
+              <dl class="mt-3 space-y-2.5 text-sm">
+                <div class="flex justify-between gap-3">
+                  <dt class="text-[#9CA3AF]" data-i18n="summaryBossChests">
+                    Baus chefe
+                  </dt>
+                  <dd
+                    id="bossCountLabel"
+                    class="font-mono font-medium tbh-type-boss"
+                  >
+                    0
+                  </dd>
+                </div>
+                <div class="flex justify-between gap-3">
+                  <dt class="text-[#9CA3AF]" data-i18n="summaryCommonChests">
+                    Baus comuns
+                  </dt>
+                  <dd
+                    id="commonCountLabel"
+                    class="font-mono font-medium tbh-type-common"
+                  >
+                    0
+                  </dd>
+                </div>
+                <div class="flex justify-between gap-3">
+                  <dt class="text-[#9CA3AF]" data-i18n="chestTypeActBoss">
+                    Act Boss
+                  </dt>
+                  <dd
+                    id="actBossCountLabel"
+                    class="font-mono font-medium tbh-type-act-boss"
+                  >
+                    0
+                  </dd>
+                </div>
+              </dl>
+            </div>
+          </section>
+
+          <section class="tbh-card tbh-card-success">
+            <div class="tbh-card-body">
+              <details class="tbh-details group">
+                <summary class="flex items-center justify-between gap-3">
                   <span class="flex min-w-0 items-center gap-3">
                     <span
                       aria-hidden="true"
-                      class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-emerald-500 text-lg font-extrabold text-emerald-950 shadow-md shadow-emerald-500/40 ring-2 ring-emerald-300/60"
+                      class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#14B8A6] text-lg font-bold text-[#0B0F19]"
                       >?</span
                     >
-                    <span class="break-words text-base font-semibold text-emerald-100"
+                    <span
+                      class="break-words text-base font-semibold text-[#E5E7EB]"
+                      data-i18n="tipsTitle"
                       >Dicas do tracker</span
                     >
                   </span>
                   <span
                     aria-hidden="true"
-                    class="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md border border-emerald-400/30 bg-emerald-500/10 text-xs text-emerald-200 transition group-open:rotate-180"
+                    class="tbh-details-chevron inline-flex h-7 w-7 items-center justify-center rounded-md border border-[rgba(20,184,166,0.25)] bg-[rgba(20,184,166,0.08)] text-xs text-[#14B8A6]"
                     >▼</span
                   >
-                </span>
-              </summary>
-              <div
-                class="mt-4 space-y-3 break-words border-t border-emerald-500/20 pt-4 text-sm leading-relaxed text-slate-300"
-              >
-                <p>
-                  Quando um bau dropar, o evento aparece na tabela e o timer
-                  correspondente e iniciado automaticamente.
-                </p>
-                <p>
-                  Use a aba <strong class="text-slate-100">Timers</strong> para
-                  ver quanto falta para cada bau dropar de novo.
-                </p>
-                <p>
-                  Clique em <strong class="text-slate-100">Desconectar</strong>
-                  para trocar o arquivo ou encerrar o monitoramento.
-                </p>
-              </div>
-            </details>
+                </summary>
+                <div
+                  id="tipsContent"
+                  class="mt-4 space-y-3 break-words border-t border-[rgba(20,184,166,0.15)] pt-4 text-sm leading-relaxed text-[#9CA3AF]"
+                  data-i18n-html="tipsHtml"
+                >
+                  <p>
+                    Defina a <strong class="text-[#E5E7EB]">Volta (s)</strong> —
+                    tempo de conclusao do mapa — para cada nivel. O mapa com
+                    <strong class="text-[#E5E7EB]">★</strong> e a fase
+                    recomendada automaticamente.
+                  </p>
+                  <p>
+                    Quando um bau dropar, o evento aparece na tabela e o
+                    cronometro e iniciado automaticamente.
+                  </p>
+                  <p>
+                    Clique em
+                    <strong class="text-[#E5E7EB]">Desconectar</strong> para
+                    trocar o arquivo.
+                  </p>
+                </div>
+              </details>
+            </div>
           </section>
-        </div>
+        </aside>
       </section>
     </main>
 
@@ -524,7 +687,6 @@
         catalogLabelForKey,
         bossChestLevelForKey,
         commonChestLevelForKey,
-        getBossCatalog,
         buildWebWatchBossKeys,
         buildWebWatchCommonKeys,
       } from "./js/chest-catalog.js";
@@ -533,15 +695,29 @@
         isFileSystemAccessSupported,
         pickPlayerLogFile,
       } from "./js/log-poller.js";
+      import {
+        createTrackerI18n,
+        LANGUAGE_STORAGE_KEY,
+      } from "./js/tracker-i18n.js";
+      import {
+        loadStages,
+        recommendedStageForLevel,
+        bestStageKeyForLevel,
+        formatStageLabel,
+      } from "./js/stage-data.js";
+
+      const i18n = createTrackerI18n();
+      const { t, getLocale, applyLanguage, setLanguage, localizeDifficulty } =
+        i18n;
 
       const STORAGE_KEY = "tbh-web-monitor-state-v2";
+      const TRACKER_STORAGE_KEY = "tbh-tracker-state-v1";
       const MONITOR_STARTUP_GRACE_MS = 15_000;
       const ALERT_SOUND_URL = "./sounds/stardew_valley.mp3";
       const DEFAULT_BOSS_MINUTES = 7;
       const DEFAULT_COMMON_MINUTES = 5;
       const BOSS_COOLDOWN_MS = DEFAULT_BOSS_MINUTES * 60_000;
       const COMMON_COOLDOWN_MS = DEFAULT_COMMON_MINUTES * 60_000;
-
       const LOG_FOLDER_PATH =
         "%USERPROFILE%\\AppData\\LocalLow\\TesseractStudio\\TaskbarHero";
 
@@ -552,7 +728,6 @@
       let sessionStartedAt = null;
       let monitorStartedAt = null;
       let eventFilter = "all";
-      let activeTab = "monitor";
       let durationTicker = null;
       /** @type {ReturnType<typeof setInterval> | null} */
       let timersTicker = null;
@@ -564,25 +739,27 @@
 
       const setupScreen = document.getElementById("setupScreen");
       const dashboardScreen = document.getElementById("dashboardScreen");
-      const setupBrowserWarning = document.getElementById("setupBrowserWarning");
+      const setupBrowserWarning = document.getElementById(
+        "setupBrowserWarning",
+      );
       const setupConnectButton = document.getElementById("setupConnectButton");
-      const setupLogFolderPathInput = document.getElementById("setupLogFolderPath");
-      const setupCopyPathButton = document.getElementById("setupCopyPathButton");
-      const setupCopyPathFeedback = document.getElementById("setupCopyPathFeedback");
-      const monitorTabPanel = document.getElementById("monitorTabPanel");
-      const timersTabPanel = document.getElementById("timersTabPanel");
+      const setupLogFolderPathInput =
+        document.getElementById("setupLogFolderPath");
+      const setupCopyPathButton = document.getElementById(
+        "setupCopyPathButton",
+      );
+      const setupCopyPathFeedback = document.getElementById(
+        "setupCopyPathFeedback",
+      );
       const stopButton = document.getElementById("stopButton");
       const browserWarning = document.getElementById("browserWarning");
-      const monitorStatusBanner = document.getElementById("monitorStatusBanner");
+      const monitorStatusBanner = document.getElementById(
+        "monitorStatusBanner",
+      );
       const monitorStatusDot = document.getElementById("monitorStatusDot");
       const monitorStatusTitle = document.getElementById("monitorStatusTitle");
-      const monitorStatusSubtitle = document.getElementById(
-        "monitorStatusSubtitle",
-      );
       const monitorStatusMeta = document.getElementById("monitorStatusMeta");
-      const connectedFileLabel = document.getElementById("connectedFileLabel");
       const logResetNotice = document.getElementById("logResetNotice");
-      const linesReadLabel = document.getElementById("linesReadLabel");
       const eventsEmptyMessage = document.getElementById("eventsEmptyMessage");
       const newEventsBadge = document.getElementById("newEventsBadge");
       const soundControls = document.getElementById("soundControls");
@@ -592,21 +769,46 @@
       const commonSoundToggle = document.getElementById("commonSoundToggle");
       const volumeInput = document.getElementById("volumeInput");
       const volumeLabel = document.getElementById("volumeLabel");
+      const testAlertButton = document.getElementById("testAlertButton");
       const eventsBody = document.getElementById("eventsBody");
       const eventFilterSelect = document.getElementById("eventFilterSelect");
       const clearEventsButton = document.getElementById("clearEventsButton");
       const timersContainer = document.getElementById("timersContainer");
-      const timersEmptyLabel = document.getElementById("timersEmptyLabel");
-      const activeTimersCountLabel = document.getElementById("activeTimersCountLabel");
+      const activeTimersCountLabel = document.getElementById(
+        "activeTimersCountLabel",
+      );
       const sessionStartLabel = document.getElementById("sessionStartLabel");
-      const sessionDurationLabel = document.getElementById("sessionDurationLabel");
-      const sessionStatusLabel = document.getElementById("sessionStatusLabel");
+      const sessionDurationLabel = document.getElementById(
+        "sessionDurationLabel",
+      );
       const chestsPerHourLabel = document.getElementById("chestsPerHourLabel");
+      const totalChestsLabel = document.getElementById("totalChestsLabel");
       const lastEventLabel = document.getElementById("lastEventLabel");
       const commonCountLabel = document.getElementById("commonCountLabel");
       const bossCountLabel = document.getElementById("bossCountLabel");
       const actBossCountLabel = document.getElementById("actBossCountLabel");
       const eventsCountLabel = document.getElementById("eventsCountLabel");
+      const languageSelect = document.getElementById("languageSelect");
+
+      function initLanguageSelect() {
+        if (!languageSelect) return;
+        languageSelect.value = i18n.getLanguage();
+        languageSelect.addEventListener("change", () => {
+          setLanguage(languageSelect.value);
+          refreshDynamicTranslations();
+        });
+      }
+
+      function refreshDynamicTranslations() {
+        if (isMonitoring) {
+          setConnectedUi(true);
+        } else {
+          setMonitorStatus(false);
+        }
+        updateEventsEmptyMessage();
+        renderEvents();
+        renderTimers();
+      }
 
       let alertAudio = null;
       let newEventsSinceStart = 0;
@@ -619,7 +821,6 @@
               bossDurationMinutes: DEFAULT_BOSS_MINUTES,
               commonDurationMinutes: DEFAULT_COMMON_MINUTES,
               alertVolume: 100,
-              timers: [],
             };
           }
           return JSON.parse(raw);
@@ -628,7 +829,6 @@
             bossDurationMinutes: DEFAULT_BOSS_MINUTES,
             commonDurationMinutes: DEFAULT_COMMON_MINUTES,
             alertVolume: 100,
-            timers: [],
           };
         }
       }
@@ -637,14 +837,44 @@
         localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
       }
 
+      function createDefaultTrackerState() {
+        return { timers: [] };
+      }
+
+      function getTrackerState() {
+        try {
+          const raw = localStorage.getItem(TRACKER_STORAGE_KEY);
+          if (raw) {
+            const parsed = JSON.parse(raw);
+            return {
+              timers: Array.isArray(parsed.timers) ? parsed.timers : [],
+            };
+          }
+        } catch {
+          /* ignore */
+        }
+        return createDefaultTrackerState();
+      }
+
+      function ensureTrackerTimers(state) {
+        if (!Array.isArray(state.timers)) {
+          state.timers = [];
+          saveTrackerState(state);
+        }
+      }
+
+      function saveTrackerState(state) {
+        localStorage.setItem(TRACKER_STORAGE_KEY, JSON.stringify(state));
+      }
+
       function isBossTimerCounting(level) {
-        const state = getSharedState();
+        const state = getTrackerState();
         const timer = state.timers.find((item) => item.level === level);
         return Boolean(timer?.expiresAt && timer.expiresAt > Date.now());
       }
 
       function isCommonTimerCounting(level) {
-        const state = getSharedState();
+        const state = getTrackerState();
         const timer = state.timers.find((item) => item.level === level);
         return Boolean(
           timer?.commonExpiresAt && timer.commonExpiresAt > Date.now(),
@@ -655,7 +885,7 @@
         const state = getSharedState();
         const now = Date.now();
 
-        if (chestType === "boss") {
+        if (chestType === "boss" || chestType === "actBoss") {
           const level = bossChestLevelForKey(itemKey);
           if (level === null) return false;
           if (isBossTimerCounting(level)) return false;
@@ -696,7 +926,6 @@
         onEvents: (events) => handleDetectedEvents(events),
         onPoll: (stats) => {
           lastPollLabel.textContent = formatTime(new Date());
-          linesReadLabel.textContent = String(poller.getTotalLinesRead());
           if (stats.truncated) {
             showLogResetNotice();
           }
@@ -719,11 +948,11 @@
       }
 
       function formatTime(date) {
-        return date.toLocaleTimeString("pt-BR", { hour12: false });
+        return date.toLocaleTimeString(getLocale(), { hour12: false });
       }
 
       function formatSessionDate(date) {
-        return date.toLocaleString("pt-BR", {
+        return date.toLocaleString(getLocale(), {
           day: "2-digit",
           month: "2-digit",
           hour: "2-digit",
@@ -753,32 +982,89 @@
       }
 
       function chestTypeBadgeClass(type) {
-        if (type === "boss") return "text-fuchsia-300";
-        if (type === "common") return "text-cyan-300";
-        return "text-amber-300";
+        if (type === "boss") return "tbh-type-boss font-medium";
+        if (type === "common") return "tbh-type-common font-medium";
+        return "tbh-type-act-boss font-medium";
       }
 
-      function catalogLabelForLevel(level) {
-        const match = getBossCatalog().find(
-          (item) => item.level === level && !item.key.startsWith("930"),
-        );
-        return match?.label ?? `Bau Lv ${level}`;
+      function chestLevelLabel(level) {
+        return t("chestLevelLabel", { level });
       }
 
-      function switchTab(tab) {
-        activeTab = tab;
-        const isMonitor = tab === "monitor";
-        monitorTabPanel.classList.toggle("hidden", !isMonitor);
-        timersTabPanel.classList.toggle("hidden", isMonitor);
-        document.querySelectorAll(".tracker-tab").forEach((button) => {
-          const selected = button.dataset.tab === tab;
-          button.className = selected
-            ? "tracker-tab rounded-md bg-indigo-500 px-4 py-2 text-sm font-medium text-white transition hover:bg-indigo-400"
-            : "tracker-tab rounded-md bg-slate-700 px-4 py-2 text-sm font-medium text-slate-100 transition hover:bg-slate-600";
-        });
-        if (!isMonitor) {
-          renderTimers();
+      function ensureTimerStageKey(timer) {
+        timer.stageKey = bestStageKeyForLevel(timer.level);
+      }
+
+      function recommendedMapHtml(timer) {
+        const entry = recommendedStageForLevel(timer.level);
+        if (!entry) {
+          return `<span class="text-[#9CA3AF]">${escapeHtml(t("mapNotAvailable"))}</span>`;
         }
+        const label = formatStageLabel(entry, {
+          includeStar: true,
+          localizeDifficulty,
+        });
+        const withStar = label.startsWith("★")
+          ? `<span class="tbh-map-star" aria-hidden="true">★</span>${escapeHtml(label.slice(1).trimStart())}`
+          : escapeHtml(label);
+        return withStar;
+      }
+
+      function createTimerForLevel(level) {
+        return {
+          id: crypto.randomUUID(),
+          level,
+          stageKey: bestStageKeyForLevel(level),
+          clearTimeSeconds: null,
+          expiresAt: null,
+          expired: false,
+          commonExpiresAt: null,
+          commonExpired: false,
+        };
+      }
+
+      function ensureTimerRowForLevel(level, state = getTrackerState()) {
+        let timer = state.timers.find((item) => item.level === level);
+        if (!timer) {
+          timer = createTimerForLevel(level);
+          state.timers.push(timer);
+        }
+        return timer;
+      }
+
+      const REMOVE_TIMER_ICON = `
+        <svg
+          viewBox="0 0 24 24"
+          class="h-3.5 w-3.5"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.8"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+        >
+          <path d="M3 6h18"></path>
+          <path d="M8 6V4h8v2"></path>
+          <path d="M6 6l1 14h10l1-14"></path>
+          <path d="M10 10v7"></path>
+          <path d="M14 10v7"></path>
+        </svg>`;
+
+      function removeTimerById(timerId) {
+        const state = getTrackerState();
+        const timer = state.timers.find((item) => item.id === timerId);
+        if (!timer) return;
+        state.timers = state.timers.filter((item) => item.id !== timerId);
+        saveTrackerState(state);
+        renderTimers();
+      }
+
+      function escapeHtml(value) {
+        return String(value)
+          .replaceAll("&", "&amp;")
+          .replaceAll("<", "&lt;")
+          .replaceAll(">", "&gt;")
+          .replaceAll('"', "&quot;");
       }
 
       function showSetupScreen() {
@@ -790,7 +1076,6 @@
       function showDashboard() {
         setupScreen.classList.add("hidden");
         dashboardScreen.classList.remove("hidden");
-        switchTab("monitor");
         renderEvents();
         renderTimers();
         startTimersTicker();
@@ -859,7 +1144,11 @@
         }
 
         if (!expiresAt || expiresAt <= now) {
-          return { text: "Pronto", state: "ready", inCooldown: false };
+          return {
+            text: t("rowTimerReady"),
+            state: "ready",
+            inCooldown: false,
+          };
         }
 
         const realRemainingMs = expiresAt - now;
@@ -876,77 +1165,163 @@
         };
       }
 
-      function timerCell(display, kind) {
+      function timerDisplayClass(display, kind) {
+        const isBoss = kind === "boss";
         if (display.state === "ready") {
-          return `<span class="font-mono text-sm text-emerald-400">${display.text}</span>`;
+          return isBoss ? "tbh-timer-ready-boss" : "tbh-timer-ready-common";
         }
         if (display.state === "expired") {
-          return `<span class="font-mono text-lg font-bold tabular-nums text-rose-400">${display.text}</span>`;
+          return "tbh-timer-expired";
         }
-        const color =
-          kind === "common" ? "text-cyan-300" : "text-fuchsia-300";
-        return `<span class="font-mono text-lg font-bold tabular-nums ${color}">${display.text}</span>`;
+        return isBoss ? "tbh-timer-active-boss" : "tbh-timer-active-common";
+      }
+
+      function timerPanel(display, kind) {
+        const isBoss = kind === "boss";
+        const panelClass = isBoss
+          ? "tbh-timer-boss-panel"
+          : "tbh-timer-common-panel";
+        const kindClass = isBoss
+          ? "tbh-timer-kind-boss"
+          : "tbh-timer-kind-common";
+        const displayClass = timerDisplayClass(display, kind);
+
+        return `
+          <div class="${panelClass} tbh-timer-panel-compact">
+            <span class="${kindClass}">${escapeHtml(t(isBoss ? "rowBossTimer" : "rowCommonTimer"))}</span>
+            <p class="tbh-timer-display ${displayClass} tabular-nums">${escapeHtml(display.text)}</p>
+          </div>`;
       }
 
       function renderTimers() {
-        const state = getSharedState();
+        const state = getTrackerState();
+        ensureTrackerTimers(state);
         const now = Date.now();
-        const timers = [...(state.timers ?? [])].sort(
-          (a, b) => a.level - b.level,
-        );
+        const timers = [...state.timers].sort((a, b) => a.level - b.level);
 
-        const activeTimers = timers.filter((timer) => {
+        const activeCount = timers.filter((timer) => {
           const boss = computeKindDisplay(timer, "boss", now);
           const common = computeKindDisplay(timer, "common", now);
           return boss.inCooldown || common.inCooldown;
-        });
-        activeTimersCountLabel.textContent = String(activeTimers.length);
+        }).length;
+        activeTimersCountLabel.textContent = String(activeCount);
+
+        const activeRow = document.activeElement?.closest("[data-timer-row]");
+        const activeTimerId = activeRow?.dataset?.timerId ?? null;
+        const activeRole = document.activeElement?.dataset?.role ?? null;
+        const activeSelectionStart =
+          document.activeElement?.selectionStart ?? null;
+        const activeSelectionEnd = document.activeElement?.selectionEnd ?? null;
+
+        timersContainer.innerHTML = "";
 
         if (timers.length === 0) {
-          timersEmptyLabel.classList.remove("hidden");
-          timersContainer.querySelectorAll("[data-timer-row]").forEach((node) => {
-            node.remove();
-          });
+          const empty = document.createElement("div");
+          empty.className = "tbh-empty py-6";
+          empty.innerHTML = `<span class="tbh-empty-icon" aria-hidden="true">⏱</span><p class="tbh-empty-desc">${t("timersEmpty")}</p>`;
+          timersContainer.appendChild(empty);
           return;
         }
 
-        timersEmptyLabel.classList.add("hidden");
-        timersContainer.querySelectorAll("[data-timer-row]").forEach((node) => {
-          node.remove();
-        });
+        let stateChanged = false;
 
         for (const timer of timers) {
+          const previousStageKey = timer.stageKey;
+          ensureTimerStageKey(timer);
+          if (timer.stageKey !== previousStageKey) {
+            stateChanged = true;
+          }
+
           const bossDisplay = computeKindDisplay(timer, "boss", now);
           const commonDisplay = computeKindDisplay(timer, "common", now);
-          const clearSeconds = effectiveClearSeconds(timer);
-          const clearHint =
-            clearSeconds > 0
-              ? `<p class="mt-0.5 text-[10px] text-slate-600">Volta: ${clearSeconds}s</p>`
-              : "";
+          const mapLabelHtml = recommendedMapHtml(timer);
+
+          const clearValue =
+            timer.clearTimeSeconds === null ||
+            timer.clearTimeSeconds === undefined
+              ? ""
+              : String(timer.clearTimeSeconds);
 
           const row = document.createElement("article");
           row.dataset.timerRow = "true";
-          row.className =
-            "rounded-lg border border-slate-800 bg-slate-950/70 px-4 py-3";
+          row.dataset.timerId = timer.id;
+          row.className = "tbh-card tbh-tracker-chest-row rounded-xl px-4 py-3";
           row.innerHTML = `
-            <div class="flex flex-wrap items-start justify-between gap-3">
-              <div class="min-w-0">
-                <p class="text-sm font-semibold text-slate-100">${catalogLabelForLevel(timer.level)}</p>
-                <p class="mt-0.5 text-xs text-slate-500">Level ${timer.level}</p>
-                ${clearHint}
-              </div>
-              <div class="flex flex-wrap items-center gap-4">
-                <div class="text-right">
-                  <p class="text-[10px] font-semibold uppercase tracking-wide text-fuchsia-300/90">Chefe</p>
-                  ${timerCell(bossDisplay, "boss")}
+            <div class="tbh-tracker-chest-inline">
+              <p class="tbh-tracker-chest-level">${escapeHtml(chestLevelLabel(timer.level))}</p>
+              <p class="tbh-recommended-map-value" title="${escapeHtml(t("rowRecommendedMap"))}">${mapLabelHtml}</p>
+              <label class="tbh-tracker-clear-field">
+                <span data-role="clear-label">${escapeHtml(t("rowClearTime"))}</span>
+                <input
+                  data-role="clear-time"
+                  type="number"
+                  min="0"
+                  max="9999"
+                  inputmode="numeric"
+                  placeholder="${escapeHtml(t("rowClearTimePlaceholder"))}"
+                  value="${escapeHtml(clearValue)}"
+                  class="tbh-input tabular-nums"
+                />
+              </label>
+              <div class="tbh-tracker-chest-actions">
+                <div class="tbh-tracker-timers-inline">
+                  ${timerPanel(commonDisplay, "common")}
+                  ${timerPanel(bossDisplay, "boss")}
                 </div>
-                <div class="text-right">
-                  <p class="text-[10px] font-semibold uppercase tracking-wide text-cyan-300/90">Comum</p>
-                  ${timerCell(commonDisplay, "common")}
-                </div>
+                <button
+                  type="button"
+                  data-role="remove"
+                  class="tbh-btn tbh-btn-danger tbh-btn-icon shrink-0"
+                  title="${escapeHtml(t("rowRemove"))}"
+                  aria-label="${escapeHtml(t("rowRemove"))}"
+                >${REMOVE_TIMER_ICON}</button>
               </div>
             </div>`;
           timersContainer.appendChild(row);
+
+          row.querySelector("[data-role='clear-label']").textContent =
+            t("rowClearTime");
+
+          const removeButton = row.querySelector("[data-role='remove']");
+          removeButton.title = t("rowRemove");
+          removeButton.setAttribute("aria-label", t("rowRemove"));
+          removeButton.addEventListener("click", () => {
+            removeTimerById(timer.id);
+          });
+
+          const clearInput = row.querySelector("[data-role='clear-time']");
+          const saveClearTime = () => {
+            const trackerState = getTrackerState();
+            const entry = trackerState.timers.find(
+              (item) => item.id === timer.id,
+            );
+            if (!entry) return;
+            entry.clearTimeSeconds = normalizeClearTimeSeconds(
+              clearInput.value,
+            );
+            saveTrackerState(trackerState);
+          };
+          clearInput.addEventListener("change", saveClearTime);
+          clearInput.addEventListener("input", saveClearTime);
+        }
+
+        if (activeTimerId && activeRole) {
+          const row = timersContainer.querySelector(
+            `[data-timer-id="${activeTimerId}"]`,
+          );
+          const el = row?.querySelector(`[data-role="${activeRole}"]`);
+          if (el instanceof HTMLInputElement) {
+            el.focus();
+            if (activeSelectionStart !== null && activeSelectionEnd !== null) {
+              el.setSelectionRange(activeSelectionStart, activeSelectionEnd);
+            }
+          } else {
+            el?.focus();
+          }
+        }
+
+        if (stateChanged) {
+          saveTrackerState(state);
         }
       }
 
@@ -965,6 +1340,17 @@
         if (chestType === "common" && !commonSoundToggle.checked) return;
         if (chestType === "actBoss" && !bossSoundToggle.checked) return;
 
+        playAlertSound(volume);
+      }
+
+      function playTestAlert() {
+        const shared = getSharedState();
+        const volume = (shared.alertVolume ?? Number(volumeInput.value)) / 100;
+        if (volume <= 0) return;
+        playAlertSound(volume);
+      }
+
+      function playAlertSound(volume) {
         if (!alertAudio) {
           alertAudio = new Audio(ALERT_SOUND_URL);
         }
@@ -974,30 +1360,18 @@
       }
 
       function startTimerForDrop(event) {
-        const state = getSharedState();
+        const state = getTrackerState();
         const now = Date.now();
 
-        if (event.chestType === "boss") {
+        if (event.chestType === "boss" || event.chestType === "actBoss") {
           const level = bossChestLevelForKey(event.itemKey);
           if (level === null) return;
-          let timer = state.timers.find((item) => item.level === level);
-          if (!timer) {
-            timer = {
-              id: crypto.randomUUID(),
-              level,
-              stageKey: null,
-              expiresAt: null,
-              expired: false,
-              commonExpiresAt: null,
-              commonExpired: false,
-            };
-            state.timers.push(timer);
-          }
+          const timer = ensureTimerRowForLevel(level, state);
           if (timer.expiresAt && timer.expiresAt > now) return;
           timer.expiresAt = now + BOSS_COOLDOWN_MS;
           timer.expired = false;
           lastDropByLevel.set(level, now);
-          saveSharedState(state);
+          saveTrackerState(state);
           renderTimers();
           return;
         }
@@ -1005,24 +1379,12 @@
         if (event.chestType === "common") {
           const level = commonChestLevelForKey(event.itemKey);
           if (level === null) return;
-          let timer = state.timers.find((item) => item.level === level);
-          if (!timer) {
-            timer = {
-              id: crypto.randomUUID(),
-              level,
-              stageKey: null,
-              expiresAt: null,
-              expired: false,
-              commonExpiresAt: null,
-              commonExpired: false,
-            };
-            state.timers.push(timer);
-          }
+          const timer = ensureTimerRowForLevel(level, state);
           if (timer.commonExpiresAt && timer.commonExpiresAt > now) return;
           timer.commonExpiresAt = now + COMMON_COOLDOWN_MS;
           timer.commonExpired = false;
           lastDropByLevel.set(-Math.abs(level), now);
-          saveSharedState(state);
+          saveTrackerState(state);
           renderTimers();
         }
       }
@@ -1030,17 +1392,19 @@
       function handleDetectedEvents(events) {
         const now = Date.now();
         for (const event of events) {
-          const label = catalogLabelForKey(event.itemKey);
           const level =
             event.chestType === "common"
               ? commonChestLevelForKey(event.itemKey)
               : bossChestLevelForKey(event.itemKey);
+          const label =
+            level !== null && event.chestType !== "actBoss"
+              ? chestLevelLabel(level)
+              : catalogLabelForKey(event.itemKey);
 
           let expiresAt = null;
           let cooldownMs = 0;
-          const shared = getSharedState();
 
-          if (event.chestType === "boss") {
+          if (event.chestType === "boss" || event.chestType === "actBoss") {
             cooldownMs = BOSS_COOLDOWN_MS;
             expiresAt = now + cooldownMs;
             startTimerForDrop(event);
@@ -1077,14 +1441,21 @@
       }
 
       function updateSummary() {
-        const bossCount = sessionEvents.filter((e) => e.chestType === "boss").length;
-        const commonCount = sessionEvents.filter((e) => e.chestType === "common").length;
-        const actCount = sessionEvents.filter((e) => e.chestType === "actBoss").length;
+        const bossCount = sessionEvents.filter(
+          (e) => e.chestType === "boss",
+        ).length;
+        const commonCount = sessionEvents.filter(
+          (e) => e.chestType === "common",
+        ).length;
+        const actCount = sessionEvents.filter(
+          (e) => e.chestType === "actBoss",
+        ).length;
         const farmCount = bossCount + commonCount;
 
         bossCountLabel.textContent = String(bossCount);
         commonCountLabel.textContent = String(commonCount);
         actBossCountLabel.textContent = String(actCount);
+        totalChestsLabel.textContent = String(sessionEvents.length);
         eventsCountLabel.textContent = String(sessionEvents.length);
 
         if (sessionStartedAt) {
@@ -1104,8 +1475,11 @@
         if (filtered.length === 0) {
           eventsBody.innerHTML = `
             <tr id="eventsEmptyRow">
-              <td colspan="4" class="px-4 py-8 text-center text-xs text-slate-500">
-                ${getEventsEmptyMessage()}
+              <td colspan="4">
+                <div class="tbh-empty py-8">
+                  <span class="tbh-empty-icon" aria-hidden="true">📡</span>
+                  <p class="tbh-empty-desc">${getEventsEmptyMessage()}</p>
+                </div>
               </td>
             </tr>`;
           return;
@@ -1114,20 +1488,20 @@
         eventsBody.innerHTML = filtered
           .map(
             (event) => `
-          <tr class="border-b border-slate-800/60 last:border-0 hover:bg-slate-900/50">
-            <td class="px-4 py-2.5 tabular-nums text-sm text-slate-300">${formatTime(new Date(event.detectedAt))}</td>
-            <td class="px-4 py-2.5 tabular-nums text-sm font-medium">${event.level ?? "—"}</td>
-            <td class="px-4 py-2.5 text-sm">${event.label}</td>
-            <td class="px-4 py-2.5 text-sm font-medium ${chestTypeBadgeClass(event.chestType)}">${chestTypeLabel(event.chestType)}</td>
+          <tr>
+            <td class="tabular-nums text-[#9CA3AF]">${formatTime(new Date(event.detectedAt))}</td>
+            <td class="tabular-nums font-medium text-[#E5E7EB]">${event.level ?? "—"}</td>
+            <td class="text-[#E5E7EB]">${event.label}</td>
+            <td class="${chestTypeBadgeClass(event.chestType)}">${chestTypeLabel(event.chestType)}</td>
           </tr>`,
           )
           .join("");
       }
 
       function chestTypeLabel(type) {
-        if (type === "boss") return "Chefe";
-        if (type === "common") return "Comum";
-        if (type === "actBoss") return "Act Boss";
+        if (type === "boss") return t("rowBossTimer");
+        if (type === "common") return t("rowCommonTimer");
+        if (type === "actBoss") return t("chestTypeActBoss");
         return type;
       }
 
@@ -1141,9 +1515,11 @@
 
       function getEventsEmptyMessage() {
         if (sessionEvents.length === 0) {
-          return "Monitorando ativamente — aguardando o proximo drop de bau no jogo.";
+          return isMonitoring
+            ? t("eventsEmptyMonitoring")
+            : t("eventsEmptyDisconnected");
         }
-        return "Nenhum evento neste filtro.";
+        return t("eventsEmptyFilter");
       }
 
       function updateEventsEmptyMessage() {
@@ -1152,35 +1528,24 @@
         }
       }
 
-      function setMonitorStatus(state, { title, subtitle, fileName = "" } = {}) {
-        monitorStatusBanner.dataset.state = state;
-        monitorStatusTitle.textContent = title;
-        monitorStatusSubtitle.textContent = subtitle;
+      function setMonitorStatus(active) {
+        monitorStatusBanner.dataset.state = active ? "monitoring" : "idle";
+        monitorStatusTitle.textContent = active
+          ? t("monitorStatusActive")
+          : t("monitorStatusInactive");
+        monitorStatusDot.className = "tbh-status-dot mt-1.5";
+        monitorStatusTitle.className = active
+          ? "mt-1 text-sm font-medium text-[#14B8A6]"
+          : "mt-1 text-sm font-medium text-[#E5E7EB]";
 
-        monitorStatusDot.className =
-          "mt-1.5 inline-flex h-3 w-3 shrink-0 rounded-full";
-
-        if (state === "monitoring") {
-          monitorStatusBanner.className =
-            "mt-4 rounded-xl border border-emerald-500/40 bg-emerald-950/25 p-4";
-          monitorStatusDot.classList.add(
-            "tracker-live-dot",
-            "bg-emerald-400",
-            "shadow-[0_0_10px_rgba(52,211,153,0.65)]",
-          );
-          monitorStatusTitle.className = "text-sm font-semibold text-emerald-100";
-          monitorStatusSubtitle.className =
-            "mt-0.5 break-words text-xs text-emerald-200/80";
+        if (active) {
+          monitorStatusBanner.className = "tbh-card tbh-card-success";
+          monitorStatusDot.classList.add("tbh-status-dot-live");
           monitorStatusMeta.classList.remove("hidden");
-          connectedFileLabel.textContent = fileName || "Player.log";
         } else {
-          monitorStatusBanner.className =
-            "mt-4 rounded-xl border border-slate-700/80 bg-slate-950/80 p-4";
-          monitorStatusDot.classList.add("bg-slate-500");
-          monitorStatusTitle.className = "text-sm font-semibold text-slate-200";
-          monitorStatusSubtitle.className =
-            "mt-0.5 break-words text-xs text-slate-400";
-          monitorStatusMeta.classList.add("hidden");
+          monitorStatusBanner.className = "tbh-card";
+          monitorStatusDot.classList.add("tbh-status-dot-idle");
+          monitorStatusMeta.classList.remove("hidden");
         }
       }
 
@@ -1190,14 +1555,7 @@
           return;
         }
 
-        setMonitorStatus("monitoring", {
-          title: "Monitorando ao vivo",
-          subtitle:
-            "Leitura ativa a cada 2s. Mantenha esta aba aberta enquanto joga.",
-          fileName: poller.getFileName() || "Player.log",
-        });
-        sessionStatusLabel.textContent = "Ativo";
-        sessionStatusLabel.className = "font-medium text-emerald-300";
+        setMonitorStatus(true);
         newEventsBadge.classList.remove("hidden");
         updateEventsEmptyMessage();
       }
@@ -1235,8 +1593,7 @@
         monitorStartedAt = null;
         sessionStartLabel.textContent = "—";
         sessionDurationLabel.textContent = "—";
-        sessionStatusLabel.textContent = "Parado";
-        sessionStatusLabel.className = "font-medium";
+        setMonitorStatus(false);
         newEventsBadge.classList.add("hidden");
         logResetNotice.classList.add("hidden");
         showSetupScreen();
@@ -1244,7 +1601,7 @@
 
       async function connectPlayerLog() {
         setupConnectButton.disabled = true;
-        setupConnectButton.textContent = "Abrindo arquivo...";
+        setupConnectButton.textContent = t("setupConnectOpening");
         try {
           if (!isFileSystemAccessSupported()) {
             setupBrowserWarning.classList.remove("hidden");
@@ -1269,11 +1626,11 @@
         } catch (error) {
           if (error?.name !== "AbortError") {
             console.error(error);
-            alert("Nao foi possivel abrir o arquivo. Tente novamente.");
+            alert(t("alertOpenFileFailed"));
           }
         } finally {
           setupConnectButton.disabled = false;
-          setupConnectButton.textContent = "Selecionar Player.log";
+          setupConnectButton.textContent = t("setupConnectButton");
         }
       }
 
@@ -1297,12 +1654,6 @@
         setupLogFolderPathInput.select();
       });
 
-      document.querySelectorAll(".tracker-tab").forEach((button) => {
-        button.addEventListener("click", () => {
-          switchTab(button.dataset.tab);
-        });
-      });
-
       eventFilterSelect.addEventListener("change", () => {
         eventFilter = eventFilterSelect.value;
         renderEvents();
@@ -1322,6 +1673,10 @@
         saveSharedState(state);
       });
 
+      testAlertButton.addEventListener("click", () => {
+        playTestAlert();
+      });
+
       async function bootstrap() {
         if (!isFileSystemAccessSupported()) {
           setupBrowserWarning.classList.remove("hidden");
@@ -1329,6 +1684,7 @@
         }
 
         await loadChestCatalog();
+        await loadStages();
         applyWatchKeysToPoller();
 
         setupLogFolderPathInput.value = LOG_FOLDER_PATH;
@@ -1336,18 +1692,24 @@
         const shared = getSharedState();
         volumeInput.value = String(shared.alertVolume ?? 100);
         volumeLabel.textContent = `${volumeInput.value}%`;
+        initLanguageSelect();
+        applyLanguage();
+        ensureTrackerTimers(getTrackerState());
+        refreshDynamicTranslations();
+        renderTimers();
         showSetupScreen();
 
-        window.addEventListener("storage", () => {
-          if (isMonitoring) {
-            renderTimers();
+        window.addEventListener("storage", (event) => {
+          if (event.key === LANGUAGE_STORAGE_KEY && event.newValue) {
+            setLanguage(event.newValue);
+            refreshDynamicTranslations();
           }
         });
       }
 
       bootstrap().catch((error) => {
         console.error(error);
-        alert("Erro ao carregar catalogo de baus.");
+        alert(t("alertCatalogLoadFailed"));
       });
     </script>
   </body>

@@ -164,6 +164,8 @@ export class BrowserLogPoller {
     this.partialLine = parts.pop() ?? "";
 
     let linesThisPoll = 0;
+    /** @type {import("./chest-detector.js").ChestEvent[]} */
+    const batchEvents = [];
     for (const line of parts) {
       if (!line) {
         continue;

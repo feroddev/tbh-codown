@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
-import { ChestDetector } from "./chest-detector.js";
+import { ChestDetector, filterInventorySyncBurst } from "./chest-detector.js";
 import {
   buildWebWatchBossKeys,
   buildWebWatchCommonKeys,
@@ -70,7 +70,29 @@ function testFirstSeenDropWithoutSeed() {
   assert(event !== null, "expected first drop without prior seed");
 }
 
+function testPollBatchCollectsEvents() {
+  const detector = new ChestDetector({
+    considerCommonChest: true,
+    watchBossKeys: buildWebWatchBossKeys(),
+    watchCommonKeys: buildWebWatchCommonKeys(),
+    flatCountDropGate: () => true,
+  });
+  detector.enableCountTracking(true);
+  detector.seedLine("GetBoxCount Success Count : 2 // ItemKey : 920501");
+
+  const batchEvents = [];
+  const event = detector.processLine(
+    "GetBoxCount Success Count : 3 // ItemKey : 920501",
+  );
+  if (event) {
+    batchEvents.push(event);
+  }
+  const filtered = filterInventorySyncBurst(batchEvents);
+  assert(filtered.length === 1, "expected one event in poll batch");
+}
+
 testFreshDropAfterLogReset();
 testCountIncreaseWhenSeeded();
 testFirstSeenDropWithoutSeed();
+testPollBatchCollectsEvents();
 console.log("detector tests passed");
