@@ -7,6 +7,19 @@
     "stages": []
   },
   {
+    "key": "930101",
+    "name": "Act Boss Box 1",
+    "level": 1,
+    "level_label": 1,
+    "stages": [
+      {
+        "act": 1,
+        "stage": 10,
+        "difficulty": "Normal"
+      }
+    ]
+  },
+  {
     "key": "920011",
     "name": "Stage Boss Box 4",
     "level": 4,
@@ -322,6 +335,19 @@
     ]
   },
   {
+    "key": "930401",
+    "name": "Act Boss Box Lv40",
+    "level": 40,
+    "level_label": 40,
+    "stages": [
+      {
+        "act": 1,
+        "stage": 10,
+        "difficulty": "Nightmare"
+      }
+    ]
+  },
+  {
     "key": "920451",
     "name": "Stage Boss Box Lv45",
     "level": 45,
@@ -427,6 +453,19 @@
     ]
   },
   {
+    "key": "930501",
+    "name": "Act Boss Box Lv50",
+    "level": 50,
+    "level_label": 50,
+    "stages": [
+      {
+        "act": 3,
+        "stage": 10,
+        "difficulty": "Nightmare"
+      }
+    ]
+  },
+  {
     "key": "920551",
     "name": "Stage Boss Box Lv55",
     "level": 55,
@@ -525,6 +564,19 @@
         "act": 1,
         "stage": 2,
         "difficulty": "Torment"
+      }
+    ]
+  },
+  {
+    "key": "930651",
+    "name": "Act Boss Box Lv65",
+    "level": 65,
+    "level_label": 65,
+    "stages": [
+      {
+        "act": 2,
+        "stage": 10,
+        "difficulty": "Hell"
       }
     ]
   },
@@ -683,10 +735,41 @@
     "stages": []
   },
   {
+    "key": "930851",
+    "name": "Act Boss Box Lv85",
+    "level": 85,
+    "level_label": 85,
+    "stages": [
+      {
+        "act": 1,
+        "stage": 10,
+        "difficulty": "Torment"
+      }
+    ]
+  },
+  {
     "key": "920901",
     "name": "Stage Boss Box Lv90",
     "level": 90,
     "level_label": 90,
     "stages": []
+  },
+  {
+    "key": "930901",
+    "name": "Act Boss Box Lv90",
+    "level": 90,
+    "level_label": 90,
+    "stages": [
+      {
+        "act": 2,
+        "stage": 10,
+        "difficulty": "Torment"
+      },
+      {
+        "act": 3,
+        "stage": 10,
+        "difficulty": "Torment"
+      }
+    ]
   }
 ]

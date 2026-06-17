@@ -114,9 +114,9 @@
     "difficulty": "Normal",
     "enemy_level": 12,
     "is_act_boss": true,
-    "boss_chest_key": "920101",
-    "boss_chest_level": 7,
-    "boss_chest_name": "Stage Boss Box 7",
+    "boss_chest_key": "930101",
+    "boss_chest_level": 1,
+    "boss_chest_name": "Act Boss Box 1",
     "boss_chest_drop_percent": 100.0
   },
   {
@@ -474,9 +474,9 @@
     "difficulty": "Nightmare",
     "enemy_level": 40,
     "is_act_boss": true,
-    "boss_chest_key": "920401",
+    "boss_chest_key": "930401",
     "boss_chest_level": 40,
-    "boss_chest_name": "Stage Boss Box Lv40",
+    "boss_chest_name": "Act Boss Box Lv40",
     "boss_chest_drop_percent": 15.0
   },
   {
@@ -714,9 +714,9 @@
     "difficulty": "Nightmare",
     "enemy_level": 52,
     "is_act_boss": true,
-    "boss_chest_key": "920501",
+    "boss_chest_key": "930501",
     "boss_chest_level": 50,
-    "boss_chest_name": "Stage Boss Box Lv50",
+    "boss_chest_name": "Act Boss Box Lv50",
     "boss_chest_drop_percent": 15.0
   },
   {
@@ -954,9 +954,9 @@
     "difficulty": "Hell",
     "enemy_level": 69,
     "is_act_boss": true,
-    "boss_chest_key": "920501",
-    "boss_chest_level": 50,
-    "boss_chest_name": "Stage Boss Box Lv50",
+    "boss_chest_key": "930651",
+    "boss_chest_level": 65,
+    "boss_chest_name": "Act Boss Box Lv65",
     "boss_chest_drop_percent": 10.0
   },
   {
@@ -1194,9 +1194,9 @@
     "difficulty": "Torment",
     "enemy_level": 85,
     "is_act_boss": true,
-    "boss_chest_key": "920651",
-    "boss_chest_level": 65,
-    "boss_chest_name": "Stage Boss Box Lv65",
+    "boss_chest_key": "930851",
+    "boss_chest_level": 85,
+    "boss_chest_name": "Act Boss Box Lv85",
     "boss_chest_drop_percent": 8.0
   },
   {
@@ -1314,9 +1314,9 @@
     "difficulty": "Torment",
     "enemy_level": 90,
     "is_act_boss": true,
-    "boss_chest_key": "920801",
-    "boss_chest_level": 80,
-    "boss_chest_name": "Stage Boss Box Lv80",
+    "boss_chest_key": "930901",
+    "boss_chest_level": 90,
+    "boss_chest_name": "Act Boss Box Lv90",
     "boss_chest_drop_percent": 8.0
   },
   {
@@ -1434,9 +1434,9 @@
     "difficulty": "Torment",
     "enemy_level": 95,
     "is_act_boss": true,
-    "boss_chest_key": "920801",
-    "boss_chest_level": 80,
-    "boss_chest_name": "Stage Boss Box Lv80",
+    "boss_chest_key": "930901",
+    "boss_chest_level": 90,
+    "boss_chest_name": "Act Boss Box Lv90",
     "boss_chest_drop_percent": 8.0
   }
 ]

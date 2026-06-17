@@ -5,6 +5,11 @@
     "level": 1
   },
   {
+    "key": "930101",
+    "label": "Act Boss Box 1",
+    "level": 1
+  },
+  {
     "key": "920011",
     "label": "Stage Boss Box 4",
     "level": 4
@@ -50,6 +55,11 @@
     "level": 40
   },
   {
+    "key": "930401",
+    "label": "Act Boss Box Lv40",
+    "level": 40
+  },
+  {
     "key": "920451",
     "label": "Stage Boss Box Lv45",
     "level": 45
@@ -57,6 +67,11 @@
   {
     "key": "920501",
     "label": "Stage Boss Box Lv50",
+    "level": 50
+  },
+  {
+    "key": "930501",
+    "label": "Act Boss Box Lv50",
     "level": 50
   },
   {
@@ -72,6 +87,11 @@
   {
     "key": "920651",
     "label": "Stage Boss Box Lv65",
+    "level": 65
+  },
+  {
+    "key": "930651",
+    "label": "Act Boss Box Lv65",
     "level": 65
   },
   {
@@ -95,28 +115,18 @@
     "level": 85
   },
   {
+    "key": "930851",
+    "label": "Act Boss Box Lv85",
+    "level": 85
+  },
+  {
     "key": "920901",
     "label": "Stage Boss Box Lv90",
     "level": 90
   },
   {
-    "key": "930401",
-    "label": "Act Boss Box Lv40",
-    "level": 40
-  },
-  {
-    "key": "930501",
-    "label": "Act Boss Box Lv50",
-    "level": 50
-  },
-  {
-    "key": "930651",
-    "label": "Act Boss Box Lv65",
-    "level": 65
-  },
-  {
-    "key": "930801",
-    "label": "Act Boss Box Lv80",
-    "level": 80
+    "key": "930901",
+    "label": "Act Boss Box Lv90",
+    "level": 90
   }
 ]
