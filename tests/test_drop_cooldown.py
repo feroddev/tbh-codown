@@ -88,6 +88,28 @@ class DropCooldownTests(unittest.TestCase):
 
         self.assertTrue(registry.should_accept_flat_count_for_key("910501"))
 
+    def test_should_reject_flat_count_drop_just_before_tolerance(self) -> None:
+        self.assertFalse(
+            should_accept_flat_count_drop(
+                chest_level=50,
+                last_drop_at=1000.0,
+                cooldown_seconds=5 * 60,
+                timer_is_counting=False,
+                now=1000.0 + 5 * 60 - 20,
+            )
+        )
+
+    def test_should_accept_flat_count_drop_within_tolerance(self) -> None:
+        self.assertTrue(
+            should_accept_flat_count_drop(
+                chest_level=50,
+                last_drop_at=1000.0,
+                cooldown_seconds=5 * 60,
+                timer_is_counting=False,
+                now=1000.0 + 5 * 60 - 10,
+            )
+        )
+
     def test_registry_rejects_flat_count_for_boss_key_within_cooldown(self) -> None:
         registry = DropCooldownRegistry(
             boss_cooldown_minutes_provider=lambda: 7.0,

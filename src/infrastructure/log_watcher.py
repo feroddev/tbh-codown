@@ -41,7 +41,9 @@ def filter_inventory_sync_burst(
     return [
         event
         for event in events
-        if key_counts[event.item_key] > 1 or event.item_key in preserve_item_keys
+        if event.count_increased
+        or key_counts[event.item_key] > 1
+        or event.item_key in preserve_item_keys
     ]
 
 
@@ -114,7 +116,10 @@ class ChestDetector:
         if chest_type is None:
             return None
 
+        count_increased = False
+
         if self._use_count_tracking:
+            had_known_count = item_key in self._last_counts
             previous_count = self._last_counts.get(item_key)
             self._last_counts[item_key] = count
 
@@ -123,6 +128,8 @@ class ChestDetector:
                     previous_count = 0
                 else:
                     return None
+
+            count_increased = had_known_count and count > previous_count
 
             if count <= previous_count:
                 if not self._should_accept_flat_count_drop(item_key):
@@ -138,6 +145,7 @@ class ChestDetector:
             chest_type=chest_type,
             count=count,
             raw_line=line.strip(),
+            count_increased=count_increased,
         )
         if self._on_chest_detected is not None:
             self._on_chest_detected(event)

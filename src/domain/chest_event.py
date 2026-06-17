@@ -16,3 +16,4 @@ class ChestEvent:
     chest_type: ChestType
     count: int
     raw_line: str
+    count_increased: bool = False

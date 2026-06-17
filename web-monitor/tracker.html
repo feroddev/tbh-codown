@@ -737,6 +737,7 @@
       const STORAGE_KEY = "tbh-web-monitor-state-v2";
       const TRACKER_STORAGE_KEY = "tbh-tracker-state-v1";
       const MONITOR_STARTUP_GRACE_MS = 15_000;
+      const COOLDOWN_TOLERANCE_MS = 15_000;
       const ALERT_SOUND_URL = "./sounds/stardew_valley.mp3";
       const DEFAULT_BOSS_MINUTES = 7;
       const DEFAULT_COMMON_MINUTES = 5;
@@ -1038,7 +1039,7 @@
               now - monitorStartedAt >= MONITOR_STARTUP_GRACE_MS
             );
           }
-          return now - lastDrop >= BOSS_COOLDOWN_MS;
+          return now - lastDrop >= BOSS_COOLDOWN_MS - COOLDOWN_TOLERANCE_MS;
         }
 
         if (chestType === "common") {
@@ -1053,7 +1054,7 @@
               now - monitorStartedAt >= MONITOR_STARTUP_GRACE_MS
             );
           }
-          return now - lastDrop >= COMMON_COOLDOWN_MS;
+          return now - lastDrop >= COMMON_COOLDOWN_MS - COOLDOWN_TOLERANCE_MS;
         }
 
         return false;
@@ -1704,9 +1705,25 @@
         updateEventsEmptyMessage();
       }
 
+      function hydrateLastDropFromTimers() {
+        const state = getTrackerState();
+        for (const timer of state.timers) {
+          if (timer.commonExpiresAt) {
+            lastDropByLevel.set(
+              -Math.abs(timer.level),
+              timer.commonExpiresAt - COMMON_COOLDOWN_MS,
+            );
+          }
+          if (timer.expiresAt) {
+            lastDropByLevel.set(timer.level, timer.expiresAt - BOSS_COOLDOWN_MS);
+          }
+        }
+      }
+
       function startSession() {
         sessionStartedAt = Date.now();
         monitorStartedAt = Date.now();
+        hydrateLastDropFromTimers();
         sessionStartLabel.textContent = formatSessionDate(
           new Date(sessionStartedAt),
         );

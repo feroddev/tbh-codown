@@ -97,6 +97,20 @@ class LogWatcherTests(unittest.TestCase):
         self.assertEqual(len(filtered), 1)
         self.assertEqual(filtered[0].item_key, "920401")
 
+    def test_inventory_burst_preserves_count_increase(self) -> None:
+        events = [
+            ChestEvent("910501", ChestType.NORMAL_BROWN, 3, "", count_increased=True),
+            ChestEvent("920301", ChestType.BOSS, 1, ""),
+            ChestEvent("920401", ChestType.BOSS, 1, ""),
+            ChestEvent("920501", ChestType.BOSS, 1, ""),
+        ]
+
+        filtered = filter_inventory_sync_burst(events)
+
+        self.assertEqual(len(filtered), 1)
+        self.assertEqual(filtered[0].item_key, "910501")
+        self.assertTrue(filtered[0].count_increased)
+
     def test_flat_count_drop_accepted_without_previous_drop_history(self) -> None:
         registry = DropCooldownRegistry(
             boss_cooldown_minutes_provider=lambda: 7.0,

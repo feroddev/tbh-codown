@@ -6,7 +6,7 @@ export const GET_BOX_COUNT_PATTERN =
 const INVENTORY_BURST_MIN_KEYS = 3;
 
 /**
- * @typedef {{ itemKey: string, chestType: "boss" | "actBoss" | "common", count: number, rawLine: string }} ChestEvent
+ * @typedef {{ itemKey: string, chestType: "boss" | "actBoss" | "common", count: number, rawLine: string, countIncreased: boolean }} ChestEvent
  */
 
 export function isInventorySyncBurst(events) {
@@ -33,6 +33,7 @@ export function filterInventorySyncBurst(events, preserveItemKeys = new Set()) {
   }
   return events.filter(
     (event) =>
+      event.countIncreased ||
       (keyCounts.get(event.itemKey) ?? 0) > 1 ||
       preserveItemKeys.has(event.itemKey),
   );
@@ -124,7 +125,13 @@ export class ChestDetector {
       return null;
     }
 
+    let countIncreased = false;
+
     if (this.useCountTracking) {
+      const hadKnownCount = Object.prototype.hasOwnProperty.call(
+        this.lastCounts,
+        itemKey,
+      );
       let previousCount = this.lastCounts[itemKey];
       this.lastCounts[itemKey] = count;
 
@@ -135,6 +142,8 @@ export class ChestDetector {
           return null;
         }
       }
+
+      countIncreased = hadKnownCount && count > previousCount;
 
       if (count <= previousCount) {
         if (!this.shouldAcceptFlatCountDrop(itemKey)) {
@@ -154,6 +163,7 @@ export class ChestDetector {
       chestType,
       count,
       rawLine: line.trim(),
+      countIncreased,
     };
   }
 

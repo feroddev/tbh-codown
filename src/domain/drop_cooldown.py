@@ -10,6 +10,7 @@ from src.domain.chest_timer_keys import common_chest_timer_key
 
 
 MONITOR_STARTUP_GRACE_SECONDS = 30.0
+COOLDOWN_TOLERANCE_SECONDS = 15.0
 
 
 def should_accept_flat_count_drop(
@@ -32,7 +33,7 @@ def should_accept_flat_count_drop(
             return True
         return current_time - monitor_started_at >= MONITOR_STARTUP_GRACE_SECONDS
 
-    return current_time - last_drop_at >= cooldown_seconds
+    return current_time - last_drop_at >= cooldown_seconds - COOLDOWN_TOLERANCE_SECONDS
 
 
 class DropCooldownRegistry:
