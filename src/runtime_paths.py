@@ -62,9 +62,15 @@ def ensure_default_config(config_path: Path | None = None) -> Path:
         return target
 
     target.parent.mkdir(parents=True, exist_ok=True)
-    template = bundled_resource("config.yaml") or project_root() / "config.yaml"
-    if template.exists():
-        shutil.copy2(template, target)
+    for candidate in [
+        bundled_resource("config.yaml"),
+        bundled_resource("config.dist.yaml"),
+        project_root() / "config.yaml",
+        project_root() / "config.dist.yaml",
+    ]:
+        if candidate is not None and candidate.exists():
+            shutil.copy2(candidate, target)
+            break
     return target
 
 
